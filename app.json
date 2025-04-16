@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "db70e71b-2bb8-4da5-9442-a8f0ce48fd2f"
+      }
+    },
+    "owner": "wicked-think"
   }
 }
