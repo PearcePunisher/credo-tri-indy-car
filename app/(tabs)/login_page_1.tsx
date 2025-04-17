@@ -9,9 +9,9 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+ import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
-import { Image, StyleSheet, Platform } from 'react-native';
+//import { Image, StyleSheet, Platform } from 'react-native';
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
