@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Use your own client ID from Google Cloud Console
+// Use your own client ID from Google Cloud Consoled
 const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 
 const discovery = {

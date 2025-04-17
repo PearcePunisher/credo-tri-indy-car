@@ -17,7 +17,7 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-WebBrowser.maybeCompleteAuthSession(); // Finalize SSO sessions if needed
+WebBrowser.maybeCompleteAuthSession(); // Finalize SSO sessions if neededd
 
 // 👇 Your Google OAuth Web Client ID (from Google Cloud Console)
 const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
