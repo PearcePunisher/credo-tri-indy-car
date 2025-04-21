@@ -90,7 +90,7 @@ export default function LoginPage() {
     setManualUser(null);
     setEmail('');
     setPassword('');
-  };
+  };//also will need to delete the session token here. 
 
   // 👇 Determine if user is logged in
   const isLoggedIn = googleUserInfo || manualUser;
