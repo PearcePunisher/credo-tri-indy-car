@@ -18,8 +18,10 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
+        "android.permission.CAMERA",
         "android.permission.CAMERA"
-      ]
+      ],
+      "package": "com.wickedthink.credotriindycar"
     },
     "web": {
       "bundler": "metro",
