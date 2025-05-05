@@ -85,7 +85,7 @@ export default function Client_QR_Check() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    alignItems: 'flex-start',
+    alignItems: 'flex-start'
   },
   title: {
     fontSize: 24,
