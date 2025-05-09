@@ -1,106 +1,154 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+  ActivityIndicator,
+  Dimensions
+} from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+const TeamScreen = () => {
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default function TabTwoScreen() {
+  useEffect(() => {
+    fetch("https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate=*")
+      .then((res) => res.json())
+      .then((json) => setDrivers(json.data))
+      .catch((err) => console.error("Failed to fetch drivers:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />;
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/red-blue-gradient-background.png')}
-          style={styles.headerImage}
-          resizeMode="cover"
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>The Team</Text>
+      {drivers.map((driver) => {
+        const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
+        const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
+        const profileImage = driver.driver_image?.formats?.medium?.url || driver.driver_image?.url;
+        const socialLinks = driver.driver_social_medias || [];
+        const carImage = driver.car?.car_image?.url || 'https://placehold.co/300x100?text=Car+Image';
+
+        return (
+          <View key={driver.id} style={styles.card}>
+            <Image source={{ uri: profileImage }} style={styles.driverImage} />
+
+            <View style={styles.cardInner}>
+              <View style={styles.driverHeader}>
+                <Text style={styles.driverName}>{fullName}</Text>
+                <Image source={{ uri: flagUrl }} style={styles.flag} />
+              </View>
+
+              <Text style={styles.bio}>{driver.driver_bio}</Text>
+
+              <View style={styles.socialRow}>
+                {socialLinks.map((s, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => Linking.openURL(`https://${s.driver_social_length}`)}
+                  >
+                    <Text style={styles.socialText}>{s.social_platform}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Image source={{ uri: carImage }} style={styles.carImage} resizeMode="contain" />
+
+              <Text style={styles.subHeader}>Achievements</Text>
+              <Text style={styles.achievement}>Coming soon…</Text>
+            </View>
+          </View>
+        );
+      })}
+    </ScrollView>
   );
-}
+};
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  headerImage: {
-    width: '100%', // Ensures the image spans the full width
-    height: 310, // Adjust height as needed
+  container: {
+    flex: 1,
+    backgroundColor: '#0B0C0F',
+    padding: 16,
   },
-  titleContainer: {
+  title: {
+    fontSize: 28,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  card: {
+    backgroundColor: '#01257D',
+    borderRadius: 16,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  driverImage: {
+    width: '100%',
+    height: 280,
+  },
+  cardInner: {
+    padding: 16,
+  },
+  driverHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  driverName: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  flag: {
+    width: 32,
+    height: 20,
+    borderRadius: 2,
+  },
+  bio: {
+    color: '#ccc',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 10,
+  },
+  socialText: {
+    color: '#fff',
+    fontSize: 13,
+    marginRight: 12,
+    textDecorationLine: 'underline',
+  },
+  carImage: {
+    width: '100%',
+    height: 80,
+    marginTop: 10,
+  },
+  subHeader: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  achievement: {
+    color: '#fff',
+    fontSize: 13,
   },
 });
+
+export default TeamScreen;
