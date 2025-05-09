@@ -11,12 +11,52 @@ import {
   Dimensions
 } from 'react-native';
 
+type SocialMedia = {
+  id: number;
+  social_platform: string;
+  driver_social_length: string;
+};
+
+type ImageFormat = {
+  url: string;
+};
+
+type CarImage = {
+  car_image_side?: {
+    formats?: {
+      medium?: ImageFormat;
+    };
+  };
+};
+
+type DriverImage = {
+  url: string;
+  formats?: {
+    medium?: ImageFormat;
+  };
+};
+
+type Car = {
+  car_images?: CarImage[];
+};
+
+type Driver = {
+  id: number;
+  driver_fname: string;
+  driver_lname: string;
+  driver_country_origin: string;
+  driver_bio: string;
+  driver_social_medias?: SocialMedia[];
+  driver_image?: DriverImage;
+  car?: Car;
+};
+
 const TeamScreen = () => {
-  const [drivers, setDrivers] = useState([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate=*")
+    fetch("https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate[car][populate][car_images][populate]=*")
       .then((res) => res.json())
       .then((json) => setDrivers(json.data))
       .catch((err) => console.error("Failed to fetch drivers:", err))
@@ -30,12 +70,16 @@ const TeamScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>The Team</Text>
-      {drivers.map((driver) => {
+      {drivers.map((driver: Driver) => {
         const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
         const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
         const profileImage = driver.driver_image?.formats?.medium?.url || driver.driver_image?.url;
+
+        const carImage =
+          driver.car?.car_images?.[0]?.car_image_side?.formats?.medium?.url ||
+          'https://placehold.co/300x100?text=Car+Image';
+
         const socialLinks = driver.driver_social_medias || [];
-        const carImage = driver.car?.car_image?.url || 'https://placehold.co/300x100?text=Car+Image';
 
         return (
           <View key={driver.id} style={styles.card}>
@@ -50,7 +94,7 @@ const TeamScreen = () => {
               <Text style={styles.bio}>{driver.driver_bio}</Text>
 
               <View style={styles.socialRow}>
-                {socialLinks.map((s, idx) => (
+                {socialLinks.map((s: SocialMedia, idx: number) => (
                   <TouchableOpacity
                     key={idx}
                     onPress={() => Linking.openURL(`https://${s.driver_social_length}`)}
@@ -135,7 +179,7 @@ const styles = StyleSheet.create({
   },
   carImage: {
     width: '100%',
-    height: 80,
+    height: 100,
     marginTop: 10,
   },
   subHeader: {
