@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from "react-native";
 
-// Type definitions based on your API structure
+// Type definitions based on API structure
 type SocialMedia = {
   id: number;
   social_platform: string;

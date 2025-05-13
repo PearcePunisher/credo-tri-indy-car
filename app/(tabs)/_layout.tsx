@@ -45,9 +45,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="test"
+        name="team"
         options={{
-          title: "TEST",
+          title: "Team",
           tabBarIcon: ({ color }) => (
             <Image
               source={require("@/assets/icons/track-icon.png")}
