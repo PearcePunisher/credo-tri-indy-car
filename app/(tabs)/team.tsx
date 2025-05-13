@@ -65,15 +65,28 @@ type Driver = {
 
 const TeamScreen = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [teamDetails, setTeamDetails] = useState<any>(null); // Adjust type based on API response
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(
+    const fetchDrivers = fetch(
       "https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate[driver_image]=true&populate[driver_social_medias]=true&populate[driver_record]=true&populate[car][populate][car_images][populate]=car_image_side"
-    )
-      .then((res) => res.json())
-      .then((json) => setDrivers(json.data))
-      .catch((err) => console.error("Failed to fetch drivers:", err))
+    ).then((res) => res.json());
+
+    const fetchTeamDetails = fetch(
+      "https://timely-actor-10dfb03957.strapiapp.com/api/team-details?fields[0]=team_name&fields[1]=team_descriptions"
+    ).then((res) => res.json());
+
+    Promise.all([fetchDrivers, fetchTeamDetails])
+      .then(([driversData, teamDetailsData]) => {
+        setDrivers(driversData.data);
+        setTeamDetails(teamDetailsData.data);
+        console.log(
+          "Fetched Team Details:",
+          JSON.stringify(teamDetailsData, null, 2)
+        );
+      })
+      .catch((err) => console.error("Failed to fetch data:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -87,6 +100,14 @@ const TeamScreen = () => {
         style={styles.container}
         contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>The Team</Text>
+        {/* Render team details */}
+        {teamDetails?.length > 0 && (
+          <View style={styles.teamDetails}>
+            <Text style={styles.subHeader}>{teamDetails[0].team_name}</Text>
+            <Text style={styles.bio}>{teamDetails[0].team_descriptions}</Text>
+          </View>
+        )}
+        {/* Render drivers */}
         {drivers.map((driver: Driver) => {
           const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
           const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
@@ -119,7 +140,11 @@ const TeamScreen = () => {
                   {socialLinks.map((s: SocialMedia, idx: number) => {
                     const platform = s.social_platform.toLowerCase();
 
-                    type FontAwesomeIconName = 'instagram' | 'twitter' | 'facebook' | 'youtube-play';
+                    type FontAwesomeIconName =
+                      | "instagram"
+                      | "twitter"
+                      | "facebook"
+                      | "youtube-play";
                     let iconName: FontAwesomeIconName | null = null;
                     if (platform.includes("instagram")) iconName = "instagram";
                     else if (
@@ -188,6 +213,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: "#FFFFFF",
     fontWeight: "bold",
+    marginBottom: 20,
+  },
+  teamDetails: {
+    backgroundColor: "#1A1A1A",
+    padding: 16,
+    borderRadius: 8,
     marginBottom: 20,
   },
   card: {
