@@ -119,7 +119,7 @@ const TeamScreen = () => {
                   {socialLinks.map((s: SocialMedia, idx: number) => {
                     const platform = s.social_platform.toLowerCase();
 
-                    type FontAwesomeIconName = 'instagram' | 'twitter' | 'facebook' | 'youtube-play' | 'tiktok';
+                    type FontAwesomeIconName = 'instagram' | 'twitter' | 'facebook' | 'youtube-play';
                     let iconName: FontAwesomeIconName | null = null;
                     if (platform.includes("instagram")) iconName = "instagram";
                     else if (
@@ -131,8 +131,6 @@ const TeamScreen = () => {
                       iconName = "facebook";
                     else if (platform.includes("youtube"))
                       iconName = "youtube-play";
-                    else if (platform.includes("tiktok"))
-                      iconName = "tiktok";
                     else iconName = null;
 
                     return (
