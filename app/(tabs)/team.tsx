@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
+import useTeamTheme from "@/theme/useTeamTheme";
 import {
   View,
   Text,
@@ -64,6 +65,7 @@ type Driver = {
 };
 
 const TeamScreen = () => {
+  const { primary } = useTeamTheme();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [teamDetails, setTeamDetails] = useState<any>(null); // Adjust type based on API response
   const [loading, setLoading] = useState(true);
@@ -81,10 +83,6 @@ const TeamScreen = () => {
       .then(([driversData, teamDetailsData]) => {
         setDrivers(driversData.data);
         setTeamDetails(teamDetailsData.data);
-        console.log(
-          "Fetched Team Details:",
-          JSON.stringify(teamDetailsData, null, 2)
-        );
       })
       .catch((err) => console.error("Failed to fetch data:", err))
       .finally(() => setLoading(false));
@@ -95,7 +93,7 @@ const TeamScreen = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0B0C0F" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: primary }}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}>
