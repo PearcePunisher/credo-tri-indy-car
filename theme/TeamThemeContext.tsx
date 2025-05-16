@@ -25,9 +25,16 @@ export const TeamThemeProvider = ({ children }: { children: React.ReactNode }) =
   useEffect(() => {
     const fetchTheme = async () => {
       try {
-        const res = await fetch("https://timely-actor-10dfb03957.strapiapp.com/api/team-details?populate=team_colors");
+        const res = await fetch("https://timely-actor-10dfb03957.strapiapp.com/api/team-details?populate=team_colors&fields[0]=team_name");
         const json = await res.json();
-        const colors = json.data.attributes.team_colors;
+
+        const firstItem = json.data?.[0];
+        const colors = firstItem?.team_colors;
+
+        if (!colors) {
+          console.warn("No team colors found in response:", JSON.stringify(json, null, 2));
+          return;
+        }
 
         const newTheme: TeamTheme = {
           primary: colors.team_primary_color,
@@ -38,7 +45,6 @@ export const TeamThemeProvider = ({ children }: { children: React.ReactNode }) =
 
         setTheme(newTheme);
 
-        // Web only: set CSS variables
         if (Platform.OS === 'web') {
           document.documentElement.style.setProperty('--team-primary', newTheme.primary);
           document.documentElement.style.setProperty('--team-secondary', newTheme.secondary);

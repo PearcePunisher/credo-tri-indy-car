@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import useTeamTheme from "@/theme/useTeamTheme";
+import TeamBackground from "@/components/TeamBackground";
+import { useColorScheme } from "@/hooks/useColorScheme"; // Add this import
+
 import {
   View,
   Text,
@@ -65,10 +68,12 @@ type Driver = {
 };
 
 const TeamScreen = () => {
-  const { primary } = useTeamTheme();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [teamDetails, setTeamDetails] = useState<any>(null); // Adjust type based on API response
   const [loading, setLoading] = useState(true);
+  const { primary, secondary } = useTeamTheme();
+  const colorScheme = useColorScheme(); // Get the current color scheme
+  const isDarkMode = colorScheme === "dark";
 
   useEffect(() => {
     const fetchDrivers = fetch(
@@ -93,106 +98,129 @@ const TeamScreen = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: primary }}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>The Team</Text>
-        {/* Render team details */}
-        {teamDetails?.length > 0 && (
-          <View style={styles.teamDetails}>
-            <Text style={styles.subHeader}>{teamDetails[0].team_name}</Text>
-            <Text style={styles.bio}>{teamDetails[0].team_descriptions}</Text>
-          </View>
-        )}
-        {/* Render drivers */}
-        {drivers.map((driver: Driver) => {
-          const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
-          const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
-          const profileImage =
-            driver.driver_image?.formats?.medium?.url ||
-            driver.driver_image?.url;
+    <TeamBackground primaryColor={primary} secondaryColor={secondary}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.title}>The Team</Text>
+          {/* Render team details */}
+          {teamDetails?.length > 0 && (
+            <View
+              style={[
+                styles.teamDetails,
+                {
+                  backgroundColor: isDarkMode
+                    ? "#1A1A1A" // Dark mode background
+                    : "#F5F5F5", // Light mode background
+                },
+              ]}>
+              <Text
+                style={[
+                  styles.subHeader,
+                  { color: isDarkMode ? "#FFFFFF" : "#000000" }, // Dynamic text color
+                ]}>
+                {teamDetails[0].team_name}
+              </Text>
+              <Text
+                style={[
+                  styles.bio,
+                  { color: isDarkMode ? "#CCCCCC" : "#333333" }, // Dynamic text color
+                ]}>
+                {teamDetails[0].team_descriptions}
+              </Text>
+            </View>
+          )}
+          {/* Render drivers */}
+          {drivers.map((driver: Driver) => {
+            const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
+            const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
+            const profileImage =
+              driver.driver_image?.formats?.medium?.url ||
+              driver.driver_image?.url;
 
-          const carImage =
-            driver.car?.car_images?.[0]?.car_image_side?.formats?.medium?.url ||
-            "https://placehold.co/300x100?text=Car+Image";
+            const carImage =
+              driver.car?.car_images?.[0]?.car_image_side?.formats?.medium
+                ?.url || "https://placehold.co/300x100?text=Car+Image";
 
-          const socialLinks = driver.driver_social_medias || [];
+            const socialLinks = driver.driver_social_medias || [];
 
-          return (
-            <View key={driver.id} style={styles.card}>
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.driverImage}
-              />
-
-              <View style={styles.cardInner}>
-                <View style={styles.driverHeader}>
-                  <Text style={styles.driverName}>{fullName}</Text>
-                  <Image source={{ uri: flagUrl }} style={styles.flag} />
-                </View>
-
-                <Text style={styles.bio}>{driver.driver_bio}</Text>
-
-                <View style={styles.socialRow}>
-                  {socialLinks.map((s: SocialMedia, idx: number) => {
-                    const platform = s.social_platform.toLowerCase();
-
-                    type FontAwesomeIconName =
-                      | "instagram"
-                      | "twitter"
-                      | "facebook"
-                      | "youtube-play";
-                    let iconName: FontAwesomeIconName | null = null;
-                    if (platform.includes("instagram")) iconName = "instagram";
-                    else if (
-                      platform.includes("twitter") ||
-                      platform.includes("x")
-                    )
-                      iconName = "twitter";
-                    else if (platform.includes("facebook"))
-                      iconName = "facebook";
-                    else if (platform.includes("youtube"))
-                      iconName = "youtube-play";
-                    else iconName = null;
-
-                    return (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.socialIcon}
-                        onPress={() =>
-                          Linking.openURL(`https://${s.driver_social_length}`)
-                        }>
-                        {iconName && (
-                          <FontAwesome
-                            name={iconName}
-                            size={24}
-                            color="white"
-                          />
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
+            return (
+              <View key={driver.id} style={styles.card}>
                 <Image
-                  source={{ uri: carImage }}
-                  style={styles.carImage}
-                  resizeMode="cover"
+                  source={{ uri: profileImage }}
+                  style={styles.driverImage}
                 />
 
-                <Text style={styles.subHeader}>Achievements</Text>
-                {(driver.driver_record || []).map((record) => (
-                  <Text key={record.id} style={styles.achievement}>
-                    {record.record_details}
-                  </Text>
-                ))}
+                <View style={styles.cardInner}>
+                  <View style={styles.driverHeader}>
+                    <Text style={styles.driverName}>{fullName}</Text>
+                    <Image source={{ uri: flagUrl }} style={styles.flag} />
+                  </View>
+
+                  <Text style={styles.bio}>{driver.driver_bio}</Text>
+
+                  <View style={styles.socialRow}>
+                    {socialLinks.map((s: SocialMedia, idx: number) => {
+                      const platform = s.social_platform.toLowerCase();
+
+                      type FontAwesomeIconName =
+                        | "instagram"
+                        | "twitter"
+                        | "facebook"
+                        | "youtube-play";
+                      let iconName: FontAwesomeIconName | null = null;
+                      if (platform.includes("instagram"))
+                        iconName = "instagram";
+                      else if (
+                        platform.includes("twitter") ||
+                        platform.includes("x")
+                      )
+                        iconName = "twitter";
+                      else if (platform.includes("facebook"))
+                        iconName = "facebook";
+                      else if (platform.includes("youtube"))
+                        iconName = "youtube-play";
+                      else iconName = null;
+
+                      return (
+                        <TouchableOpacity
+                          key={idx}
+                          style={styles.socialIcon}
+                          onPress={() =>
+                            Linking.openURL(`https://${s.driver_social_length}`)
+                          }>
+                          {iconName && (
+                            <FontAwesome
+                              name={iconName}
+                              size={24}
+                              color="white"
+                            />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  <Image
+                    source={{ uri: carImage }}
+                    style={styles.carImage}
+                    resizeMode="cover"
+                  />
+
+                  <Text style={styles.subHeader}>Achievements</Text>
+                  {(driver.driver_record || []).map((record) => (
+                    <Text key={record.id} style={styles.achievement}>
+                      {record.record_details}
+                    </Text>
+                  ))}
+                </View>
               </View>
-            </View>
-          );
-        })}
-      </ScrollView>
-    </SafeAreaView>
+            );
+          })}
+        </ScrollView>
+      </SafeAreaView>
+    </TeamBackground>
   );
 };
 
@@ -201,7 +229,6 @@ const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B0C0F",
     padding: 16,
   },
   scrollContent: {
@@ -220,7 +247,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    backgroundColor: "#01257D",
+    backgroundColor: "#121f45",
     borderRadius: 16,
     marginBottom: 24,
     overflow: "hidden",
