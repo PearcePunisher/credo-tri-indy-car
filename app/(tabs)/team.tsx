@@ -111,21 +111,32 @@ const TeamScreen = () => {
                 styles.teamDetails,
                 {
                   backgroundColor: isDarkMode
-                    ? "#1A1A1A" // Dark mode background
-                    : "#F5F5F5", // Light mode background
+                    ? "#1A1A1A"
+                    : "#F5F5F5",
                 },
               ]}>
+              {/* Add the logo image here */}
+              <View style={{ width: "100%", aspectRatio: 3 / 2, alignSelf: "center", marginBottom: 10 }}>
+                <Image
+                  source={require("../../assets/images/valcora2_transparent.png")}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                  }}
+                  resizeMode="contain"
+                />
+              </View>
               <Text
                 style={[
                   styles.subHeader,
-                  { color: isDarkMode ? "#FFFFFF" : "#000000" }, // Dynamic text color
+                  { color: isDarkMode ? "#FFFFFF" : "#000000" },
                 ]}>
                 {teamDetails[0].team_name}
               </Text>
               <Text
                 style={[
                   styles.bio,
-                  { color: isDarkMode ? "#CCCCCC" : "#333333" }, // Dynamic text color
+                  { color: isDarkMode ? "#CCCCCC" : "#333333" },
                 ]}>
                 {teamDetails[0].team_descriptions}
               </Text>
