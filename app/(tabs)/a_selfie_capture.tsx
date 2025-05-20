@@ -17,7 +17,7 @@ export default function App() {
       Alert.alert('Unsupported', 'This camera feature is only available on mobile devices.');
     }
   }, []);
-
+console.log("TEST IN HEREZ");
   if (!permission) return <View />;
   if (!permission.granted) {
     return (
@@ -36,13 +36,16 @@ export default function App() {
   };
 
   const takePhoto = async () => {
-    if (!cameraRef.current || !faceDetected) return;
-
+    console.log("TEST IN HERE1");
+    if (!cameraRef.current /*|| !faceDetected*/) return;
+    console.log("TEST IN HERE2");
     try {
+      console.log("TEST IN HERE3");
       const photo = await takePictureAsync(cameraRef.current, { skipProcessing: true });
       setPhotoUri(photo.uri);
       setStep('review');
     } catch (err) {
+      console.log("TEST IN HERECC");
       Alert.alert('Error', 'Could not take photo.');
     }
   };
@@ -70,7 +73,7 @@ export default function App() {
     setPhotoUri(null);
     setStep('capture');
   };
-
+  console.log("TEST IN HEREA");
   return (
     <View style={styles.container}>
       {step === 'capture' && (
@@ -78,19 +81,20 @@ export default function App() {
           <CameraView
             ref={cameraRef}
             style={styles.camera}
+            
             facing="front"
-            onFacesDetected={handleFacesDetected}
+       //     onFacesDetected={handleFacesDetected}
             onCameraReady={() => setCameraReady(true)}
-            faceDetectorSettings={{
+          /*  faceDetectorSettings={{
               mode: FaceDetector.FaceDetectorMode.fast,
               detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
               runClassifications: FaceDetector.FaceDetectorClassifications.none,
-            }}
+            }}*/
           />
           <TouchableOpacity
             style={[styles.flipButton, { backgroundColor: faceDetected ? '#4CAF50' : '#aaa' }]}
             onPress={takePhoto}
-            disabled={!faceDetected || !cameraReady}
+            disabled={/*!faceDetected ||*/ !cameraReady}
           >
             <Text style={styles.flipText}>Take Photo</Text>
           </TouchableOpacity>
