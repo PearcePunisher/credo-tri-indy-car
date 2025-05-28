@@ -76,7 +76,7 @@ const WelcomeScreen = () => {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <Image
-          source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/valcora2_transparent_0e83065d22.png' }}
+          source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
           style={styles.brand}
         />
 
@@ -106,7 +106,7 @@ const WelcomeScreen = () => {
         {/* Notification Box */}
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <Image
-            source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/valcora2_transparent_0e83065d22.png' }}
+            source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
             style={styles.cardLogo}
           />
           <Text style={[styles.cardText, { color: textColor }]}>

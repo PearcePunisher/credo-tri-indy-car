@@ -93,7 +93,7 @@ const VenueDirectionsScreen = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: bgColor }}>
       <ScrollView
         contentContainerStyle={{
-          paddingTop: insets.top,
+          // paddingTop: insets.top,
           paddingBottom: insets.bottom + 20,
           paddingHorizontal: 20,
         }}

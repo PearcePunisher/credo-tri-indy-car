@@ -10,6 +10,11 @@ import {
   useColorScheme,
 } from 'react-native';
 
+  export const options = {
+  title: 'Experience',
+  headerBackTitle: 'Back',
+};
+
 const ExperienceScreen = () => {
   const [experience, setExperience] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +58,7 @@ const ExperienceScreen = () => {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <Image
-          source={{ uri: 'https://via.placeholder.com/180x40?text=BRAND+NAME' }}
+          source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
           style={styles.brand}
         />
 
@@ -108,10 +113,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   brand: {
-    width: 180,
-    height: 40,
+    width: 250,
+    height: 120,
     alignSelf: 'center',
     marginBottom: 10,
+    objectFit: 'contain',
   },
   title: {
     fontSize: 26,

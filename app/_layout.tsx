@@ -47,9 +47,22 @@ export default function RootLayout() {
                 headerBackTitle: "Back",
               }}
             />
+            <Stack.Screen
+              name="experience"
+              options={{
+                title: "Experience",
+                headerBackTitle: "Back",
+              }}
+            />
+            <Stack.Screen
+              name="directions"
+              options={{
+                title: "Directions",
+                headerBackTitle: "Back",
+              }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
-
           <StatusBar style="auto" />
         </ThemeProvider>
       </SafeAreaProvider>
