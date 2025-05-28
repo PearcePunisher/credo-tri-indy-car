@@ -61,6 +61,13 @@ export default function RootLayout() {
                 headerBackTitle: "Back",
               }}
             />
+            <Stack.Screen
+              name="schedule"
+              options={{
+                title: "Schedule",
+                headerBackTitle: "Back",
+              }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="auto" />

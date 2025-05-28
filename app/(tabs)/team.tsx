@@ -67,9 +67,9 @@ type Driver = {
 
 const TeamScreen = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [teamDetails, setTeamDetails] = useState<any>(null); // Adjust type based on API response
+  const [teamDetails, setTeamDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme(); // Get the current color scheme
+  const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
 
   useEffect(() => {
@@ -98,26 +98,39 @@ const TeamScreen = () => {
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: isDarkMode ? "#1A1A1A" : "#E5E5EA", // Set background color here
+        backgroundColor: isDarkMode ? "#1A1A1A" : "#E5E5EA",
       }}
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>The Team</Text>
-        {/* Render team details */}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Text
+          style={[
+            styles.title,
+            { color: isDarkMode ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          The Team
+        </Text>
+
         {teamDetails?.length > 0 && (
           <View
             style={[
               styles.teamDetails,
               {
-                backgroundColor: isDarkMode
-                  ? "#1A1A1A"
-                  : "#F5F5F5",
+                backgroundColor: isDarkMode ? "#1A1A1A" : "#F5F5F5",
               },
-            ]}>
-            {/* Add the logo image here */}
-            <View style={{ width: "100%", aspectRatio: 3 / 2, alignSelf: "center", marginBottom: 10 }}>
+            ]}
+          >
+            <View
+              style={{
+                width: "100%",
+                aspectRatio: 3 / 2,
+                alignSelf: "center",
+                marginBottom: 10,
+              }}
+            >
               <Image
                 source={require("../../assets/images/valcora2_transparent.png")}
                 style={{
@@ -131,19 +144,21 @@ const TeamScreen = () => {
               style={[
                 styles.subHeader,
                 { color: isDarkMode ? "#FFFFFF" : "#000000" },
-              ]}>
+              ]}
+            >
               {teamDetails[0].team_name}
             </Text>
             <Text
               style={[
                 styles.bio,
                 { color: isDarkMode ? "#CCCCCC" : "#333333" },
-              ]}>
+              ]}
+            >
               {teamDetails[0].team_descriptions}
             </Text>
           </View>
         )}
-        {/* Render drivers */}
+
         {drivers.map((driver: Driver) => {
           const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
           const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
@@ -159,10 +174,7 @@ const TeamScreen = () => {
 
           return (
             <View key={driver.id} style={styles.card}>
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.driverImage}
-              />
+              <Image source={{ uri: profileImage }} style={styles.driverImage} />
 
               <View style={styles.cardInner}>
                 <View style={styles.driverHeader}>
@@ -181,19 +193,13 @@ const TeamScreen = () => {
                       | "twitter"
                       | "facebook"
                       | "youtube-play";
+
                     let iconName: FontAwesomeIconName | null = null;
-                    if (platform.includes("instagram"))
-                      iconName = "instagram";
-                    else if (
-                      platform.includes("twitter") ||
-                      platform.includes("x")
-                    )
+                    if (platform.includes("instagram")) iconName = "instagram";
+                    else if (platform.includes("twitter") || platform.includes("x"))
                       iconName = "twitter";
-                    else if (platform.includes("facebook"))
-                      iconName = "facebook";
-                    else if (platform.includes("youtube"))
-                      iconName = "youtube-play";
-                    else iconName = null;
+                    else if (platform.includes("facebook")) iconName = "facebook";
+                    else if (platform.includes("youtube")) iconName = "youtube-play";
 
                     return (
                       <TouchableOpacity
@@ -201,13 +207,10 @@ const TeamScreen = () => {
                         style={styles.socialIcon}
                         onPress={() =>
                           Linking.openURL(`https://${s.driver_social_length}`)
-                        }>
+                        }
+                      >
                         {iconName && (
-                          <FontAwesome
-                            name={iconName}
-                            size={24}
-                            color="white"
-                          />
+                          <FontAwesome name={iconName} size={24} color="white" />
                         )}
                       </TouchableOpacity>
                     );
@@ -247,9 +250,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: "#FFFFFF",
     fontWeight: "bold",
     marginBottom: 20,
+    // no fixed color here — now dynamic
   },
   teamDetails: {
     backgroundColor: "#1A1A1A",
