@@ -3,56 +3,118 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import VIPTile from "@/components/VIPTile";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import TeamBackground from "@/components/TeamBackground";
-import useTeamTheme from "@/theme/useTeamTheme";
+import { useColorScheme } from "@/hooks/useColorScheme";
+
+// Importing icons
+import TrackIcon from "@/assets/icons/trackIcon.svg";
+import DoorIcon from "@/assets/icons/doorIcon.svg";
+import CelebrationIcon from "@/assets/icons/celebrationIcon.svg";
+import EventIcon from "@/assets/icons/scheduleIcon.svg";
+import PinIcon from "@/assets/icons/pinIcon.svg";
+import GroupIcon from "@/assets/icons/groupIcon.svg";
+import CarIcon from "@/assets/icons/carIcon.svg";
+import CalendarIcon from "@/assets/icons/calendarIcon.svg";
+import QuizIcon from "@/assets/icons/quizIcon.svg";
+import CommentIcon from "@/assets/icons/commentIcon.svg";
+import LogoutIcon from "@/assets/icons/logoutIcon.svg";
 
 const router = useRouter();
 
+export const options = {
+  title: 'Home',
+};
+
 export default function VIPHomeScreen() {
-  const { primary, secondary } = useTeamTheme(); // Get team colors
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === "dark";
+  const iconColor = isDarkMode ? "#FFFFFF" : "#1A1A1A"; // Dynamic color for icons
 
   return (
-    <TeamBackground primaryColor={primary} secondaryColor={secondary}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.header}>PIT LANE CLUB</Text>
-          <Text style={styles.sub}>
-            The ultimate individual VIP Hospitality experience
-          </Text>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: isDarkMode ? "#1A1A1A" : "#F2F2F7",
+      }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text
+          style={[
+            styles.header,
+            { color: isDarkMode ? "#FFFFFF" : "#1A1A1A" }, // Dynamic color
+          ]}>
+          PIT LANE CLUB
+        </Text>
+        <Text
+          style={[
+            styles.sub,
+            { color: isDarkMode ? "#CCCCCC" : "#333333" }, // Dynamic color for sub text
+          ]}>
+          The ultimate individual VIP Hospitality experience
+        </Text>
 
-          <View style={styles.grid}>
-            <VIPTile icon="qr-code" label="My ID" onPress={() => {}} />
-            <VIPTile icon="medal" label="Welcome" onPress={() => {}} />
-            <VIPTile icon="flash" label="Experience" onPress={() => {}} />
-            <VIPTile
-              icon="calendar"
-              label="Weekend Schedule"
-              onPress={() => {}}
-            />
-            <VIPTile
-              icon="location"
-              label="Venue Directions"
-              onPress={() => {}}
-            />
-            <VIPTile icon="car-sport" label="Track Info" onPress={() => {}} />
-            <VIPTile
-              icon="people"
-              label="The Team"
-              onPress={() => router.push("/team")}
-            />
-            <VIPTile icon="car" label="The Car" onPress={() => {}} />
-            <VIPTile
-              icon="calendar-clear"
-              label="2025 Indy Car Calendar"
-              onPress={() => {}}
-            />
-            <VIPTile icon="help-circle" label="FAQ’s" onPress={() => {}} />
-            <VIPTile icon="chatbubbles" label="Feedback" onPress={() => {}} />
-            <VIPTile icon="log-out" label="Log Out" onPress={() => {}} />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </TeamBackground>
+        <View style={styles.grid}>
+          <VIPTile 
+            icon="qr-code" 
+            label="My ID"
+            iconColor={iconColor}
+            onPress={() => {}} />
+          <VIPTile
+            iconComponent={<DoorIcon />}
+            label="Welcome"
+            onPress={() => router.push("/welcome")}
+          />
+          <VIPTile
+            iconComponent={<CelebrationIcon />}
+            label="Experience"
+            onPress={() => router.push("/experience")}
+          />
+          <VIPTile
+            iconComponent={<EventIcon />}
+            label="Weekend Schedule"
+            onPress={() => router.push("/schedule")}
+          />
+          <VIPTile
+            iconComponent={<PinIcon />}
+            label="Venue Directions"
+            onPress={() => router.push("/directions")}
+          />
+          <VIPTile
+            iconComponent={<TrackIcon />}
+            label="Track Info"
+            onPress={() => router.push("/track")}
+          />
+          <VIPTile
+            iconComponent={<GroupIcon />}
+            label="The Team"
+            onPress={() => router.push("/team")}
+          />
+          <VIPTile
+            iconComponent={<CarIcon />}
+            label="The Car"
+            onPress={() => router.push("/car")}
+          />
+          <VIPTile
+            iconComponent={<CalendarIcon />}
+            label="2025 Indy Car Calendar"
+            onPress={() => {}}
+          />
+          <VIPTile
+            iconComponent={<QuizIcon />}
+            label="FAQ’s"
+            onPress={() => {}}
+          />
+          <VIPTile
+            iconComponent={<CommentIcon />}
+            label="Feedback"
+            onPress={() => {}}
+          />
+          <VIPTile
+            iconComponent={<LogoutIcon />}
+            label="Log Out"
+            onPress={() => {}}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -60,7 +122,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     paddingVertical: 20,
-    backgroundColor: "transparent", // Ensure transparency to show the gradient
+    backgroundColor: "transparent", // Keep transparent for SafeAreaView bg
   },
   header: {
     color: "#fff",

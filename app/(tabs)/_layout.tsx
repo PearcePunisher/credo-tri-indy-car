@@ -36,11 +36,28 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="schedule"
         options={{
-          title: "Explore",
+          title: "Schedule",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <Image
+              source={require("@/assets/icons/schedule-icon.png")}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="track"
+        options={{
+          title: "Track",
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require("@/assets/icons/trackIcon.png")}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
           ),
         }}
       />
@@ -50,7 +67,7 @@ export default function TabLayout() {
           title: "Team",
           tabBarIcon: ({ color }) => (
             <Image
-              source={require("@/assets/icons/track-icon.png")}
+              source={require("@/assets/icons/groupIcon.png")}
               style={{ width: 28, height: 28, tintColor: color }}
               resizeMode="contain"
             />

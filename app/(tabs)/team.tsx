@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
-import useTeamTheme from "@/theme/useTeamTheme";
-import TeamBackground from "@/components/TeamBackground";
-import { useColorScheme } from "@/hooks/useColorScheme"; // Add this import
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 import {
   View,
@@ -71,7 +69,6 @@ const TeamScreen = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [teamDetails, setTeamDetails] = useState<any>(null); // Adjust type based on API response
   const [loading, setLoading] = useState(true);
-  const { primary, secondary } = useTeamTheme();
   const colorScheme = useColorScheme(); // Get the current color scheme
   const isDarkMode = colorScheme === "dark";
 
@@ -98,140 +95,143 @@ const TeamScreen = () => {
   }
 
   return (
-    <TeamBackground primaryColor={primary} secondaryColor={secondary}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>The Team</Text>
-          {/* Render team details */}
-          {teamDetails?.length > 0 && (
-            <View
-              style={[
-                styles.teamDetails,
-                {
-                  backgroundColor: isDarkMode
-                    ? "#1A1A1A"
-                    : "#F5F5F5",
-                },
-              ]}>
-              {/* Add the logo image here */}
-              <View style={{ width: "100%", aspectRatio: 3 / 2, alignSelf: "center", marginBottom: 10 }}>
-                <Image
-                  source={require("../../assets/images/valcora2_transparent.png")}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                  }}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text
-                style={[
-                  styles.subHeader,
-                  { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                ]}>
-                {teamDetails[0].team_name}
-              </Text>
-              <Text
-                style={[
-                  styles.bio,
-                  { color: isDarkMode ? "#CCCCCC" : "#333333" },
-                ]}>
-                {teamDetails[0].team_descriptions}
-              </Text>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: isDarkMode ? "#1A1A1A" : "#E5E5EA", // Set background color here
+      }}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>The Team</Text>
+        {/* Render team details */}
+        {teamDetails?.length > 0 && (
+          <View
+            style={[
+              styles.teamDetails,
+              {
+                backgroundColor: isDarkMode
+                  ? "#1A1A1A"
+                  : "#F5F5F5",
+              },
+            ]}>
+            {/* Add the logo image here */}
+            <View style={{ width: "100%", aspectRatio: 3 / 2, alignSelf: "center", marginBottom: 10 }}>
+              <Image
+                source={require("../../assets/images/valcora2_transparent.png")}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
+                resizeMode="contain"
+              />
             </View>
-          )}
-          {/* Render drivers */}
-          {drivers.map((driver: Driver) => {
-            const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
-            const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
-            const profileImage =
-              driver.driver_image?.formats?.medium?.url ||
-              driver.driver_image?.url;
+            <Text
+              style={[
+                styles.subHeader,
+                { color: isDarkMode ? "#FFFFFF" : "#000000" },
+              ]}>
+              {teamDetails[0].team_name}
+            </Text>
+            <Text
+              style={[
+                styles.bio,
+                { color: isDarkMode ? "#CCCCCC" : "#333333" },
+              ]}>
+              {teamDetails[0].team_descriptions}
+            </Text>
+          </View>
+        )}
+        {/* Render drivers */}
+        {drivers.map((driver: Driver) => {
+          const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
+          const flagUrl = `https://flagcdn.com/${driver.driver_country_origin?.toLowerCase()}.png`;
+          const profileImage =
+            driver.driver_image?.formats?.medium?.url ||
+            driver.driver_image?.url;
 
-            const carImage =
-              driver.car?.car_images?.[0]?.car_image_side?.formats?.medium
-                ?.url || "https://placehold.co/300x100?text=Car+Image";
+          const carImage =
+            driver.car?.car_images?.[0]?.car_image_side?.formats?.medium
+              ?.url || "https://placehold.co/300x100?text=Car+Image";
 
-            const socialLinks = driver.driver_social_medias || [];
+          const socialLinks = driver.driver_social_medias || [];
 
-            return (
-              <View key={driver.id} style={styles.card}>
+          return (
+            <View key={driver.id} style={styles.card}>
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.driverImage}
+              />
+
+              <View style={styles.cardInner}>
+                <View style={styles.driverHeader}>
+                  <Text style={styles.driverName}>{fullName}</Text>
+                  <Image source={{ uri: flagUrl }} style={styles.flag} />
+                </View>
+
+                <Text style={styles.bio}>{driver.driver_bio}</Text>
+
+                <View style={styles.socialRow}>
+                  {socialLinks.map((s: SocialMedia, idx: number) => {
+                    const platform = s.social_platform.toLowerCase();
+
+                    type FontAwesomeIconName =
+                      | "instagram"
+                      | "twitter"
+                      | "facebook"
+                      | "youtube-play";
+                    let iconName: FontAwesomeIconName | null = null;
+                    if (platform.includes("instagram"))
+                      iconName = "instagram";
+                    else if (
+                      platform.includes("twitter") ||
+                      platform.includes("x")
+                    )
+                      iconName = "twitter";
+                    else if (platform.includes("facebook"))
+                      iconName = "facebook";
+                    else if (platform.includes("youtube"))
+                      iconName = "youtube-play";
+                    else iconName = null;
+
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        style={styles.socialIcon}
+                        onPress={() =>
+                          Linking.openURL(`https://${s.driver_social_length}`)
+                        }>
+                        {iconName && (
+                          <FontAwesome
+                            name={iconName}
+                            size={24}
+                            color="white"
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
                 <Image
-                  source={{ uri: profileImage }}
-                  style={styles.driverImage}
+                  source={{ uri: carImage }}
+                  style={styles.carImage}
+                  resizeMode="cover"
                 />
 
-                <View style={styles.cardInner}>
-                  <View style={styles.driverHeader}>
-                    <Text style={styles.driverName}>{fullName}</Text>
-                    <Image source={{ uri: flagUrl }} style={styles.flag} />
-                  </View>
-
-                  <Text style={styles.bio}>{driver.driver_bio}</Text>
-
-                  <View style={styles.socialRow}>
-                    {socialLinks.map((s: SocialMedia, idx: number) => {
-                      const platform = s.social_platform.toLowerCase();
-
-                      type FontAwesomeIconName =
-                        | "instagram"
-                        | "twitter"
-                        | "facebook"
-                        | "youtube-play";
-                      let iconName: FontAwesomeIconName | null = null;
-                      if (platform.includes("instagram"))
-                        iconName = "instagram";
-                      else if (
-                        platform.includes("twitter") ||
-                        platform.includes("x")
-                      )
-                        iconName = "twitter";
-                      else if (platform.includes("facebook"))
-                        iconName = "facebook";
-                      else if (platform.includes("youtube"))
-                        iconName = "youtube-play";
-                      else iconName = null;
-
-                      return (
-                        <TouchableOpacity
-                          key={idx}
-                          style={styles.socialIcon}
-                          onPress={() =>
-                            Linking.openURL(`https://${s.driver_social_length}`)
-                          }>
-                          {iconName && (
-                            <FontAwesome
-                              name={iconName}
-                              size={24}
-                              color="white"
-                            />
-                          )}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-
-                  <Image
-                    source={{ uri: carImage }}
-                    style={styles.carImage}
-                    resizeMode="cover"
-                  />
-
-                  <Text style={styles.subHeader}>Achievements</Text>
-                  {(driver.driver_record || []).map((record) => (
-                    <Text key={record.id} style={styles.achievement}>
-                      {record.record_details}
-                    </Text>
-                  ))}
-                </View>
+                <Text style={styles.subHeader}>Achievements</Text>
+                {(driver.driver_record || []).map((record) => (
+                  <Text key={record.id} style={styles.achievement}>
+                    {record.record_details}
+                  </Text>
+                ))}
               </View>
-            );
-          })}
-        </ScrollView>
-      </SafeAreaView>
-    </TeamBackground>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
