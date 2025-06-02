@@ -80,52 +80,6 @@ const WelcomeScreen = () => {
           source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
           style={styles.brand}
         />
-
-        {/* Title */}
-        <Text style={[styles.title, { color: textColor }]}>Welcome</Text>
-
-        {/* Intro Paragraphs */}
-        <Text style={[styles.paragraph, { color: textColor }]}>
-          Welcome to our Indy Car Team Event Portal. We welcome you to the Acura Grand Prix of Long Beach.
-        </Text>
-        <Text style={[styles.paragraph, { color: textColor }]}>
-          We look forward to hosting you and making your experience the absolute best it can be. Before heading to the track, we wanted to ensure all the vital information needed to help you make the most out of your experience.
-        </Text>
-
-        {/* Subheading */}
-        <Text style={[styles.subheading, { color: textColor }]}>Here, you will find:</Text>
-
-        {/* Bullet list */}
-        <View style={styles.bulletList}>
-          {bulletItems.map((item, i) => (
-            <Text key={i} style={[styles.bullet, { color: textColor }]}>
-              • {item}
-            </Text>
-          ))}
-        </View>
-
-        {/* Notification Box */}
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <Image
-            source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
-            style={styles.cardLogo}
-          />
-          <Text style={[styles.cardText, { color: textColor }]}>
-            We would like to send you notifications for your personal schedule and other relevant updates. Please subscribe below, you can unsubscribe at any time.
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.subscribeBtn,
-              subscribed && styles.subscribedBtn,
-            ]}
-            onPress={handleSubscribe}
-            disabled={subscribed}
-          >
-            <Text style={styles.subscribeBtnText}>
-              {subscribed ? 'Subscribed' : 'Subscribe'}
-            </Text>
-          </TouchableOpacity>
-        </View>
         <UserRegistration />
       </ScrollView>
     </SafeAreaView>

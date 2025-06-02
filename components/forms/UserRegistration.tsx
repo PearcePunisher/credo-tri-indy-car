@@ -9,8 +9,10 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
+  Modal,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -18,39 +20,33 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [dobYear, setDobYear] = useState("");
-  const [dobMonth, setDobMonth] = useState("");
-  const [dobDay, setDobDay] = useState("");
+  const [dob, setDob] = useState<Date | undefined>(undefined);
+  const [isUserDobPickerVisible, setIsUserDobPickerVisible] = useState(false);
   const [signedWaiver, setSignedWaiver] = useState(true);
   const [waiverLink, setWaiverLink] = useState("https://signedwaiver.com");
 
   const [guest1FirstName, setGuest1FirstName] = useState("");
   const [guest1LastName, setGuest1LastName] = useState("");
-  const [guest1DobYear, setGuest1DobYear] = useState("");
-  const [guest1DobMonth, setGuest1DobMonth] = useState("");
-  const [guest1DobDay, setGuest1DobDay] = useState("");
+  const [guest1Dob, setGuest1Dob] = useState<Date | undefined>(undefined);
+  const [isGuest1DobPickerVisible, setIsGuest1DobPickerVisible] = useState(false);
   const [guest1Phone, setGuest1Phone] = useState("");
 
   const [guest2FirstName, setGuest2FirstName] = useState("");
   const [guest2LastName, setGuest2LastName] = useState("");
-  const [guest2DobYear, setGuest2DobYear] = useState("");
-  const [guest2DobMonth, setGuest2DobMonth] = useState("");
-  const [guest2DobDay, setGuest2DobDay] = useState("");
+  const [guest2Dob, setGuest2Dob] = useState<Date | undefined>(undefined);
+  const [isGuest2DobPickerVisible, setIsGuest2DobPickerVisible] = useState(false);
   const [guest2Phone, setGuest2Phone] = useState("");
 
-  const years: string[] = [];
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y >= 1900; y--) {
-    years.push(y.toString());
-  }
-  const months: string[] = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-  const days: string[] = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
 
-  const formatDate = (year: string, month: string, day: string) => {
-    if (!year || !month || !day) return "";
-    const mm = month.padStart(2, "0");
-    const dd = day.padStart(2, "0");
-    return `${year}-${mm}-${dd}`;
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   const handleRegister = async () => {
@@ -59,9 +55,9 @@ export default function RegisterScreen() {
       return;
     }
 
-    const userDOB = formatDate(dobYear, dobMonth, dobDay);
-    const guest1DOB = formatDate(guest1DobYear, guest1DobMonth, guest1DobDay);
-    const guest2DOB = formatDate(guest2DobYear, guest2DobMonth, guest2DobDay);
+    const userDOB = formatDate(dob);
+    const guest1DOB = formatDate(guest1Dob);
+    const guest2DOB = formatDate(guest2Dob);
 
     const payload = {
       email: email,
@@ -108,61 +104,47 @@ export default function RegisterScreen() {
     }
   };
 
+  const onPasswordChange = (text: string) => {
+    setPassword(text);
+    setPasswordsMatch(text === confirmPassword);
+  };
+
+  const onConfirmPasswordChange = (text: string) => {
+    setConfirmPassword(text);
+    setPasswordsMatch(password === text);
+  };
+
   const renderTextInput = (
     placeholder: string,
     value: string,
     setter: (text: string) => void,
-    secure: boolean = false
+    secure: boolean = false,
+    isPasswordField: boolean = false,
+    visible: boolean = false,
+    toggleVisibility?: () => void
   ) => (
-    <TextInput
-      placeholder={placeholder}
-      value={value}
-      onChangeText={setter}
-      secureTextEntry={secure}
-      style={styles.input}
-      placeholderTextColor="#999"
-    />
-  );
-
-  const renderDOBPicker = (
-    year: string,
-    setYear: (val: string) => void,
-    month: string,
-    setMonth: (val: string) => void,
-    day: string,
-    setDay: (val: string) => void
-  ) => (
-    <View style={styles.pickerContainer}>
-      <Picker
-        selectedValue={year}
-        style={styles.picker}
-        onValueChange={(itemValue: string) => setYear(itemValue)}
-      >
-        <Picker.Item label="Year" value="" />
-        {years.map((y) => (
-          <Picker.Item key={y} label={y} value={y} />
-        ))}
-      </Picker>
-      <Picker
-        selectedValue={month}
-        style={styles.picker}
-        onValueChange={(itemValue: string) => setMonth(itemValue)}
-      >
-        <Picker.Item label="Month" value="" />
-        {months.map((m) => (
-          <Picker.Item key={m} label={m} value={m} />
-        ))}
-      </Picker>
-      <Picker
-        selectedValue={day}
-        style={styles.picker}
-        onValueChange={(itemValue: string) => setDay(itemValue)}
-      >
-        <Picker.Item label="Day" value="" />
-        {days.map((d) => (
-          <Picker.Item key={d} label={d} value={d} />
-        ))}
-      </Picker>
+    <View style={styles.passwordContainer}>
+      <TextInput
+        placeholder={placeholder}
+        value={value}
+        onChangeText={setter}
+        secureTextEntry={secure && !visible}
+        style={[styles.input, isPasswordField ? { paddingRight: 40 } : null]}
+        placeholderTextColor="#999"
+      />
+      {isPasswordField && toggleVisibility && (
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={toggleVisibility}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={visible ? "eye-off-outline" : "eye-outline"}
+            size={24}
+            color="#999"
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -173,11 +155,45 @@ export default function RegisterScreen() {
       {renderTextInput("First Name", firstName, setFirstName)}
       {renderTextInput("Last Name", lastName, setLastName)}
       {renderTextInput("Email", email, setEmail)}
-      {renderTextInput("Password", password, setPassword, true)}
-      {renderTextInput("Confirm Password", confirmPassword, setConfirmPassword, true)}
+      {renderTextInput(
+        "Password",
+        password,
+        onPasswordChange,
+        true,
+        true,
+        passwordVisible,
+        () => setPasswordVisible(!passwordVisible)
+      )}
+      {renderTextInput(
+        "Confirm Password",
+        confirmPassword,
+        onConfirmPasswordChange,
+        true,
+        true,
+        confirmPasswordVisible,
+        () => setConfirmPasswordVisible(!confirmPasswordVisible)
+      )}
+      {!passwordsMatch && (
+        <Text style={styles.errorText}>Passwords do not match</Text>
+      )}
 
       <Text style={styles.subheading}>DOB</Text>
-      {renderDOBPicker(dobYear, setDobYear, dobMonth, setDobMonth, dobDay, setDobDay)}
+      <TouchableOpacity
+        style={styles.dateInput}
+        onPress={() => setIsUserDobPickerVisible(true)}
+      >
+        <Text>{dob ? formatDate(dob) : "Select Date"}</Text>
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isUserDobPickerVisible}
+        mode="date"
+        maximumDate={new Date()}
+        onConfirm={(date) => {
+          setDob(date);
+          setIsUserDobPickerVisible(false);
+        }}
+        onCancel={() => setIsUserDobPickerVisible(false)}
+      />
 
       <Text style={styles.subheading}>Signed Waiver</Text>
       <Switch value={signedWaiver} onValueChange={setSignedWaiver} />
@@ -188,14 +204,44 @@ export default function RegisterScreen() {
       {renderTextInput("First Name", guest1FirstName, setGuest1FirstName)}
       {renderTextInput("Last Name", guest1LastName, setGuest1LastName)}
       <Text style={styles.subheading}>DOB</Text>
-      {renderDOBPicker(guest1DobYear, setGuest1DobYear, guest1DobMonth, setGuest1DobMonth, guest1DobDay, setGuest1DobDay)}
+      <TouchableOpacity
+        style={styles.dateInput}
+        onPress={() => setIsGuest1DobPickerVisible(true)}
+      >
+        <Text>{guest1Dob ? formatDate(guest1Dob) : "Select Date"}</Text>
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isGuest1DobPickerVisible}
+        mode="date"
+        maximumDate={new Date()}
+        onConfirm={(date) => {
+          setGuest1Dob(date);
+          setIsGuest1DobPickerVisible(false);
+        }}
+        onCancel={() => setIsGuest1DobPickerVisible(false)}
+      />
       {renderTextInput("Phone", guest1Phone, setGuest1Phone)}
 
       <Text style={styles.subheading}>Guest 2</Text>
       {renderTextInput("First Name", guest2FirstName, setGuest2FirstName)}
       {renderTextInput("Last Name", guest2LastName, setGuest2LastName)}
       <Text style={styles.subheading}>DOB</Text>
-      {renderDOBPicker(guest2DobYear, setGuest2DobYear, guest2DobMonth, setGuest2DobMonth, guest2DobDay, setGuest2DobDay)}
+      <TouchableOpacity
+        style={styles.dateInput}
+        onPress={() => setIsGuest2DobPickerVisible(true)}
+      >
+        <Text>{guest2Dob ? formatDate(guest2Dob) : "Select Date"}</Text>
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isGuest2DobPickerVisible}
+        mode="date"
+        maximumDate={new Date()}
+        onConfirm={(date) => {
+          setGuest2Dob(date);
+          setIsGuest2DobPickerVisible(false);
+        }}
+        onCancel={() => setIsGuest2DobPickerVisible(false)}
+      />
       {renderTextInput("Phone", guest2Phone, setGuest2Phone)}
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -204,6 +250,8 @@ export default function RegisterScreen() {
     </ScrollView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -233,6 +281,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 12,
   },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+    backgroundColor: "#fff",
+    marginBottom: 12,
+    justifyContent: "center",
+  },
   pickerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -240,7 +298,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     flex: 1,
-    height: 50,
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ccc",
@@ -263,5 +320,21 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+  },
+  errorText: {
+    color: "#FF3B30",
+    fontSize: 12,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  passwordContainer: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 10,
+    height: "100%",
+    justifyContent: "center",
   },
 });
