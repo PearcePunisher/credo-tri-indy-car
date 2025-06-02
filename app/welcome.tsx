@@ -13,6 +13,7 @@ import {
   Linking,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import BrandLogo from '@/components/BrandLogo';
 
 export const options = {
   title: 'Welcome',
@@ -75,10 +76,7 @@ const WelcomeScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
-        <Image
-          source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
-          style={styles.brand}
-        />
+        <BrandLogo style={styles.brand} />
 
         {/* Title */}
         <Text style={[styles.title, { color: textColor }]}>Welcome</Text>
@@ -105,10 +103,7 @@ const WelcomeScreen = () => {
 
         {/* Notification Box */}
         <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <Image
-            source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
-            style={styles.cardLogo}
-          />
+          <BrandLogo style={styles.cardLogo} />
           <Text style={[styles.cardText, { color: textColor }]}>
             We would like to send you notifications for your personal schedule and other relevant updates. Please subscribe below, you can unsubscribe at any time.
           </Text>

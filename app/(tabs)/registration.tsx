@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import UserRegistration from '../../components/forms/UserRegistration';
+import BrandLogo from '@/components/BrandLogo';
 
 export const options = {
   title: 'Welcome',
@@ -76,10 +77,8 @@ const WelcomeScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
-        <Image
-          source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
-          style={styles.brand}
-        />
+        <BrandLogo style={styles.brand} />
+        {/* Title */}
         <UserRegistration />
       </ScrollView>
     </SafeAreaView>
