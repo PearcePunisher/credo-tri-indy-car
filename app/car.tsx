@@ -6,19 +6,18 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme'; // Only import your custom hook
 
 const CarScreen = () => {
   const [car, setCar] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme();
-
-  const isDark = colorScheme === 'dark';
-  const textColor = isDark ? 'white' : 'black';
-  const bgColor = isDark ? '#111' : '#f8f8f8';
-  const cardColor = isDark ? '#1c1c1e' : '#f0f0f0';
+  const colorScheme = useColorScheme() || "light"; // Fallback to "light" if null/undefined
+  const bgColor = Colors[colorScheme].background;
+  const textColor = Colors[colorScheme].text;
+  const cardColor = colorScheme === 'dark' ? '#1c1c1e' : '#f0f0f0'; // Or add to Colors if you want
 
   useEffect(() => {
     const fetchData = async () => {

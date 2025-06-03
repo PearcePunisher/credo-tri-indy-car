@@ -7,14 +7,16 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import useTeamTheme from "@/theme/useTeamTheme"; // <-- Import the hook
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const teamTheme = useTeamTheme(); // <-- Get team colors
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
+        tabBarActiveTintColor: teamTheme.primary, // <-- Use team primary color
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,

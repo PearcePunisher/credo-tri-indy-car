@@ -4,6 +4,7 @@ import VIPTile from "@/components/VIPTile";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors"; // <-- Add this import
 
 // Importing icons
 import TrackIcon from "@/assets/icons/trackIcon.svg";
@@ -22,34 +23,27 @@ import BrandLogo from "@/components/BrandLogo";
 const router = useRouter();
 
 export const options = {
-  title: 'Home',
+  title: "Home",
 };
 
 export default function VIPHomeScreen() {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === "dark";
-  const iconColor = isDarkMode ? "#FFFFFF" : "#1A1A1A"; // Dynamic color for icons
+  const colorScheme = useColorScheme() || "light"; // fallback for safety
+  const colors = Colors[colorScheme];
+
+  const iconColor = colors.text; // Use theme text color for icons
 
   return (
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: isDarkMode ? "#1A1A1A" : "#F2F2F7",
+        backgroundColor: colors.background, // Use theme background
       }}>
       <ScrollView contentContainerStyle={styles.container}>
         <BrandLogo style={styles.brand} />
-        <Text
-          style={[
-            styles.header,
-            { color: isDarkMode ? "#FFFFFF" : "#1A1A1A" }, // Dynamic color
-          ]}>
+        <Text style={[styles.header, { color: colors.text }]}>
           PIT LANE CLUB
         </Text>
-        <Text
-          style={[
-            styles.sub,
-            { color: isDarkMode ? "#CCCCCC" : "#333333" }, // Dynamic color for sub text
-          ]}>
+        <Text style={[styles.sub, { color: colors.secondaryText || colors.text }]}>
           The ultimate individual VIP Hospitality experience
         </Text>
 
@@ -58,7 +52,8 @@ export default function VIPHomeScreen() {
             icon="qr-code"
             label="My ID"
             iconColor={iconColor}
-            onPress={() => { }} />
+            onPress={() => {}}
+          />
           <VIPTile
             iconComponent={<DoorIcon />}
             label="Welcome"
@@ -97,22 +92,22 @@ export default function VIPHomeScreen() {
           <VIPTile
             iconComponent={<CalendarIcon />}
             label="2025 Indy Car Calendar"
-            onPress={() => { }}
+            onPress={() => {}}
           />
           <VIPTile
             iconComponent={<QuizIcon />}
             label="FAQ’s"
-            onPress={() => { }}
+            onPress={() => {}}
           />
           <VIPTile
             iconComponent={<CommentIcon />}
             label="Feedback"
-            onPress={() => { }}
+            onPress={() => {}}
           />
           <VIPTile
             iconComponent={<LogoutIcon />}
             label="Log Out"
-            onPress={() => { }}
+            onPress={() => {}}
           />
         </View>
       </ScrollView>
@@ -127,14 +122,18 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent", // Keep transparent for SafeAreaView bg
   },
   header: {
-    color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 4,
   },
-  brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 10, objectFit: 'contain' },
+  brand: {
+    width: 250,
+    height: 120,
+    alignSelf: "center",
+    marginBottom: 10,
+    objectFit: "contain",
+  },
   sub: {
-    color: "#fff",
     fontSize: 14,
     marginBottom: 20,
   },

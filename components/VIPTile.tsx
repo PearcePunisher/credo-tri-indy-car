@@ -29,19 +29,16 @@ export default function VIPTile({
   label,
   onPress,
 }: VIPTileProps) {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === "dark";
-  const fillColor = iconColor || (isDarkMode ? Colors.dark.text : Colors.light.text);
+  const colorScheme = useColorScheme() || "light";
+  const colors = Colors[colorScheme];
+
+  const fillColor = iconColor || colors.text;
 
   return (
     <TouchableOpacity
       style={[
         styles.tile,
-        {
-          backgroundColor: isDarkMode
-            ? Colors.dark.background
-            : Colors.light.background,
-        },
+        { backgroundColor: colors.card },
       ]}
       onPress={onPress}
     >

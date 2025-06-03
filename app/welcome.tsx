@@ -7,13 +7,14 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  useColorScheme,
   Alert,
   Platform,
   Linking,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import BrandLogo from '@/components/BrandLogo';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 export const options = {
   title: 'Welcome',
@@ -21,11 +22,8 @@ export const options = {
 };
 
 const WelcomeScreen = () => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const bgColor = isDark ? '#111' : '#f9f9f9';
-  const cardColor = isDark ? '#1c1c1e' : '#ededed';
-  const textColor = isDark ? '#fff' : '#000';
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
 
   const [subscribed, setSubscribed] = useState(false);
 
@@ -73,50 +71,55 @@ const WelcomeScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
         {/* Title */}
-        <Text style={[styles.title, { color: textColor }]}>Welcome</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome</Text>
 
         {/* Intro Paragraphs */}
-        <Text style={[styles.paragraph, { color: textColor }]}>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
           Welcome to our Indy Car Team Event Portal. We welcome you to the Acura Grand Prix of Long Beach.
         </Text>
-        <Text style={[styles.paragraph, { color: textColor }]}>
+        <Text style={[styles.paragraph, { color: colors.text }]}>
           We look forward to hosting you and making your experience the absolute best it can be. Before heading to the track, we wanted to ensure all the vital information needed to help you make the most out of your experience.
         </Text>
 
         {/* Subheading */}
-        <Text style={[styles.subheading, { color: textColor }]}>Here, you will find:</Text>
+        <Text style={[styles.subheading, { color: colors.text }]}>Here, you will find:</Text>
 
         {/* Bullet list */}
         <View style={styles.bulletList}>
           {bulletItems.map((item, i) => (
-            <Text key={i} style={[styles.bullet, { color: textColor }]}>
+            <Text key={i} style={[styles.bullet, { color: colors.text }]}>
               • {item}
             </Text>
           ))}
         </View>
 
         {/* Notification Box */}
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
           <BrandLogo style={styles.cardLogo} />
-          <Text style={[styles.cardText, { color: textColor }]}>
+          <Text style={[styles.cardText, { color: colors.text }]}>
             We would like to send you notifications for your personal schedule and other relevant updates. Please subscribe below, you can unsubscribe at any time.
           </Text>
           <TouchableOpacity
             style={[
               styles.subscribeBtn,
-              subscribed && styles.subscribedBtn,
+              { backgroundColor: subscribed ? colors.secondaryText : colors.tint },
             ]}
             onPress={handleSubscribe}
             disabled={subscribed}
           >
-            <Text style={styles.subscribeBtnText}>
-              {subscribed ? 'Subscribed' : 'Subscribe'}
+            <Text
+              style={[
+                styles.subscribeBtnText,
+                { color: subscribed ? 'white' : 'black' },
+              ]}
+            >
+              {subscribed ? '✅ Subscribed' : 'Subscribe'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -142,13 +145,10 @@ const styles = StyleSheet.create({
   cardLogo: { width: 250, height: 120, marginBottom: 12, objectFit: 'contain' },
   cardText: { fontSize: 14, textAlign: 'center', marginBottom: 12 },
   subscribeBtn: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#FF3B30', // fallback, will be overridden by inline style
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 24,
-  },
-  subscribedBtn: {
-    backgroundColor: '#34C759', // iOS green
   },
   subscribeBtnText: {
     color: 'white',
