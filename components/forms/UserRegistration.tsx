@@ -51,7 +51,7 @@ export default function RegisterScreen() {
     return `${year}-${month}-${day}`;
   };
 
-  const filePath = path.join(__dirname, 'user_data', 'user_info.json');
+  const filePath = "@/user_data/user_info.json";
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -88,6 +88,7 @@ export default function RegisterScreen() {
     };
 
     try {
+      console.log("NEW DATA: " + JSON.stringify(payload));
       const response = await fetch(
         "https://themetesting.kinsta.cloud/wp-json/wicked-api/v1/app_registration",
         {
@@ -98,6 +99,7 @@ export default function RegisterScreen() {
       );
 
       const text = await response.text();
+      console.log("Data collection" + JSON.stringify(text))
       console.log("Server response:", text);
 
       const cleaned = text.trim().replace(/[%]+$/, "");
@@ -110,6 +112,7 @@ export default function RegisterScreen() {
       const fileData = fs.readFileSync(filePath, 'utf-8');
     const parsedData = JSON.parse(data);
     } catch (error) {
+      console.error("Dude it shadoodled");
       console.error("Error:", error);
     }
   };
