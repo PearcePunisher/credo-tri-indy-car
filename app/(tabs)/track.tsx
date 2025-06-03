@@ -8,18 +8,16 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  useColorScheme,
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 const TrackDetailScreen = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const bgColor = isDark ? '#111' : '#f8f8f8';
-  const cardColor = isDark ? '#1c1c1e' : '#eee';
-  const textColor = isDark ? 'white' : 'black';
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -38,8 +36,8 @@ const TrackDetailScreen = () => {
 
   if (loading || !event) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-        <ActivityIndicator size="large" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
@@ -50,18 +48,16 @@ const TrackDetailScreen = () => {
   const imageUrl = event.event_images?.[0]?.formats?.medium?.url;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
-        {/* Loading Indicator */}
-
         {/* Title */}
-        <Text style={[styles.title, { color: textColor }]}>{event.event_name}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{event.event_name}</Text>
 
         {/* Description */}
-        <Text style={[styles.description, { color: textColor }]}>
+        <Text style={[styles.description, { color: colors.text }]}>
           {event.event_description}
         </Text>
 
@@ -73,36 +69,40 @@ const TrackDetailScreen = () => {
         {/* Callouts */}
         <View style={styles.calloutGrid}>
           {callouts.map((item: any) => (
-            <View key={item.id} style={styles.calloutItem}>
-              <Text style={styles.calloutTitle}>{item.event_detail_callout_title}</Text>
-              <Text style={styles.calloutValue}>{item.event_detail_callouts_details}</Text>
+            <View key={item.id} style={[styles.calloutItem, { borderColor: colors.border }]}>
+              <Text style={[styles.calloutTitle, { color: colors.secondaryText }]}>
+                {item.event_detail_callout_title}
+              </Text>
+              <Text style={[styles.calloutValue, { color: colors.tint }]}>
+                {item.event_detail_callouts_details}
+              </Text>
             </View>
           ))}
         </View>
 
         {/* Fact File */}
-        <Text style={[styles.sectionTitle, { color: textColor }]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {factFile.event_fact_file_title}
         </Text>
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
           {factFile.event_fact_file_details[0].children.map((li: any, index: number) => (
-            <Text key={index} style={[styles.factText, { color: textColor }]}>
+            <Text key={index} style={[styles.factText, { color: colors.text }]}>
               • {li.children[0].text}
             </Text>
           ))}
         </View>
 
         {/* Download Map CTA */}
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Image
             source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Chat_GPT_Image_May_6_2025_04_23_58_PM_07886895f5.png' }}
             style={styles.mapImage}
           />
-          <Text style={[styles.downloadText, { color: textColor }]}>
+          <Text style={[styles.downloadText, { color: colors.text }]}>
             {download.event_downloadables_description}
           </Text>
-          <TouchableOpacity style={styles.downloadBtn}>
-            <Text style={styles.downloadBtnText}>Download Map</Text>
+          <TouchableOpacity style={[styles.downloadBtn, { backgroundColor: colors.tint }]}>
+            <Text style={[styles.downloadBtnText, { color: 'black' }]}>Download Map</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -120,13 +120,11 @@ const styles = StyleSheet.create({
   calloutGrid: { marginBottom: 20 },
   calloutItem: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
     paddingVertical: 10,
   },
   calloutTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#888',
   },
   calloutValue: {
     fontSize: 16,
@@ -158,13 +156,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   downloadBtn: {
-    backgroundColor: '#FF3B30',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
   downloadBtnText: {
-    color: 'white',
     fontWeight: 'bold',
   },
 });

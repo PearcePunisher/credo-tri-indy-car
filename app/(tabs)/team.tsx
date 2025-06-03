@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import BrandLogo from "@/components/BrandLogo";
-
+import { Colors } from "@/constants/Colors";
 import {
   View,
   Text,
@@ -70,8 +70,8 @@ const TeamScreen = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [teamDetails, setTeamDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === "dark";
+  const colorScheme = useColorScheme() || "light";
+  const colors = Colors[colorScheme];
 
   useEffect(() => {
     const fetchDrivers = fetch(
@@ -92,14 +92,14 @@ const TeamScreen = () => {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />;
+    return <ActivityIndicator size="large" color={colors.tint} style={{ flex: 1 }} />;
   }
 
   return (
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: isDarkMode ? "#1A1A1A" : "#E5E5EA",
+        backgroundColor: colors.background,
       }}
     >
       <ScrollView
@@ -109,7 +109,7 @@ const TeamScreen = () => {
         <Text
           style={[
             styles.title,
-            { color: isDarkMode ? "#FFFFFF" : "#000000" },
+            { color: colors.text },
           ]}
         >
           The Team
@@ -119,25 +119,15 @@ const TeamScreen = () => {
           <View
             style={[
               styles.teamDetails,
-              {
-                backgroundColor: isDarkMode ? "#1A1A1A" : "#F5F5F5",
-              },
+              { backgroundColor: colors.card },
             ]}
           >
-            <View
-              style={{
-                width: "100%",
-                aspectRatio: 3 / 2,
-                alignSelf: "center",
-                marginBottom: 10,
-              }}
-            >
-              <BrandLogo style={styles.brand} />
-            </View>
+            {/* Remove the extra View and just use the logo with a small margin */}
+            <BrandLogo style={{ ...styles.brand, marginBottom: 4 }} />
             <Text
               style={[
                 styles.subHeader,
-                { color: isDarkMode ? "#FFFFFF" : "#000000" },
+                { color: colors.text },
               ]}
             >
               {teamDetails[0].team_name}
@@ -145,7 +135,7 @@ const TeamScreen = () => {
             <Text
               style={[
                 styles.bio,
-                { color: isDarkMode ? "#CCCCCC" : "#333333" },
+                { color: colors.secondaryText },
               ]}
             >
               {teamDetails[0].team_descriptions}
@@ -167,16 +157,16 @@ const TeamScreen = () => {
           const socialLinks = driver.driver_social_medias || [];
 
           return (
-            <View key={driver.id} style={styles.card}>
+            <View key={driver.id} style={[styles.card, { backgroundColor: colors.card }]}>
               <Image source={{ uri: profileImage }} style={styles.driverImage} />
 
               <View style={styles.cardInner}>
                 <View style={styles.driverHeader}>
-                  <Text style={styles.driverName}>{fullName}</Text>
+                  <Text style={[styles.driverName, { color: colors.text }]}>{fullName}</Text>
                   <Image source={{ uri: flagUrl }} style={styles.flag} />
                 </View>
 
-                <Text style={styles.bio}>{driver.driver_bio}</Text>
+                <Text style={[styles.bio, { color: colors.secondaryText }]}>{driver.driver_bio}</Text>
 
                 <View style={styles.socialRow}>
                   {socialLinks.map((s: SocialMedia, idx: number) => {
@@ -204,7 +194,7 @@ const TeamScreen = () => {
                         }
                       >
                         {iconName && (
-                          <FontAwesome name={iconName} size={24} color="white" />
+                          <FontAwesome name={iconName} size={24} color={colors.tint} />
                         )}
                       </TouchableOpacity>
                     );
@@ -217,9 +207,9 @@ const TeamScreen = () => {
                   resizeMode="cover"
                 />
 
-                <Text style={styles.subHeader}>Achievements</Text>
+                <Text style={[styles.subHeader, { color: colors.text }]}>Achievements</Text>
                 {(driver.driver_record || []).map((record) => (
-                  <Text key={record.id} style={styles.achievement}>
+                  <Text key={record.id} style={[styles.achievement, { color: colors.tint }]}>
                     {record.record_details}
                   </Text>
                 ))}
@@ -246,17 +236,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 20,
-    // no fixed color here — now dynamic
   },
   brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 10, objectFit: 'contain' },
   teamDetails: {
-    backgroundColor: "#1A1A1A",
     padding: 16,
     borderRadius: 8,
     marginBottom: 20,
   },
   card: {
-    backgroundColor: "#121f45",
     borderRadius: 16,
     marginBottom: 24,
     overflow: "hidden",
@@ -277,7 +264,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   driverName: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -287,7 +273,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   bio: {
-    color: "#ccc",
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 10,
@@ -299,7 +284,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   socialText: {
-    color: "#fff",
     fontSize: 13,
     marginRight: 12,
     textDecorationLine: "underline",
@@ -314,14 +298,12 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   subHeader: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
     marginTop: 12,
     marginBottom: 4,
   },
   achievement: {
-    color: "#fff",
     fontSize: 13,
     paddingVertical: 10,
     paddingHorizontal: 0,
