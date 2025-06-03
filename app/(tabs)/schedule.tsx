@@ -6,19 +6,17 @@ import {
   View,
   StyleSheet,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { format, parseISO } from 'date-fns';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 const ScheduleScreen = () => {
   const [schedule, setSchedule] = useState<any[]>([]);
   const [description, setDescription] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme();
-
-  const isDark = colorScheme === 'dark';
-  const bgColor = isDark ? '#111' : '#f9f9f9';
-  const textColor = isDark ? '#fff' : '#000';
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
 
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -47,7 +45,7 @@ const ScheduleScreen = () => {
     const formattedDate = format(parseISO(day.event_schedule_date_date), 'EEEE, MMMM do');
     return (
       <View key={index} style={styles.dayBlock}>
-        <Text style={[styles.dayHeading, { color: textColor }]}>{formattedDate}</Text>
+        <Text style={[styles.dayHeading, { color: colors.text }]}>{formattedDate}</Text>
         {day.event_schedule_date_details.map((entry: any, idx: number) => {
           const rawText = entry.children[0]?.text || '';
           const [time, ...descParts] = rawText.split(/\t+/);
@@ -55,30 +53,30 @@ const ScheduleScreen = () => {
 
           return (
             <View key={idx} style={styles.row}>
-              <Text style={[styles.time, { color: textColor }]}>{time}</Text>
-              <Text style={[styles.description, { color: textColor }]}>{description}</Text>
+              <Text style={[styles.time, { color: colors.text }]}>{time}</Text>
+              <Text style={[styles.description, { color: colors.text }]}>{description}</Text>
             </View>
           );
         })}
-        <View style={styles.divider} />
+        <View style={[styles.divider, { borderBottomColor: colors.border }]} />
       </View>
     );
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-        <ActivityIndicator size="large" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={[styles.title, { color: textColor }]}>Weekend Schedule</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Weekend Schedule</Text>
         {description.map((line, index) => (
-          <Text key={index} style={[styles.paragraph, { color: textColor }]}>
+          <Text key={index} style={[styles.paragraph, { color: colors.text }]}>
             {line}
           </Text>
         ))}
@@ -131,7 +129,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginTop: 16,
-    borderBottomColor: '#ccc',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

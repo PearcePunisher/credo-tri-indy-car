@@ -7,11 +7,12 @@ import {
   SafeAreaView,
   Image,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
-  export const options = {
+export const options = {
   title: 'Experience',
   headerBackTitle: 'Back',
 };
@@ -19,11 +20,8 @@ import BrandLogo from '@/components/BrandLogo';
 const ExperienceScreen = () => {
   const [experience, setExperience] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const bgColor = isDark ? '#111' : '#f9f9f9';
-  const textColor = isDark ? 'white' : 'black';
-  const cardColor = isDark ? '#1c1c1e' : '#ededed';
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
 
   useEffect(() => {
     const fetchExperience = async () => {
@@ -45,8 +43,8 @@ const ExperienceScreen = () => {
 
   if (loading || !experience) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-        <ActivityIndicator size="large" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
@@ -55,33 +53,31 @@ const ExperienceScreen = () => {
   const bullets = experience.experience_description?.[0]?.children || [];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
-        {/* Loading Indicator */}
-
         {/* Title */}
-        <Text style={[styles.title, { color: textColor }]}>Experiences</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Experiences</Text>
 
         {/* Experience Name */}
-        <Text style={[styles.sectionHeading, { color: textColor }]}>
+        <Text style={[styles.sectionHeading, { color: colors.text }]}>
           Your “{experience.experience_title}”
         </Text>
 
         {/* Bullet Points */}
         <View style={{ marginBottom: 20 }}>
           {bullets.map((item: any, i: number) => (
-            <Text key={i} style={[styles.bullet, { color: textColor }]}>
+            <Text key={i} style={[styles.bullet, { color: colors.text }]}>
               • {item.children[0].text}
             </Text>
           ))}
         </View>
 
         {/* Feature Card */}
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <Text style={[styles.cardTitle, { color: textColor }]}>Pit Stop Challenge</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Pit Stop Challenge</Text>
 
           {imageUrl && (
             <Image
@@ -91,7 +87,7 @@ const ExperienceScreen = () => {
             />
           )}
 
-          <Text style={[styles.cardDescription, { color: textColor }]}>
+          <Text style={[styles.cardDescription, { color: colors.text }]}>
             Step into the adrenaline-fuel world of Indy Car with our team in the Pit Stop
             Challenge. Under the guidance of our professional Pit Stop Team, guests will immerse
             themselves in the action precision of an actual Indy Car stop. You will learn how
