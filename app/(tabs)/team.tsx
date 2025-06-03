@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import BrandLogo from "@/components/BrandLogo";
 
 import {
   View,
@@ -131,14 +132,7 @@ const TeamScreen = () => {
                 marginBottom: 10,
               }}
             >
-              <Image
-                source={require("../../assets/images/valcora2_transparent.png")}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                }}
-                resizeMode="contain"
-              />
+              <BrandLogo style={styles.brand} />
             </View>
             <Text
               style={[
@@ -254,6 +248,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     // no fixed color here — now dynamic
   },
+  brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 10, objectFit: 'contain' },
   teamDetails: {
     backgroundColor: "#1A1A1A",
     padding: 16,

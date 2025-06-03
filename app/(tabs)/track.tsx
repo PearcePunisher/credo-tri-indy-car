@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from 'react-native';
+import BrandLogo from '@/components/BrandLogo';
 
 const TrackDetailScreen = () => {
   const [event, setEvent] = useState<any>(null);
@@ -52,7 +53,9 @@ const TrackDetailScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
-        <Image source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/valcora2_transparent_0e83065d22.png' }} style={styles.brand} />
+        <BrandLogo style={styles.brand} />
+
+        {/* Loading Indicator */}
 
         {/* Title */}
         <Text style={[styles.title, { color: textColor }]}>{event.event_name}</Text>

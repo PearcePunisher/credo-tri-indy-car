@@ -74,6 +74,19 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="registration"
+        options={{
+          title: "Account",
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require("@/assets/icons/qrIcon.png")}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   useColorScheme,
 } from 'react-native';
+import BrandLogo from '@/components/BrandLogo';
 
   export const options = {
   title: 'Experience',
@@ -57,10 +58,9 @@ const ExperienceScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
-        <Image
-          source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Motorsports_Logo_1_f5dd153fb8.png' }}
-          style={styles.brand}
-        />
+        <BrandLogo style={styles.brand} />
+
+        {/* Loading Indicator */}
 
         {/* Title */}
         <Text style={[styles.title, { color: textColor }]}>Experiences</Text>

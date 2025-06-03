@@ -17,6 +17,7 @@ import CalendarIcon from "@/assets/icons/calendarIcon.svg";
 import QuizIcon from "@/assets/icons/quizIcon.svg";
 import CommentIcon from "@/assets/icons/commentIcon.svg";
 import LogoutIcon from "@/assets/icons/logoutIcon.svg";
+import BrandLogo from "@/components/BrandLogo";
 
 const router = useRouter();
 
@@ -36,6 +37,7 @@ export default function VIPHomeScreen() {
         backgroundColor: isDarkMode ? "#1A1A1A" : "#F2F2F7",
       }}>
       <ScrollView contentContainerStyle={styles.container}>
+        <BrandLogo style={styles.brand} />
         <Text
           style={[
             styles.header,
@@ -52,11 +54,11 @@ export default function VIPHomeScreen() {
         </Text>
 
         <View style={styles.grid}>
-          <VIPTile 
-            icon="qr-code" 
+          <VIPTile
+            icon="qr-code"
             label="My ID"
             iconColor={iconColor}
-            onPress={() => {}} />
+            onPress={() => { }} />
           <VIPTile
             iconComponent={<DoorIcon />}
             label="Welcome"
@@ -95,22 +97,22 @@ export default function VIPHomeScreen() {
           <VIPTile
             iconComponent={<CalendarIcon />}
             label="2025 Indy Car Calendar"
-            onPress={() => {}}
+            onPress={() => { }}
           />
           <VIPTile
             iconComponent={<QuizIcon />}
             label="FAQ’s"
-            onPress={() => {}}
+            onPress={() => { }}
           />
           <VIPTile
             iconComponent={<CommentIcon />}
             label="Feedback"
-            onPress={() => {}}
+            onPress={() => { }}
           />
           <VIPTile
             iconComponent={<LogoutIcon />}
             label="Log Out"
-            onPress={() => {}}
+            onPress={() => { }}
           />
         </View>
       </ScrollView>
@@ -130,6 +132,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 4,
   },
+  brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 10, objectFit: 'contain' },
   sub: {
     color: "#fff",
     fontSize: 14,
