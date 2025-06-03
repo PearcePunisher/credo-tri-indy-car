@@ -108,7 +108,7 @@ export default function RegisterScreen() {
 
       // Read the data from the file
       const fileData = fs.readFileSync(filePath, 'utf-8');
-    const parsedData = JSON.parse(fileData);
+    const parsedData = JSON.parse(data);
     } catch (error) {
       console.error("Error:", error);
     }
