@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -48,6 +50,8 @@ export default function RegisterScreen() {
     const day = date.getDate().toString().padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
+
+  const filePath = path.join(__dirname, 'user_data', 'user_info.json');
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -99,6 +103,12 @@ export default function RegisterScreen() {
       const cleaned = text.trim().replace(/[%]+$/, "");
       const data = JSON.parse(cleaned);
       console.log("Parsed JSON:", data);
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      console.log('Data written to file successfully.');
+
+      // Read the data from the file
+      const fileData = fs.readFileSync(filePath, 'utf-8');
+    const parsedData = JSON.parse(fileData);
     } catch (error) {
       console.error("Error:", error);
     }
