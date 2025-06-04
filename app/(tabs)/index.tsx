@@ -4,7 +4,7 @@ import VIPTile from "@/components/VIPTile";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { Colors } from "@/constants/Colors"; // <-- Add this import
+import { Colors } from "@/constants/Colors";
 
 // Importing icons
 import TrackIcon from "@/assets/icons/trackIcon.svg";
@@ -27,16 +27,15 @@ export const options = {
 };
 
 export default function VIPHomeScreen() {
-  const colorScheme = useColorScheme() || "light"; // fallback for safety
+  const colorScheme = useColorScheme() || "light";
   const colors = Colors[colorScheme];
-
-  const iconColor = colors.text; // Use theme text color for icons
+  const iconColor = colors.text;
 
   return (
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: colors.background, // Use theme background
+        backgroundColor: colors.background,
       }}>
       <ScrollView contentContainerStyle={styles.container}>
         <BrandLogo style={styles.brand} />
@@ -48,67 +47,42 @@ export default function VIPHomeScreen() {
         </Text>
 
         <View style={styles.grid}>
-          <VIPTile
-            icon="qr-code"
-            label="My ID"
-            iconColor={iconColor}
-            onPress={() => {}}
-          />
-          <VIPTile
-            iconComponent={<DoorIcon />}
-            label="Welcome"
-            onPress={() => router.push("/welcome")}
-          />
-          <VIPTile
-            iconComponent={<CelebrationIcon />}
-            label="Experience"
-            onPress={() => router.push("/experience")}
-          />
-          <VIPTile
-            iconComponent={<EventIcon />}
-            label="Weekend Schedule"
-            onPress={() => router.push("/schedule")}
-          />
-          <VIPTile
-            iconComponent={<PinIcon />}
-            label="Venue Directions"
-            onPress={() => router.push("/directions")}
-          />
-          <VIPTile
-            iconComponent={<TrackIcon />}
-            label="Track Info"
-            onPress={() => router.push("/track")}
-          />
-          <VIPTile
-            iconComponent={<GroupIcon />}
-            label="The Team"
-            onPress={() => router.push("/team")}
-          />
-          <VIPTile
-            iconComponent={<CarIcon />}
-            label="The Car"
-            onPress={() => router.push("/car")}
-          />
-          <VIPTile
-            iconComponent={<CalendarIcon />}
-            label="2025 Indy Car Calendar"
-            onPress={() => {}}
-          />
-          <VIPTile
-            iconComponent={<QuizIcon />}
-            label="FAQ’s"
-            onPress={() => {}}
-          />
-          <VIPTile
-            iconComponent={<CommentIcon />}
-            label="Feedback"
-            onPress={() => {}}
-          />
-          <VIPTile
-            iconComponent={<LogoutIcon />}
-            label="Log Out"
-            onPress={() => {}}
-          />
+          <View style={styles.tile}>
+            <VIPTile icon="qr-code" label="My ID" iconColor={iconColor} onPress={() => {}} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<DoorIcon />} label="Welcome" onPress={() => router.push("/welcome")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<CelebrationIcon />} label="Experience" onPress={() => router.push("/experience")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<EventIcon />} label="Weekend Schedule" onPress={() => router.push("/schedule")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<PinIcon />} label="Venue Directions" onPress={() => router.push("/directions")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<TrackIcon />} label="Track Info" onPress={() => router.push("/track")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<GroupIcon />} label="The Team" onPress={() => router.push("/team")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<CarIcon />} label="The Car" onPress={() => router.push("/car")} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<CalendarIcon />} label="2025 Indy Car Calendar" onPress={() => {}} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<QuizIcon />} label="FAQ’s" onPress={() => {}} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<CommentIcon />} label="Feedback" onPress={() => {}} />
+          </View>
+          <View style={styles.tile}>
+            <VIPTile iconComponent={<LogoutIcon />} label="Log Out" onPress={() => {}} />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -119,7 +93,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     paddingVertical: 20,
-    backgroundColor: "transparent", // Keep transparent for SafeAreaView bg
+    backgroundColor: "transparent",
   },
   header: {
     fontSize: 24,
@@ -140,6 +114,10 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly", // evenly spaced in each row
+  },
+  tile: {
+    width: "45%", // slightly smaller to ensure no overflow
+    marginBottom: 10,
   },
 });

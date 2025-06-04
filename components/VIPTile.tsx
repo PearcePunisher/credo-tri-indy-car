@@ -77,11 +77,11 @@ export default function VIPTile({
 
 const styles = StyleSheet.create({
   tile: {
-    width: "45%",
-    aspectRatio: 1,
+    flex: 1, // Make the tile fill the width of its parent container
+    aspectRatio: 16/10,
     borderRadius: 12,
     padding: 10,
-    margin: 10,
+    // margin: 10,
     justifyContent: "center",
     alignItems: "center",
   },
