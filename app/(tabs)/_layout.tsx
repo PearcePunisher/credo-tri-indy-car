@@ -89,6 +89,19 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="userID"
+        options={{
+          title: "User",
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require("@/assets/icons/doorIcon.png")}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
