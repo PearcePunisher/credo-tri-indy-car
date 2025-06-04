@@ -13,8 +13,8 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import * as fs from 'fs';
-import * as path from 'path';
+// import * as fs from 'fs';
+// import * as path from 'path';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -101,16 +101,16 @@ export default function RegisterScreen() {
       const text = await response.text();
       console.log("Data collection" + JSON.stringify(text))
       console.log("Server response:", text);
+    // Commented out for demo --- RILEY
+    //   const cleaned = text.trim().replace(/[%]+$/, "");
+    //   const data = JSON.parse(cleaned);
+    //   console.log("Parsed JSON:", data);
+    //   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    //   console.log('Data written to file successfully.');
 
-      const cleaned = text.trim().replace(/[%]+$/, "");
-      const data = JSON.parse(cleaned);
-      console.log("Parsed JSON:", data);
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-      console.log('Data written to file successfully.');
-
-      // Read the data from the file
-      const fileData = fs.readFileSync(filePath, 'utf-8');
-    const parsedData = JSON.parse(data);
+    //   // Read the data from the file
+    //   const fileData = fs.readFileSync(filePath, 'utf-8');
+    // const parsedData = JSON.parse(data);
     } catch (error) {
       console.error("Dude it shadoodled");
       console.error("Error:", error);
