@@ -20,7 +20,7 @@ export const Colors = {
   },
   dark: {
     text: "#fff",                 // White for primary text
-    background: "#000",        // Dark grey background
+    background: "#000",           // Black background
     tint: "#00ff4f",              // Green for accents
     icon: "#fff",                 // White for icons
     tabIconDefault: "#2b2b2b",    // Light grey for inactive tab icons

@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -81,11 +82,7 @@ export default function TabLayout() {
         options={{
           title: "Account",
           tabBarIcon: ({ color }) => (
-            <Image
-              source={require("@/assets/icons/qrIcon.png")}
-              style={{ width: 28, height: 28, tintColor: color }}
-              resizeMode="contain"
-            />
+            <Ionicons name="person-circle-outline" size={28} color={color} />
           ),
         }}
       />
@@ -94,11 +91,7 @@ export default function TabLayout() {
         options={{
           title: "User",
           tabBarIcon: ({ color }) => (
-            <Image
-              source={require("@/assets/icons/doorIcon.png")}
-              style={{ width: 28, height: 28, tintColor: color }}
-              resizeMode="contain"
-            />
+            <Ionicons name="qr-code" size={28} color={color} />
           ),
         }}
       />

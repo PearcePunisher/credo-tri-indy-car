@@ -18,6 +18,8 @@ import CalendarIcon from "@/assets/icons/calendarIcon.svg";
 import QuizIcon from "@/assets/icons/quizIcon.svg";
 import CommentIcon from "@/assets/icons/commentIcon.svg";
 import LogoutIcon from "@/assets/icons/logoutIcon.svg";
+
+// Importing the brand logo component
 import BrandLogo from "@/components/BrandLogo";
 
 const router = useRouter();
