@@ -4,3 +4,8 @@ declare module "*.svg" {
   const content: React.FC<SvgProps>;
   export default content;
 }
+
+declare module '@env' {
+  export const SPORTRADAR_API_KEY: string;
+  // add other env variables here as needed
+}

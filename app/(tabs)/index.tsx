@@ -38,6 +38,7 @@ export default function VIPHomeScreen() {
       style={{
         flex: 1,
         backgroundColor: colors.background,
+        paddingBottom: 40,
       }}>
       <ScrollView contentContainerStyle={styles.container}>
         <BrandLogo style={styles.brand} />
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-evenly", // evenly spaced in each row
+    justifyContent: "space-evenly",
   },
   tile: {
     width: "45%", // slightly smaller to ensure no overflow
