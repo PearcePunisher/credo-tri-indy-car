@@ -2,66 +2,56 @@ import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
-  Text,
   View,
+  Text,
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { format, parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import BrandLogo from '@/components/BrandLogo';
+// Import the local JSON file
+// Adjust 'scheduleData.json' if your filename is different
+import scheduleData from '/Users/rileypearce/dev/credo-tri-indy-car/race_data/scheduleData.json';
 
 const ScheduleScreen = () => {
   const [schedule, setSchedule] = useState<any[]>([]);
-  const [description, setDescription] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const res = await fetch(
-          'https://timely-actor-10dfb03957.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l?populate=event_schedule'
-        );
-        const json = await res.json();
-        setSchedule(json.data.event_schedule || []);
-        setDescription(
-          (json.data.event_schedule_description || [])
-            .map((block: any) => block.children[0]?.text)
-            .filter(Boolean)
-        );
-      } catch (err) {
-        console.error('Failed to fetch schedule', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSchedule();
+    try {
+      // Assuming your JSON file has a 'stages' array like the API response.
+      // If your JSON file is directly an array of events, use:
+      // setSchedule(scheduleData || []);
+      setSchedule(scheduleData.stages || []);
+    } catch (error) {
+      console.error('Error loading schedule from local file:', error);
+      setSchedule([]); // Set to empty array on error
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const renderDay = (day: any, index: number) => {
-    const formattedDate = format(parseISO(day.event_schedule_date_date), 'EEEE, MMMM do');
-    return (
-      <View key={index} style={styles.dayBlock}>
-        <Text style={[styles.dayHeading, { color: colors.text }]}>{formattedDate}</Text>
-        {day.event_schedule_date_details.map((entry: any, idx: number) => {
-          const rawText = entry.children[0]?.text || '';
-          const [time, ...descParts] = rawText.split(/\t+/);
-          const description = descParts.join(' ').trim();
+  // Group schedule by month
+  const groupedSchedule = schedule.reduce((acc, item) => {
+    const date = parseISO(item.scheduled);
+    const month = format(date, 'MMMM');
+    if (!acc[month]) acc[month] = [];
+    acc[month].push(item);
+    return acc;
+  }, {});
 
-          return (
-            <View key={idx} style={styles.row}>
-              <Text style={[styles.time, { color: colors.text }]}>{time}</Text>
-              <Text style={[styles.description, { color: colors.text }]}>{description}</Text>
-            </View>
-          );
-        })}
-        <View style={[styles.divider, { borderBottomColor: colors.border }]} />
-      </View>
-    );
-  };
+  const monthOrder = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const sortedMonths = Object.keys(groupedSchedule).sort((a, b) => {
+    return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+  });
 
   if (loading) {
     return (
@@ -74,62 +64,69 @@ const ScheduleScreen = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={[styles.title, { color: colors.text }]}>Weekend Schedule</Text>
-        {description.map((line, index) => (
-          <Text key={index} style={[styles.paragraph, { color: colors.text }]}>
-            {line}
-          </Text>
+        <BrandLogo style={{ marginBottom: 16 }} />
+        <Text style={[styles.header, { color: colors.text }]}>2025 Schedule</Text>
+        {sortedMonths.map((month) => (
+          <View key={month} style={styles.monthSection}>
+            <Text style={[styles.monthTitle, { color: colors.tint }]}>{month}</Text>
+            {groupedSchedule[month].map((event: any, idx: number) => {
+              const eventDate = format(parseISO(event.scheduled), 'MMMM d, yyyy, h:mm a');
+              const isCancelled = event.status === 'cancelled'; // Assuming 'status' field indicates cancellation
+
+              return (
+                <View 
+                  key={idx} 
+                  style={[
+                    styles.card, 
+                    { backgroundColor: colors.card },
+                    isCancelled && styles.cancelledCard // Apply cancelled style
+                  ]}
+                >
+                  <Text style={[styles.eventTitle, { color: colors.text }]}>{event.description}</Text>
+                  {isCancelled && (
+                    <Text style={[styles.cancelledText, { color: colors.error }]}>Cancelled</Text>
+                  )}
+                  <Text style={[styles.venue, { color: colors.text }]}>
+                    {event.venue?.name} — {event.venue?.city}, {event.venue?.country}
+                  </Text>
+                  <Text style={[styles.date, { color: colors.text }]}>{eventDate}</Text>
+                </View>
+              );
+            })}
+          </View>
         ))}
-        {schedule.map((day, index) => renderDay(day, index))}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scroll: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  paragraph: {
-    fontSize: 15,
-    marginBottom: 10,
-  },
-  dayBlock: {
-    marginTop: 24,
-  },
-  dayHeading: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  container: { flex: 1 },
+  scroll: { padding: 16 },
+  header: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
+  monthSection: { marginBottom: 24 },
+  monthTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
+  card: {
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
-  time: {
-    width: 80,
-    fontWeight: '600',
+  eventTitle: { fontSize: 16, fontWeight: 'bold' },
+  venue: { fontSize: 14 },
+  date: { fontSize: 12, color: '#888' },
+  cancelledCard: {
+    borderColor: 'red',
+    borderWidth: 1,
+  },
+  cancelledText: {
     fontSize: 14,
-  },
-  description: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    paddingLeft: 8,
-  },
-  divider: {
-    marginTop: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
 });
 

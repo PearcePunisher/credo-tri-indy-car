@@ -17,6 +17,7 @@ export const Colors = {
     secondaryText: "#2b2b2b",     // Light grey for secondary text
     card: "#f7f7f7",              // Optional: very light grey for cards
     border: "#e0e0e0",            // Optional: subtle border color
+    error: "#ff0000",            // Red for error messages
   },
   dark: {
     text: "#fff",                 // White for primary text
@@ -28,5 +29,6 @@ export const Colors = {
     secondaryText: "#919391",     // Light grey for secondary text
     card: "#2b2b2b",              // Light grey for cards
     border: "#333",               // Optional: subtle border color
+    error: "#ff0000",            // Red for error messages
   },
 };
