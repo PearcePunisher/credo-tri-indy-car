@@ -6,14 +6,25 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 
 ## Styling & Theming
 
-- Always import and use the `useColorScheme` hook from `@/hooks/useColorScheme` when a component depends on color theming.
-- All color values must come from the `Colors` object imported from `@/constants/Colors`.
-- Do not hardcode hex codes, Tailwind `text-*` or `bg-*` color classes unless they are explicitly defined within `Colors`.
-- **Always destructure the hook as:** `const { colors } = useColorScheme();`
+- **Always** import and use the `useColorScheme` hook from `@/hooks/useColorScheme` when a component depends on color theming.
+- **Destructure the hook as:** `const { colors } = useColorScheme();`
 - **Never** use `const colorScheme = useColorScheme()` and then index into `Colors[colorScheme]`.
+- All color values must come from the `Colors` object imported from `@/constants/Colors`.
 - Reference all colors as `colors.primary`, `colors.background`, etc.
+- Do not hardcode hex codes, Tailwind `text-*` or `bg-*` color classes unless they are explicitly defined within `Colors`.
 - Ensure your `useColorScheme` hook returns an object with a `colors` property. If it does not, update the hook to match this convention.
 - If you need to use a color that is not present in `colors`, add it to the `Colors` object and update the hook accordingly.
+- **Use the `/app/(tabs)/track.tsx` page as the reference implementation for correct color and style usage.**  
+  - Example:  
+    ```tsx
+    import { useColorScheme } from '@/hooks/useColorScheme';
+    import { Colors } from '@/constants/Colors';
+
+    const { colors } = useColorScheme();
+    <Text style={{ color: colors.primary }} />
+    <SafeAreaView style={{ backgroundColor: colors.background }} />
+    ```
+  - All color usage in styles (including StyleSheet and inline) must reference the destructured `colors` object from the hook, as shown above and in the track page.
 
 **Correct usage example:**
 ```tsx
@@ -34,6 +45,7 @@ const colors = Colors[colorScheme];
 - Avoid writing per-page styles (e.g. CSS Modules or scoped styles inside a single page/component).
 - Prefer reusable utility classes (like Tailwind) or global styling conventions defined in the project.
 - If a component needs unique styles, abstract them into a shared component or styling file.
+- **Reference `/app/(tabs)/track.tsx` for best practices on combining StyleSheet and dynamic color usage.**
 
 ## Code Style
 

@@ -8,9 +8,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://www.juncoshollinger.com/wp-content/themes/juncoshollinger/assets/images/logo.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Dark_Logo_f3a9db6483.png";
 const LOGO_LIGHT =
-  "https://upload.wikimedia.org/wikipedia/en/9/9b/2023_Juncos_Hollinger_Racing_Logo.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Light_Logo_640461bc89.png";
 
 export default function BrandLogo({
   width = 250,

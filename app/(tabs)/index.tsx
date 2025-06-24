@@ -112,23 +112,28 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, }}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Button style={styles.loginButton}>
+          <Button>
             Login
           </Button>
-          <View style={styles.notificationBell}>
-            <FontAwesome5 name="bell" size={24} color="white" solid />
+            <View style={styles.notificationBell}>
+            <FontAwesome5
+              name="bell"
+              size={24}
+              color={colorScheme === "dark" ? "white" : "black"}
+              solid
+            />
             <View style={styles.notificationDot} />
-          </View>
+            </View>
         </View>
 
         <View style={styles.logoContainer}>
           <BrandLogo style={styles.brand} />
         </View>
 
-        <Text style={styles.sectionTitle}>Upcoming Races</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Upcoming Races</Text>
         <View style={styles.carouselContainer}>
           <ScrollView
             horizontal
@@ -142,8 +147,8 @@ export default function HomeScreen() {
                 }}
                 style={styles.cardImage}
               />
-              <View style={styles.upNextBadge}>
-                <Text style={styles.upNextText}>Up Next</Text>
+              <View style={[styles.upNextBadge, styles.sponsoredBadge, { backgroundColor: colors.tint }]}>
+                <Text style={[styles.upNextText, { color: colors.textOnGreen }]}>Up Next</Text>
               </View>
             </View>
             {/* Add more race cards here */}
@@ -151,12 +156,12 @@ export default function HomeScreen() {
           {/* Add pagination dots here */}
         </View>
         <View style={styles.raceInfo}>
-          <Text style={styles.raceTitle}>
+          <Text style={[styles.raceTitle, { color: colors.text }]}>
             {nextRace
               ? (nextRace.event.description || "Next Race").toUpperCase()
               : "No Upcoming Race"}
           </Text>
-          <Text style={styles.raceDate}>
+          <Text style={[styles.raceDate , { color: colors.tint }]}>
             {nextRace
               ? (() => {
                   const start = new Date(nextRace.race.scheduled);
@@ -164,17 +169,38 @@ export default function HomeScreen() {
                   const options: Intl.DateTimeFormatOptions = { month: "long", day: "numeric", year: "numeric" };
                   const startStr = start.toLocaleDateString(undefined, options);
                   const endStr = end ? end.toLocaleDateString(undefined, options) : "";
-                  const city = nextRace.event.venue?.city;
-                  const state = nextRace.event.venue?.country_code === "USA"
-                    ? (city?.split(", ")[1] || "")
-                    : nextRace.event.venue?.country;
-                  return `${startStr}${endStr && startStr !== endStr ? " - " + endStr : ""} • ${city}${state ? ", " + state : ""}`;
+                  const cityRaw = nextRace.event.venue?.city;
+                  const countryCode = nextRace.event.venue?.country_code;
+                  let city = cityRaw || "";
+                  let state = "";
+                  let country = nextRace.event.venue?.country;
+
+                  // If USA, try to extract state from city (e.g., "Lexington, OH")
+                  if (countryCode === "USA" && cityRaw?.includes(", ")) {
+                    const parts = cityRaw.split(", ");
+                    if (parts.length === 2) {
+                      city = parts[0];
+                      state = parts[1];
+                      country = "USA";
+                    }
+                  }
+
+                  // Compose location string
+                  let location = city;
+                  if (state) location += `, ${state}`;
+                  if (countryCode === "USA") {
+                    location += `, USA`;
+                  } else if (country) {
+                    location += `, ${country}`;
+                  }
+
+                  return `${startStr}${endStr && startStr !== endStr ? " - " + endStr : ""} • ${location}`;
                 })()
               : ""}
           </Text>
         </View>
 
-        <Text style={styles.countdownTitle}>COUNTDOWN TO NEXT RACE:</Text>
+        <Text style={[styles.countdownTitle, { color: colors.text }]}>COUNTDOWN TO NEXT RACE:</Text>
         <View style={styles.countdownContainer}>
           <View style={styles.countdownItem}>
             <Text style={styles.countdownValue}>{countdown.days}</Text>
@@ -202,38 +228,38 @@ export default function HomeScreen() {
               }}
               style={styles.gridImage}
             />
-            <Text style={styles.gridTitle}>Guest Registration</Text>
-            <Text style={styles.gridSubtitle}>Register now</Text>
+            <Text style={[styles.gridTitle, { color: colors.text }]}>Guest Registration</Text>
+            <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Register now</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1590442187458-49b1b46561e4?q=80&w=2874&auto=format&fit=crop",
+                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
               }}
               style={styles.gridImage}
             />
-            <Text style={styles.gridTitle}>Weekend Schedule</Text>
-            <Text style={styles.gridSubtitle}>See full schedule</Text>
+            <Text style={[styles.gridTitle, { color: colors.text }]}>Weekend Schedule</Text>
+            <Text style={[styles.gridSubtitle, { color: colors.tint }]}>See full schedule</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1611826522189-0c25a7864587?q=80&w=2874&auto=format&fit=crop",
+                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
               }}
               style={styles.gridImage}
             />
-            <Text style={styles.gridTitle}>What to Expect</Text>
-            <Text style={styles.gridSubtitle}>Learn more</Text>
+            <Text style={[styles.gridTitle, { color: colors.text }]}>What to Expect</Text>
+            <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Learn more</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1470104345625-700a501b78c8?q=80&w=2848&auto=format&fit=crop",
+                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
               }}
               style={styles.gridImage}
             />
-            <Text style={styles.gridTitle}>Getting to the Circuit</Text>
-            <Text style={styles.gridSubtitle}>Travel info</Text>
+            <Text style={[styles.gridTitle, { color: colors.text }]}>Getting to the Circuit</Text>
+            <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Travel info</Text>
           </TouchableOpacity>
         </View>
 
@@ -247,12 +273,12 @@ export default function HomeScreen() {
             <View style={styles.card}>
               <Image
                 source={{
-                  uri: "https://images.unsplash.com/photo-1611826522189-0c25a7864587?q=80&w=2874&auto=format&fit=crop",
+                  uri: "https://digbza2f4g9qo.cloudfront.net/-/media/IndyCar/News/Standard/2025/01/01-08-StPete.jpg?vs=1&d=20250108T213909Z",
                 }}
                 style={styles.cardImage}
               />
-              <View style={[styles.upNextBadge, styles.sponsoredBadge]}>
-                <Text style={styles.upNextText}>Sponsored Event</Text>
+              <View style={[styles.upNextBadge, styles.sponsoredBadge, { backgroundColor: colors.tint }]}>
+                <Text style={[styles.upNextText, { color: colors.textOnGreen }]}>Sponsored Event</Text>
               </View>
             </View>
             {/* Add more event cards here */}
@@ -260,15 +286,15 @@ export default function HomeScreen() {
           {/* Add pagination dots here */}
         </View>
         <View style={styles.eventInfo}>
-          <Text style={styles.eventTitle}>Garage Tour</Text>
-          <Text style={styles.eventDetails}>
+          <Text style={[styles.eventTitle, { color: colors.text }]}>Garage Tour</Text>
+          <Text style={[styles.eventDetails, { color: colors.tint }]}>
             Exclusive Event • Meet the Beta Testers
           </Text>
-          <Text style={styles.eventSubDetails}>Invitation Only</Text>
+          <Text style={[styles.eventSubDetails, { color: colors.tint }]}>Invitation Only</Text>
         </View>
 
-        <TouchableOpacity style={styles.shareButton}>
-          <Text style={styles.shareButtonText}>Share Your Thoughts</Text>
+        <TouchableOpacity style={[styles.shareButton , { backgroundColor: colors.tint }]}>
+          <Text style={[styles.shareButtonText, { color: colors.textOnGreen }]}>Share Your Thoughts</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
@@ -299,13 +325,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     // marginBottom: 20,
     objectFit: "contain",
-  },
-  loginButton: {
-    borderColor: "#00dd00",
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
   },
   notificationBell: {
     backgroundColor: "transparent",
@@ -397,6 +416,7 @@ const styles = StyleSheet.create({
   countdownValue: {
     fontSize: 32,
     fontWeight: "bold",
+    color: "white",
   },
   countdownLabel: {
     color: "#00dd00",
@@ -416,8 +436,9 @@ const styles = StyleSheet.create({
   },
   gridImage: {
     width: "100%",
-    height: 120,
+    minHeight: 120,
     borderRadius: 15,
+    aspectRatio: 1 / 1,
   },
   gridTitle: {
     fontSize: 16,
