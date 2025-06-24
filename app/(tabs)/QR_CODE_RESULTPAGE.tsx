@@ -10,6 +10,8 @@ import {
   Platform,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import BrandLogo from '@/components/BrandLogo';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function QRCodePage() {
   const [email, setEmail] = useState('');
@@ -52,7 +54,9 @@ export default function QRCodePage() {
   };
 
   return (
+    <SafeAreaView>
     <ScrollView contentContainerStyle={styles.container}>
+      <BrandLogo />
       <Text style={styles.title}>Create Event QR Code</Text>
 
       <TextInput
@@ -95,6 +99,7 @@ export default function QRCodePage() {
         </View>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

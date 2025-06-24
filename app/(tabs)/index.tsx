@@ -13,6 +13,12 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import BrandLogo from "@/components/BrandLogo";
 import CedoLogo from "@/components/CedoLogo";
 import scheduleData from "@/race_data/scheduleData.json";
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Button } from "@/components/Button";
+
+const colorScheme = useColorScheme() || 'light';
+const colors = Colors[colorScheme];
 
 // --- Types for schedule data ---
 type Venue = {
@@ -106,12 +112,12 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+    <SafeAreaView style={{ flex: 1, }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
+          <Button style={styles.loginButton}>
+            Login
+          </Button>
           <View style={styles.notificationBell}>
             <FontAwesome5 name="bell" size={24} color="white" solid />
             <View style={styles.notificationDot} />
@@ -277,7 +283,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
     paddingHorizontal: 20,
   },
   header: {
@@ -302,10 +307,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 20,
   },
-  loginButtonText: {
-    color: "white",
-    fontSize: 16,
-  },
   notificationBell: {
     backgroundColor: "transparent",
   },
@@ -326,7 +327,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   sectionTitle: {
-    color: "white",
     fontSize: 22,
     fontWeight: "bold",
     marginTop: 20,
@@ -369,7 +369,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   raceTitle: {
-    color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -379,7 +378,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   countdownTitle: {
-    color: "white",
     fontSize: 14,
     fontWeight: "bold",
     marginTop: 30,
@@ -397,7 +395,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   countdownValue: {
-    color: "white",
     fontSize: 32,
     fontWeight: "bold",
   },
@@ -423,7 +420,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   gridTitle: {
-    color: "white",
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
@@ -438,7 +434,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   eventTitle: {
-    color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -448,7 +443,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   eventSubDetails: {
-    color: "white",
     fontSize: 14,
     marginTop: 5,
   },
