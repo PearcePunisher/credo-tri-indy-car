@@ -17,8 +17,8 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Button } from "@/components/Button";
 
-const colorScheme = useColorScheme() || 'light';
-const colors = Colors[colorScheme];
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40;
 
 // --- Types for schedule data ---
 type Venue = {
@@ -60,9 +60,6 @@ type ScheduleData = {
   stages: Event[];
 };
 
-const { width } = Dimensions.get("window");
-const CARD_WIDTH = width - 40;
-
 // --- Find next race helper ---
 function getNextRace(events: Event[]): { race: Stage; event: Event } | null {
   const now = new Date();
@@ -98,6 +95,9 @@ function getCountdownParts(targetDate: string): { days: number; hours: number; m
 export default function HomeScreen() {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [nextRace, setNextRace] = useState<{ race: Stage; event: Event } | null>(null);
+
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
 
   useEffect(() => {
     const found = getNextRace((scheduleData as ScheduleData).stages);

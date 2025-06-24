@@ -21,17 +21,24 @@ export const Button = ({
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
 
-  const backgroundColor = outlined
-    ? 'transparent'
-    : colors.tint;
+  // Custom logic for background, text, and border based on color scheme and outlined
+  let backgroundColor = 'black';
+  let textColor = 'white';
+  let borderColor = 'transparent';
 
-  const borderColor = outlined
-    ? colors.tint
-    : 'transparent';
-
-  const textColor = outlined
-    ? colors.tint
-    : colors.text;
+  if (outlined) {
+    backgroundColor = 'transparent';
+    textColor = colors.tint;
+    borderColor = colors.tint;
+  } else if (colorScheme === 'dark') {
+    backgroundColor = 'black';
+    textColor = 'white';
+    borderColor = colors.tint;
+  } else if (colorScheme === 'light') {
+    backgroundColor = 'black';
+    textColor = 'white';
+    borderColor = 'transparent';
+  }
 
   return (
     <TouchableOpacity
