@@ -55,6 +55,19 @@ export function RegisterScreenFormik() {
     return value.replace(/[^\d\s]/g, "");
   }
 
+  // Replace your formatDOB function with this:
+  function formatDOB(value: string) {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 4 && digits.length <= 6) {
+      formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    } else if (digits.length > 6) {
+      formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+    }
+    return formatted;
+  }
+
   return (
     <PaperProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -141,6 +154,7 @@ export function RegisterScreenFormik() {
                   onBlur={handleBlur("firstName")}
                   style={styles.input}
                   mode="outlined"
+                  autoComplete="given-name"
                   theme={{
                     colors: {
                       primary: colors.tint,
@@ -151,13 +165,6 @@ export function RegisterScreenFormik() {
                   }}
                   error={!!(touched.firstName && errors.firstName)}
                 />
-                {/* First Name Error Message */}
-                {touched.firstName && errors.firstName && (
-                  <Text style={{ color: colors.error, marginBottom: 4 }}>
-                    {errors.firstName}
-                  </Text>
-                )}
-                {/* END First Name Error Message */}
                 <TextInput
                   label="Last Name"
                   value={values.lastName}
@@ -165,6 +172,7 @@ export function RegisterScreenFormik() {
                   onBlur={handleBlur("lastName")}
                   style={styles.input}
                   mode="outlined"
+                  autoComplete="family-name"
                   theme={{
                     colors: {
                       primary: colors.tint,
@@ -175,13 +183,6 @@ export function RegisterScreenFormik() {
                   }}
                   error={!!(touched.lastName && errors.lastName)}
                 />
-                {/* Last Name Error Message */}
-                {touched.lastName && errors.lastName && (
-                  <Text style={{ color: colors.error, marginBottom: 4 }}>
-                    {errors.lastName}
-                  </Text>
-                )}
-                {/* END Last Name Error Message */}
                 <TextInput
                   label="Email"
                   value={values.email}
@@ -191,6 +192,7 @@ export function RegisterScreenFormik() {
                   mode="outlined"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoComplete="email"
                   theme={{
                     colors: {
                       primary: colors.tint,
@@ -201,13 +203,27 @@ export function RegisterScreenFormik() {
                   }}
                   error={!!(touched.email && errors.email)}
                 />
-                {/* Email Error Message */}
-                {touched.email && errors.email && (
-                  <Text style={{ color: colors.error, marginBottom: 4 }}>
-                    {errors.email}
-                  </Text>
-                )}
-                {/* END Email Error Message */}
+                <TextInput
+                  label="Date of Birth"
+                  value={values.dob}
+                  onChangeText={text => setFieldValue("dob", formatDOB(text))}
+                  onBlur={handleBlur("dob")}
+                  style={styles.input}
+                  mode="outlined"
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  autoComplete="birthdate-full"
+                  placeholder="YYYY-MM-DD"
+                  theme={{
+                    colors: {
+                      primary: colors.tint,
+                      background: colors.card,
+                      text: colors.text,
+                      placeholder: colors.secondaryText,
+                    },
+                  }}
+                  error={!!(touched.dob && errors.dob)}
+                />
                 <View
                   style={{
                     flexDirection: "row",
@@ -278,6 +294,7 @@ export function RegisterScreenFormik() {
                     style={[styles.input, { flex: 1, marginBottom: 0 }]}
                     mode="outlined"
                     keyboardType="phone-pad"
+                    autoComplete="tel"
                     theme={{
                       colors: {
                         primary: colors.tint,
@@ -297,6 +314,7 @@ export function RegisterScreenFormik() {
                   style={styles.input}
                   mode="outlined"
                   secureTextEntry
+                  autoComplete="new-password"
                   theme={{
                     colors: {
                       primary: colors.tint,
@@ -315,6 +333,7 @@ export function RegisterScreenFormik() {
                   style={styles.input}
                   mode="outlined"
                   secureTextEntry
+                  autoComplete="new-password"
                   theme={{
                     colors: {
                       primary: colors.tint,
