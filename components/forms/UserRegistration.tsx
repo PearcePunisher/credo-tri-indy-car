@@ -16,6 +16,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Picker } from "@react-native-picker/picker";
 // import * as fs from 'fs';
 // import * as path from 'path';
 
@@ -46,6 +47,17 @@ export default function RegisterScreen() {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+1");
+
+  // Example country codes, expand as needed
+  const countryCodes = [
+    { label: "🇺🇸 +1", value: "+1" },
+    { label: "🇨🇦 +1", value: "+1" },
+    { label: "🇬🇧 +44", value: "+44" },
+    { label: "🇦🇺 +61", value: "+61" },
+    { label: "🇮🇳 +91", value: "+91" },
+  ];
 
   const colorScheme = useColorScheme() || "light";
   const colors = Colors[colorScheme];
@@ -165,7 +177,7 @@ export default function RegisterScreen() {
       first_name: firstName,
       last_name: lastName,
       DOB: userDOB,
-      signed_waiver: signedWaiver.toString(),
+      signed_waiver: signedWaiver ? "True" : "False",
       signed_waiver_link: waiverLink,
       user_guests: [
         {
@@ -184,9 +196,10 @@ export default function RegisterScreen() {
     };
 
     try {
-      console.log("NEW DATA: " + JSON.stringify(payload));
+      console.log("POST /create_user_test_2 payload:", payload);
+
       const response = await fetch(
-        "https://themetesting.kinsta.cloud/wp-json/wicked-api/v1/app_registration",
+        "https://nodejs-production-0e5a.up.railway.app/create_user_test_2",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -194,22 +207,16 @@ export default function RegisterScreen() {
         }
       );
 
-      const text = await response.text();
-      console.log("Data collection" + JSON.stringify(text))
-      console.log("Server response:", text);
-    // Commented out for demo --- RILEY
-    //   const cleaned = text.trim().replace(/[%]+$/, "");
-    //   const data = JSON.parse(cleaned);
-    //   console.log("Parsed JSON:", data);
-    //   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    //   console.log('Data written to file successfully.');
+      console.log("Response status:", response.status);
 
-    //   // Read the data from the file
-    //   const fileData = fs.readFileSync(filePath, 'utf-8');
-    // const parsedData = JSON.parse(data);
+      if (response.status === 200) {
+        alert("Registration successful!");
+      } else {
+        alert(`Registration failed. Error code: ${response.status}`);
+      }
     } catch (error) {
-      console.error("Dude it shadoodled");
-      console.error("Error:", error);
+      alert("An error occurred during registration.");
+      console.error("Registration error:", error);
     }
   };
 
@@ -265,6 +272,68 @@ export default function RegisterScreen() {
     </View>
   );
 
+  const renderPhoneInput = () => (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 8,
+        backgroundColor: colors.card,
+        marginBottom: 12,
+        height: 48,
+        overflow: "hidden",
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: colors.card,
+          borderRightWidth: 1,
+          borderRightColor: colors.border,
+          height: "100%",
+        }}
+      >
+        <Picker
+          selectedValue={countryCode}
+          style={{
+            width: 110, // wider for emoji + code
+            color: colors.text,
+            backgroundColor: colors.card,
+            height: 48,
+            paddingHorizontal: 0,
+            paddingVertical: 0,
+          }}
+          dropdownIconColor={colors.text}
+          onValueChange={(itemValue) => setCountryCode(itemValue)}
+          itemStyle={{ fontSize: 16, height: 48 }}
+          mode="dropdown" // dropdown on Android, best effort on iOS
+        >
+          {countryCodes.map((c) => (
+            <Picker.Item key={c.value} label={c.label} value={c.value} />
+          ))}
+        </Picker>
+      </View>
+      <TextInput
+        placeholder="Phone Number"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+        style={{
+          flex: 1,
+          paddingHorizontal: 14,
+          fontSize: 16,
+          backgroundColor: colors.card,
+          color: colors.text,
+          height: 48,
+        }}
+        placeholderTextColor={colors.secondaryText}
+      />
+    </View>
+  );
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
@@ -277,6 +346,7 @@ export default function RegisterScreen() {
         {renderTextInput("First Name", firstName, setFirstName, false, false, false, undefined, "firstName")}
         {renderTextInput("Last Name", lastName, setLastName, false, false, false, undefined, "lastName")}
         {renderTextInput("Email", email, setEmail, false, false, false, undefined, "email")}
+        {renderPhoneInput()}
         {renderTextInput(
           "Password",
           password,
@@ -326,7 +396,7 @@ export default function RegisterScreen() {
 
         <Text style={styles.subheading}>Guest 1</Text>
         {renderTextInput("First Name", guest1FirstName, setGuest1FirstName, false, false, false, undefined, "guest1FirstName")}
-        {renderTextInput("Last Name", guest1LastName, setGuest1LastName, false, false, false, undefined, "guest1LastName")}
+        {renderTextInput("Last Name", guest1LastName, setGuest2LastName, false, false, false, undefined, "guest1LastName")}
         <Text style={styles.subheading}>DOB</Text>
         <TouchableOpacity
           style={styles.dateInput}
