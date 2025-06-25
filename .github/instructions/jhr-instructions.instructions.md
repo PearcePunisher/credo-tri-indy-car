@@ -7,8 +7,6 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 ## Styling & Theming
 
 - **Always** import and use the `useColorScheme` hook from `@/hooks/useColorScheme` when a component depends on color theming.
-- **Destructure the hook as:** `const { colors } = useColorScheme();`
-- **Never** use `const colorScheme = useColorScheme()` and then index into `Colors[colorScheme]`.
 - All color values must come from the `Colors` object imported from `@/constants/Colors`.
 - Reference all colors as `colors.primary`, `colors.background`, etc.
 - Do not hardcode hex codes, Tailwind `text-*` or `bg-*` color classes unless they are explicitly defined within `Colors`.

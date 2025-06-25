@@ -224,17 +224,17 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
+                uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg",
               }}
               style={styles.gridImage}
             />
-            <Text style={[styles.gridTitle, { color: colors.text }]}>Guest Registration</Text>
-            <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Register now</Text>
+            <Text style={[styles.gridTitle, { color: colors.text }]}>Our Team</Text>
+            <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Learn More</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
+                uri: "https://images.unsplash.com/photo-1667921686462-da83bb890fed?q=80&w=4031&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
               }}
               style={styles.gridImage}
             />
@@ -244,7 +244,7 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
+                uri: "https://cdn-1.motorsport.com/images/amp/YMdy8432/s1200/callum-ilott-juncos-hollinger-.webp",
               }}
               style={styles.gridImage}
             />
@@ -254,7 +254,7 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.gridItem}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1554774853-719586f82d77?q=80&w=2940&auto=format&fit=crop",
+                uri: "https://images.unsplash.com/photo-1590005608858-67892d55ae86?q=80&w=1586&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
               }}
               style={styles.gridImage}
             />
@@ -263,7 +263,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>Upcoming Events</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
         <View style={styles.carouselContainer}>
           <ScrollView
             horizontal
@@ -273,7 +273,7 @@ export default function HomeScreen() {
             <View style={styles.card}>
               <Image
                 source={{
-                  uri: "https://digbza2f4g9qo.cloudfront.net/-/media/IndyCar/News/Standard/2025/01/01-08-StPete.jpg?vs=1&d=20250108T213909Z",
+                  uri: "https://i0.wp.com/speedsport.com/wp-content/uploads/2023/01/unnamed-2023-01-28T140339.484.jpg?fit=900%2C471&ssl=1",
                 }}
                 style={styles.cardImage}
               />

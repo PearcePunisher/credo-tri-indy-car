@@ -8,16 +8,16 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import useTeamTheme from "@/theme/useTeamTheme"; // <-- Import the hook
+
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const teamTheme = useTeamTheme(); // <-- Get team colors
+    const colorScheme = useColorScheme() || 'light';
+    const colors = Colors[colorScheme];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: teamTheme.primary, // <-- Use team primary color
+        tabBarActiveTintColor: colors.tint, // <-- Use team primary color
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
