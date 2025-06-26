@@ -100,5 +100,6 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 8,
     textAlign: "center",
+    fontFamily: 'Roobert',
   },
 });

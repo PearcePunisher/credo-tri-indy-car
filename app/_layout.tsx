@@ -20,7 +20,9 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Roobert: require("../assets/fonts/Roobert-Regular.ttf"),
+    RoobertSemi: require("../assets/fonts/Roobert-SemiBold.ttf"),
+    RoobertMedium: require("../assets/fonts/Roobert-Medium.ttf"),
   });
 
   useEffect(() => {

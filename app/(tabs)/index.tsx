@@ -7,8 +7,10 @@ import {
   Dimensions,
   Text,
   View,
-  SafeAreaView, // <-- add import
+  StatusBar,
+  Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome5 } from "@expo/vector-icons";
 import BrandLogo from "@/components/BrandLogo";
 import CedoLogo from "@/components/CedoLogo";
@@ -18,7 +20,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Button } from "@/components/Button";
 
 const { width } = Dimensions.get("window");
-const CARD_WIDTH = width - 40;
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 // --- Types for schedule data ---
 type Venue = {
@@ -112,8 +114,17 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <>
+      <StatusBar 
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background}
+        translucent={false}
+      />
+      <SafeAreaView 
+        style={[styles.container, { backgroundColor: colors.background }]}
+        edges={['top']}
+      >
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Button>
             Login
@@ -201,22 +212,22 @@ export default function HomeScreen() {
         </View>
 
         <Text style={[styles.countdownTitle, { color: colors.text }]}>COUNTDOWN TO NEXT RACE:</Text>
-        <View style={styles.countdownContainer}>
+        <View style={[styles.countdownContainer, { backgroundColor: colors.card }]}>
           <View style={styles.countdownItem}>
-            <Text style={styles.countdownValue}>{countdown.days}</Text>
-            <Text style={styles.countdownLabel}>Days</Text>
+            <Text style={[styles.countdownValue, {color: colors.text}]}>{countdown.days}</Text>
+            <Text style={[styles.countdownLabel, {color: colors.tint}]}>Days</Text>
           </View>
           <View style={styles.countdownItem}>
-            <Text style={styles.countdownValue}>{countdown.hours}</Text>
-            <Text style={styles.countdownLabel}>Hours</Text>
+            <Text style={[styles.countdownValue, {color: colors.text}]}>{countdown.hours}</Text>
+            <Text style={[styles.countdownLabel, {color: colors.tint}]}>Hours</Text>
           </View>
           <View style={styles.countdownItem}>
-            <Text style={styles.countdownValue}>{countdown.minutes}</Text>
-            <Text style={styles.countdownLabel}>Minutes</Text>
+            <Text style={[styles.countdownValue, {color: colors.text}]}>{countdown.minutes}</Text>
+            <Text style={[styles.countdownLabel, {color: colors.tint}]}>Minutes</Text>
           </View>
           <View style={styles.countdownItem}>
-            <Text style={styles.countdownValue}>{countdown.seconds}</Text>
-            <Text style={styles.countdownLabel}>Seconds</Text>
+            <Text style={[styles.countdownValue, {color: colors.text}]}>{countdown.seconds}</Text>
+            <Text style={[styles.countdownLabel, {color: colors.tint}]}>Seconds</Text>
           </View>
         </View>
 
@@ -303,13 +314,14 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   header: {
     flexDirection: "row",
@@ -350,6 +362,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 20,
     marginBottom: 10,
+    fontFamily: 'RoobertSemi',
   },
   carouselContainer: {
     // height: 200,
@@ -382,6 +395,7 @@ const styles = StyleSheet.create({
   upNextText: {
     color: "black",
     fontWeight: "bold",
+    fontFamily: 'Roobert',
   },
   raceInfo: {
     marginTop: 15,
@@ -390,17 +404,19 @@ const styles = StyleSheet.create({
   raceTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: 'RoobertMedium',
   },
   raceDate: {
-    color: "#00dd00",
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Roobert',
   },
   countdownTitle: {
     fontSize: 14,
     fontWeight: "bold",
     marginTop: 30,
     marginBottom: 10,
+    fontFamily: 'RoobertMedium',
   },
   countdownContainer: {
     flexDirection: "row",
@@ -416,12 +432,12 @@ const styles = StyleSheet.create({
   countdownValue: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "white",
+    fontFamily: 'RoobertSemi',
   },
   countdownLabel: {
-    color: "#00dd00",
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Roobert',
   },
   gridContainer: {
     flexDirection: "row",
@@ -444,11 +460,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
+    fontFamily: 'RoobertMedium',
   },
   gridSubtitle: {
-    color: "#00dd00",
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Roobert',
   },
   eventInfo: {
     marginTop: 15,
@@ -457,18 +474,19 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: 'RoobertSemi',
   },
   eventDetails: {
-    color: "#00dd00",
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Roobert',
   },
   eventSubDetails: {
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Roobert',
   },
   shareButton: {
-    backgroundColor: "#00dd00",
     borderRadius: 25,
     paddingVertical: 15,
     alignItems: "center",
@@ -476,9 +494,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   shareButtonText: {
-    color: "black",
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: 'RoobertSemi',
   },
   footer: {
     alignItems: "center",
@@ -488,5 +506,6 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#888",
     fontSize: 12,
+    fontFamily: 'Roobert',
   },
 });

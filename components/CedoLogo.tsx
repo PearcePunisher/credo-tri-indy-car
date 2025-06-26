@@ -12,7 +12,7 @@ const LOGO_LIGHT = require("../assets/images/cedoAppsGray.png");
 
 export default function CedoLogo({
   width = 250,
-  height = 120,
+  height = 60,
   style,
 }: CedoLogoProps) {
   const colorScheme = useColorScheme();
@@ -32,7 +32,7 @@ export default function CedoLogo({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 40,
   },
   logo: {
     alignSelf: "center",

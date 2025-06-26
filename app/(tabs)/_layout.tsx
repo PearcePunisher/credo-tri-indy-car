@@ -78,7 +78,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="registration"
+        name="userID"
         options={{
           title: "Account",
           tabBarIcon: ({ color }) => (
@@ -87,11 +87,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="userID"
+        name="navigation"
         options={{
-          title: "User",
+          title: "Menu",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="qr-code" size={28} color={color} />
+            <Ionicons name="menu" size={28} color={color} />
           ),
         }}
       />

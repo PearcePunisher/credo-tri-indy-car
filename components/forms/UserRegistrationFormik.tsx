@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Platform } from "react-native";
+import { View, ScrollView, StyleSheet, Platform, TouchableOpacity } from "react-native";
 import {
   TextInput,
   Button,
@@ -13,12 +13,17 @@ import * as Yup from "yup";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const countryCodes = [
-  { label: "🇺🇸/🇨🇦 +1", value: "+1" },
-  { label: "🇬🇧 +44", value: "+44" },
-  { label: "🇦🇺 +61", value: "+61" },
-  { label: "🇮🇳 +91", value: "+91" },
+  { label: "🇺🇸 +1", value: "+1", placeholder: "(555) 123-4567", maxLength: 14 },
+  { label: "🇨🇦 +1", value: "+1", placeholder: "(555) 123-4567", maxLength: 14 },
+  { label: "🇲🇽 +52", value: "+52", placeholder: "55 1234 5678", maxLength: 13 },
+  { label: "🇬🇧 +44", value: "+44", placeholder: "7700 123456", maxLength: 12 },
+  { label: "🇦🇺 +61", value: "+61", placeholder: "412 345 678", maxLength: 11 },
+  { label: "🇩🇪 +49", value: "+49", placeholder: "30 12345678", maxLength: 13 },
+  { label: "🇫🇷 +33", value: "+33", placeholder: "1 23 45 67 89", maxLength: 12 },
+  { label: "🇮🇳 +91", value: "+91", placeholder: "98765 43210", maxLength: 12 },
 ];
 
 const validationSchema = Yup.object().shape({
@@ -29,43 +34,143 @@ const validationSchema = Yup.object().shape({
     .required("Confirm Password Required"),
   firstName: Yup.string().required("First Name Required"),
   lastName: Yup.string().required("Last Name Required"),
-  phone: Yup.string().required("Phone Number Required"),
+  phone: Yup.string()
+    .required("Phone Number Required")
+    .min(7, "Phone number too short")
+    .max(15, "Phone number too long"),
+  bringingGuests: Yup.boolean(),
+  numberOfGuests: Yup.number().when("bringingGuests", {
+    is: true,
+    then: (schema) =>
+      schema
+        .min(1, "At least 1 guest required")
+        .max(2, "Maximum 2 guests allowed")
+        .required("Number of guests required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest1FirstName: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 1,
+    then: (schema) => schema.required("Guest 1 first name required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest1LastName: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 1,
+    then: (schema) => schema.required("Guest 1 last name required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest1Dob: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 1,
+    then: (schema) => schema.required("Guest 1 date of birth required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest1Phone: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 1,
+    then: (schema) => schema
+      .required("Guest 1 phone number required")
+      .min(7, "Phone number too short")
+      .max(15, "Phone number too long"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest2FirstName: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 2,
+    then: (schema) => schema.required("Guest 2 first name required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest2LastName: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 2,
+    then: (schema) => schema.required("Guest 2 last name required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest2Dob: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 2,
+    then: (schema) => schema.required("Guest 2 date of birth required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  guest2Phone: Yup.string().when("numberOfGuests", {
+    is: (val: number) => val >= 2,
+    then: (schema) => schema
+      .required("Guest 2 phone number required")
+      .min(7, "Phone number too short")
+      .max(15, "Phone number too long"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 });
 
 export function RegisterScreenFormik() {
   const colorScheme = useColorScheme() || "light";
   const colors = Colors[colorScheme];
-  const [dobPickerVisible, setDobPickerVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [guest1MenuVisible, setGuest1MenuVisible] = useState(false);
+  const [guest2MenuVisible, setGuest2MenuVisible] = useState(false);
+  
+  // Date picker states
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [isGuest1DatePickerVisible, setGuest1DatePickerVisible] = useState(false);
+  const [isGuest2DatePickerVisible, setGuest2DatePickerVisible] = useState(false);
 
-  // Helper function to format US phone numbers
-  function formatUSPhoneNumber(value: string) {
+  // Helper function to format date to YYYY-MM-DD
+  function formatDateToString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Helper function to parse date string to Date object
+  function parseStringToDate(dateString: string): Date | null {
+    if (!dateString) return null;
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return null;
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1; // Month is 0-indexed
+    const day = parseInt(parts[2]);
+    if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+    return new Date(year, month, day);
+  }
+
+  // Helper function to format phone numbers based on country
+  function formatPhoneNumber(value: string, countryCode: string) {
     // Remove all non-digit characters
     const digits = value.replace(/\D/g, "");
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(
-      6,
-      10
-    )}`;
-  }
-
-  // Helper function for international numbers (basic, just digits and spaces)
-  function formatInternationalPhoneNumber(value: string) {
-    return value.replace(/[^\d\s]/g, "");
-  }
-
-  // Replace your formatDOB function with this:
-  function formatDOB(value: string) {
-    // Remove all non-digit characters
-    const digits = value.replace(/\D/g, "").slice(0, 8);
-    let formatted = digits;
-    if (digits.length > 4 && digits.length <= 6) {
-      formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
-    } else if (digits.length > 6) {
-      formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+    
+    if (countryCode === "+1") {
+      // US/Canada format: (555) 123-4567
+      if (digits.length <= 3) return digits;
+      if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    } else if (countryCode === "+52") {
+      // Mexico format: 55 1234 5678
+      if (digits.length <= 2) return digits;
+      if (digits.length <= 6) return `${digits.slice(0, 2)} ${digits.slice(2)}`;
+      return `${digits.slice(0, 2)} ${digits.slice(2, 6)} ${digits.slice(6, 10)}`;
+    } else if (countryCode === "+44") {
+      // UK format: 7700 123456
+      if (digits.length <= 4) return digits;
+      return `${digits.slice(0, 4)} ${digits.slice(4, 10)}`;
+    } else if (countryCode === "+61") {
+      // Australia format: 412 345 678
+      if (digits.length <= 3) return digits;
+      if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+      return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)}`;
+    } else if (countryCode === "+49") {
+      // Germany format: 30 12345678
+      if (digits.length <= 2) return digits;
+      return `${digits.slice(0, 2)} ${digits.slice(2, 10)}`;
+    } else if (countryCode === "+33") {
+      // France format: 1 23 45 67 89
+      if (digits.length <= 1) return digits;
+      if (digits.length <= 3) return `${digits.slice(0, 1)} ${digits.slice(1)}`;
+      if (digits.length <= 5) return `${digits.slice(0, 1)} ${digits.slice(1, 3)} ${digits.slice(3)}`;
+      if (digits.length <= 7) return `${digits.slice(0, 1)} ${digits.slice(1, 3)} ${digits.slice(3, 5)} ${digits.slice(5)}`;
+      return `${digits.slice(0, 1)} ${digits.slice(1, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+    } else if (countryCode === "+91") {
+      // India format: 98765 43210
+      if (digits.length <= 5) return digits;
+      return `${digits.slice(0, 5)} ${digits.slice(5, 10)}`;
+    } else {
+      // Default international format: simple space separation
+      return digits.replace(/(\d{3})/g, '$1 ').trim();
     }
-    return formatted;
   }
 
   return (
@@ -76,6 +181,17 @@ export function RegisterScreenFormik() {
             styles.container,
             { backgroundColor: colors.background },
           ]}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: colors.tint,
+              marginBottom: 16,
+              textAlign: "left",
+              fontFamily: "Roobert",
+            }}>
+            Register here
+          </Text>
           <Formik
             initialValues={{
               email: "",
@@ -88,32 +204,50 @@ export function RegisterScreenFormik() {
               dob: "",
               signedWaiver: true,
               waiverLink: "https://signedwaiver.com",
+              bringingGuests: false,
+              numberOfGuests: 0,
+              guest1FirstName: "",
+              guest1LastName: "",
+              guest1Dob: "",
+              guest1Phone: "",
+              guest1CountryCode: "+1",
+              guest2FirstName: "",
+              guest2LastName: "",
+              guest2Dob: "",
+              guest2Phone: "",
+              guest2CountryCode: "+1",
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {
               try {
-                // Example guest data; replace with real guest fields if you collect them
-                const userGuests = [
-                  {
-                    guest_first_name: "Meeeindo",
-                    guest_last_name: "Meeeado",
-                    guest_DOB: "2102-05-05",
-                    guest_phone_num: "123231231231231231",
-                  },
-                  {
-                    guest_first_name: "MeeeAKO",
-                    guest_last_name: "LeeeAKO",
-                    guest_DOB: "2002-05-05",
-                    guest_phone_num: "34343423423242342",
-                  },
-                ];
+                // Build guest data based on user input
+                const userGuests = [];
+
+                if (values.bringingGuests && values.numberOfGuests >= 1) {
+                  userGuests.push({
+                    guest_first_name: values.guest1FirstName,
+                    guest_last_name: values.guest1LastName,
+                    guest_DOB: values.guest1Dob,
+                    guest_phone_num: `${values.guest1CountryCode}${values.guest1Phone.replace(/\D/g, '')}`,
+                  });
+                }
+
+                if (values.bringingGuests && values.numberOfGuests >= 2) {
+                  userGuests.push({
+                    guest_first_name: values.guest2FirstName,
+                    guest_last_name: values.guest2LastName,
+                    guest_DOB: values.guest2Dob,
+                    guest_phone_num: `${values.guest2CountryCode}${values.guest2Phone.replace(/\D/g, '')}`,
+                  });
+                }
 
                 const payload = {
                   email: values.email,
                   password: values.password,
                   first_name: values.firstName,
                   last_name: values.lastName,
-                  DOB: values.dob || "1920-05-05", // Replace with actual DOB field if present
+                  phone: `${values.countryCode}${values.phone.replace(/\D/g, '')}`,
+                  DOB: values.dob || "1920-05-05",
                   signed_waiver: values.signedWaiver ? "True" : "False",
                   signed_waiver_link: values.waiverLink,
                   user_guests: userGuests,
@@ -162,6 +296,11 @@ export function RegisterScreenFormik() {
                       text: colors.text,
                       placeholder: colors.secondaryText,
                     },
+                    fonts: {
+                      regular: {
+                        fontFamily: "Roobert",
+                      },
+                    },
                   }}
                   error={!!(touched.firstName && errors.firstName)}
                 />
@@ -179,6 +318,11 @@ export function RegisterScreenFormik() {
                       background: colors.card,
                       text: colors.text,
                       placeholder: colors.secondaryText,
+                    },
+                    fonts: {
+                      regular: {
+                        fontFamily: "Roobert",
+                      },
                     },
                   }}
                   error={!!(touched.lastName && errors.lastName)}
@@ -200,30 +344,60 @@ export function RegisterScreenFormik() {
                       text: colors.text,
                       placeholder: colors.secondaryText,
                     },
+                    fonts: {
+                      regular: {
+                        fontFamily: "Roobert",
+                      },
+                    },
                   }}
                   error={!!(touched.email && errors.email)}
                 />
-                <TextInput
-                  label="Date of Birth"
-                  value={values.dob}
-                  onChangeText={text => setFieldValue("dob", formatDOB(text))}
-                  onBlur={handleBlur("dob")}
-                  style={styles.input}
-                  mode="outlined"
-                  keyboardType="numeric"
-                  autoCapitalize="none"
-                  autoComplete="birthdate-full"
-                  placeholder="YYYY-MM-DD"
-                  theme={{
-                    colors: {
-                      primary: colors.tint,
-                      background: colors.card,
-                      text: colors.text,
-                      placeholder: colors.secondaryText,
-                    },
-                  }}
-                  error={!!(touched.dob && errors.dob)}
-                />
+                <View style={styles.input}>
+                  <Text style={{ 
+                    color: colors.secondaryText, 
+                    fontSize: 12, 
+                    marginBottom: 4,
+                    fontFamily: "Roobert" 
+                  }}>
+                    Date of Birth
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setDatePickerVisible(true)}
+                    style={{
+                      borderColor: touched.dob && errors.dob ? colors.error : colors.secondaryText,
+                      backgroundColor: colors.card,
+                      borderRadius: 4,
+                      borderWidth: 0.5,
+                      height: 48,
+                      paddingHorizontal: 12,
+                      justifyContent: "center",
+                    }}>
+                    <Text style={{
+                      color: values.dob ? colors.text : colors.secondaryText,
+                      fontSize: 16,
+                      fontFamily: "Roobert",
+                    }}>
+                      {values.dob || "Select Date of Birth"}
+                    </Text>
+                  </TouchableOpacity>
+                  <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode="date"
+                    onConfirm={(date) => {
+                      setFieldValue("dob", formatDateToString(date));
+                      setDatePickerVisible(false);
+                    }}
+                    onCancel={() => setDatePickerVisible(false)}
+                    maximumDate={new Date()}
+                    date={parseStringToDate(values.dob) || new Date(2000, 0, 1)}
+                    isDarkModeEnabled={colorScheme === "dark"}
+                    pickerContainerStyleIOS={{
+                      backgroundColor: colors.card,
+                    }}
+                    confirmTextIOS="Select"
+                    cancelTextIOS="Cancel"
+                  />
+                </View>
                 <View
                   style={{
                     flexDirection: "row",
@@ -241,7 +415,7 @@ export function RegisterScreenFormik() {
                           style={{
                             marginRight: 8,
                             minWidth: 90,
-                            borderColor: colors.border,
+                            borderColor: colors.secondaryText,
                             borderRadius: 25,
                             backgroundColor: colors.card,
                           }}
@@ -253,23 +427,20 @@ export function RegisterScreenFormik() {
                           {
                             countryCodes.find(
                               (c) => c.value === values.countryCode
-                            )?.label
+                            )?.label || "🇺🇸 +1"
                           }
                         </Button>
                       }
                       contentStyle={{
                         backgroundColor: colors.card,
                         minWidth: 120,
-                      }}
-                      style={{
-                        // Ensures the menu appears above other elements
-                        zIndex: 20,
                       }}>
                       {countryCodes.map((c) => (
                         <Menu.Item
-                          key={c.value}
+                          key={c.value + c.label}
                           onPress={() => {
                             setFieldValue("countryCode", c.value);
+                            setFieldValue("phone", ""); // Clear phone when changing country
                             setMenuVisible(false);
                           }}
                           title={c.label}
@@ -282,12 +453,8 @@ export function RegisterScreenFormik() {
                     label="Phone Number"
                     value={values.phone}
                     onChangeText={(text) => {
-                      let formatted = text;
-                      if (values.countryCode === "+1") {
-                        formatted = formatUSPhoneNumber(text);
-                      } else {
-                        formatted = formatInternationalPhoneNumber(text);
-                      }
+                      const countryData = countryCodes.find(c => c.value === values.countryCode);
+                      const formatted = formatPhoneNumber(text, values.countryCode);
                       setFieldValue("phone", formatted);
                     }}
                     onBlur={handleBlur("phone")}
@@ -295,12 +462,18 @@ export function RegisterScreenFormik() {
                     mode="outlined"
                     keyboardType="phone-pad"
                     autoComplete="tel"
+                    placeholder={countryCodes.find(c => c.value === values.countryCode)?.placeholder || "Phone number"}
                     theme={{
                       colors: {
                         primary: colors.tint,
                         background: colors.card,
                         text: colors.text,
                         placeholder: colors.secondaryText,
+                      },
+                      fonts: {
+                        regular: {
+                          fontFamily: "Roobert",
+                        },
                       },
                     }}
                     error={!!(touched.phone && errors.phone)}
@@ -322,6 +495,11 @@ export function RegisterScreenFormik() {
                       text: colors.text,
                       placeholder: colors.secondaryText,
                     },
+                    fonts: {
+                      regular: {
+                        fontFamily: "Roobert",
+                      },
+                    },
                   }}
                   error={!!(touched.password && errors.password)}
                 />
@@ -341,9 +519,540 @@ export function RegisterScreenFormik() {
                       text: colors.text,
                       placeholder: colors.secondaryText,
                     },
+                    fonts: {
+                      regular: {
+                        fontFamily: "Roobert",
+                      },
+                    },
                   }}
                   error={!!(touched.confirmPassword && errors.confirmPassword)}
                 />
+
+                {/* Guest Section */}
+                <View
+                  style={{
+                    marginTop: 24,
+                    marginBottom: 16,
+                    padding: 16,
+                    backgroundColor: colors.card,
+                    borderRadius: 8,
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "bold",
+                      color: colors.tint,
+                      marginBottom: 12,
+                      fontFamily: "Roobert",
+                    }}>
+                    Guest Information
+                  </Text>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 16,
+                    }}>
+                    <Text
+                      style={{
+                        color: colors.text,
+                        marginRight: 12,
+                        fontFamily: "Roobert",
+                      }}>
+                      Will you be bringing guests?
+                    </Text>
+                    <Switch
+                      value={values.bringingGuests}
+                      onValueChange={(value) => {
+                        setFieldValue("bringingGuests", value);
+                        if (!value) {
+                          setFieldValue("numberOfGuests", 0);
+                          setFieldValue("guest1FirstName", "");
+                          setFieldValue("guest1LastName", "");
+                          setFieldValue("guest1Dob", "");
+                          setFieldValue("guest1Phone", "");
+                          setFieldValue("guest1CountryCode", "+1");
+                          setFieldValue("guest2FirstName", "");
+                          setFieldValue("guest2LastName", "");
+                          setFieldValue("guest2Dob", "");
+                          setFieldValue("guest2Phone", "");
+                          setFieldValue("guest2CountryCode", "+1");
+                          // Close any open date pickers
+                          setGuest1DatePickerVisible(false);
+                          setGuest2DatePickerVisible(false);
+                        }
+                      }}
+                      thumbColor={
+                        values.bringingGuests ? colors.tint : colors.border
+                      }
+                      trackColor={{
+                        false: colors.border,
+                        true: colors.tint + "50",
+                      }}
+                    />
+                  </View>
+
+                  {values.bringingGuests && (
+                    <>
+                      <View style={{ marginBottom: 16 }}>
+                        <Text
+                          style={{
+                            color: colors.text,
+                            marginBottom: 8,
+                            fontFamily: "Roobert",
+                          }}>
+                          How many guests? (Maximum 2)
+                        </Text>
+                        <View style={{ flexDirection: "row", gap: 12 }}>
+                          <Button
+                            mode={
+                              values.numberOfGuests === 1
+                                ? "contained"
+                                : "outlined"
+                            }
+                            onPress={() => {
+                              setFieldValue("numberOfGuests", 1);
+                              // Clear guest 2 fields when selecting 1 guest
+                              setFieldValue("guest2FirstName", "");
+                              setFieldValue("guest2LastName", "");
+                              setFieldValue("guest2Dob", "");
+                              setFieldValue("guest2Phone", "");
+                              setFieldValue("guest2CountryCode", "+1");
+                              // Close guest 2 date picker
+                              setGuest2DatePickerVisible(false);
+                            }}
+                            style={{ flex: 1, borderColor: colors.border }}
+                            contentStyle={{
+                              backgroundColor:
+                                values.numberOfGuests === 1
+                                  ? colors.tint
+                                  : colors.card,
+                            }}
+                            labelStyle={{
+                              color:
+                                values.numberOfGuests === 1
+                                  ? colors.textOnGreen
+                                  : colors.text,
+                            }}>
+                            1 Guest
+                          </Button>
+                          <Button
+                            mode={
+                              values.numberOfGuests === 2
+                                ? "contained"
+                                : "outlined"
+                            }
+                            onPress={() => setFieldValue("numberOfGuests", 2)}
+                            style={{ flex: 1, borderColor: colors.border }}
+                            contentStyle={{
+                              backgroundColor:
+                                values.numberOfGuests === 2
+                                  ? colors.tint
+                                  : colors.card,
+                            }}
+                            labelStyle={{
+                              color:
+                                values.numberOfGuests === 2
+                                  ? colors.textOnGreen
+                                  : colors.text,
+                            }}>
+                            2 Guests
+                          </Button>
+                        </View>
+                      </View>
+
+                      {/* Guest 1 Fields */}
+                      {values.numberOfGuests >= 1 && (
+                        <View style={{ marginBottom: 16 }}>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: "bold",
+                              color: colors.tint,
+                              marginBottom: 12,
+                              fontFamily: "Roobert",
+                            }}>
+                            Guest 1 Information
+                          </Text>
+                          <TextInput
+                            label="Guest 1 First Name"
+                            value={values.guest1FirstName}
+                            onChangeText={handleChange("guest1FirstName")}
+                            onBlur={handleBlur("guest1FirstName")}
+                            style={styles.input}
+                            mode="outlined"
+                            theme={{
+                              colors: {
+                                primary: colors.tint,
+                                background: colors.card,
+                                text: colors.text,
+                                placeholder: colors.secondaryText,
+                              },
+                              fonts: {
+                                regular: {
+                                  fontFamily: "Roobert",
+                                },
+                              },
+                            }}
+                            error={
+                              !!(
+                                touched.guest1FirstName &&
+                                errors.guest1FirstName
+                              )
+                            }
+                          />
+                          <TextInput
+                            label="Guest 1 Last Name"
+                            value={values.guest1LastName}
+                            onChangeText={handleChange("guest1LastName")}
+                            onBlur={handleBlur("guest1LastName")}
+                            style={styles.input}
+                            mode="outlined"
+                            theme={{
+                              colors: {
+                                primary: colors.tint,
+                                background: colors.card,
+                                text: colors.text,
+                                placeholder: colors.secondaryText,
+                              },
+                              fonts: {
+                                regular: {
+                                  fontFamily: "Roobert",
+                                },
+                              },
+                            }}
+                            error={
+                              !!(
+                                touched.guest1LastName && errors.guest1LastName
+                              )
+                            }
+                          />
+                          <View style={styles.input}>
+                            <Text style={{ 
+                              color: colors.secondaryText, 
+                              fontSize: 12, 
+                              marginBottom: 4,
+                              fontFamily: "Roobert" 
+                            }}>
+                              Guest 1 Date of Birth
+                            </Text>
+                            <TouchableOpacity
+                              onPress={() => setGuest1DatePickerVisible(true)}
+                              style={{
+                                borderColor: touched.guest1Dob && errors.guest1Dob ? colors.error : colors.secondaryText,
+                                backgroundColor: colors.card,
+                                borderRadius: 4,
+                                borderWidth: 0.5,
+                                height: 48,
+                                paddingHorizontal: 12,
+                                justifyContent: "center",
+                              }}>
+                              <Text style={{
+                                color: values.guest1Dob ? colors.text : colors.secondaryText,
+                                fontSize: 16,
+                                fontFamily: "Roobert",
+                              }}>
+                                {values.guest1Dob || "Select Guest 1 Date of Birth"}
+                              </Text>
+                            </TouchableOpacity>
+                            <DateTimePickerModal
+                              isVisible={isGuest1DatePickerVisible}
+                              mode="date"
+                              onConfirm={(date) => {
+                                setFieldValue("guest1Dob", formatDateToString(date));
+                                setGuest1DatePickerVisible(false);
+                              }}
+                              onCancel={() => setGuest1DatePickerVisible(false)}
+                              maximumDate={new Date()}
+                              date={parseStringToDate(values.guest1Dob) || new Date(2000, 0, 1)}
+                              isDarkModeEnabled={colorScheme === "dark"}
+                              pickerContainerStyleIOS={{
+                                backgroundColor: colors.card,
+                              }}
+                              confirmTextIOS="Select"
+                              cancelTextIOS="Cancel"
+                            />
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginBottom: 12,
+                            }}>
+                            <View style={{ alignSelf: "center", zIndex: 10 }}>
+                              <Menu
+                                visible={guest1MenuVisible}
+                                onDismiss={() => setGuest1MenuVisible(false)}
+                                anchor={
+                                  <Button
+                                    mode="outlined"
+                                    onPress={() => setGuest1MenuVisible(true)}
+                                    style={{
+                                      marginRight: 8,
+                                      minWidth: 90,
+                                      borderColor: colors.secondaryText,
+                                      borderRadius: 25,
+                                      backgroundColor: colors.card,
+                                    }}
+                                    labelStyle={{ color: colors.text }}
+                                    contentStyle={{
+                                      flexDirection: "row",
+                                      alignItems: "center",
+                                    }}>
+                                    {
+                                      countryCodes.find(
+                                        (c) => c.value === values.guest1CountryCode
+                                      )?.label || "🇺🇸 +1"
+                                    }
+                                  </Button>
+                                }
+                                contentStyle={{
+                                  backgroundColor: colors.card,
+                                  minWidth: 120,
+                                }}>
+                                {countryCodes.map((c) => (
+                                  <Menu.Item
+                                    key={c.value + c.label + "guest1"}
+                                    onPress={() => {
+                                      setFieldValue("guest1CountryCode", c.value);
+                                      setFieldValue("guest1Phone", ""); // Clear phone when changing country
+                                      setGuest1MenuVisible(false);
+                                    }}
+                                    title={c.label}
+                                    titleStyle={{ color: colors.text }}
+                                  />
+                                ))}
+                              </Menu>
+                            </View>
+                            <TextInput
+                              label="Guest 1 Phone Number"
+                              value={values.guest1Phone}
+                              onChangeText={(text) => {
+                                const formatted = formatPhoneNumber(text, values.guest1CountryCode);
+                                setFieldValue("guest1Phone", formatted);
+                              }}
+                              onBlur={handleBlur("guest1Phone")}
+                              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                              mode="outlined"
+                              keyboardType="phone-pad"
+                              placeholder={countryCodes.find(c => c.value === values.guest1CountryCode)?.placeholder || "Phone number"}
+                              theme={{
+                                colors: {
+                                  primary: colors.tint,
+                                  background: colors.card,
+                                  text: colors.text,
+                                  placeholder: colors.secondaryText,
+                                },
+                                fonts: {
+                                  regular: {
+                                    fontFamily: "Roobert",
+                                  },
+                                },
+                              }}
+                              error={!!(touched.guest1Phone && errors.guest1Phone)}
+                            />
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Guest 2 Fields */}
+                      {values.numberOfGuests >= 2 && (
+                        <View style={{ marginBottom: 16 }}>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: "bold",
+                              color: colors.tint,
+                              marginBottom: 12,
+                              fontFamily: "Roobert",
+                            }}>
+                            Guest 2 Information
+                          </Text>
+                          <TextInput
+                            label="Guest 2 First Name"
+                            value={values.guest2FirstName}
+                            onChangeText={handleChange("guest2FirstName")}
+                            onBlur={handleBlur("guest2FirstName")}
+                            style={styles.input}
+                            mode="outlined"
+                            theme={{
+                              colors: {
+                                primary: colors.tint,
+                                background: colors.card,
+                                text: colors.text,
+                                placeholder: colors.secondaryText,
+                              },
+                              fonts: {
+                                regular: {
+                                  fontFamily: "Roobert",
+                                },
+                              },
+                            }}
+                            error={
+                              !!(
+                                touched.guest2FirstName &&
+                                errors.guest2FirstName
+                              )
+                            }
+                          />
+                          <TextInput
+                            label="Guest 2 Last Name"
+                            value={values.guest2LastName}
+                            onChangeText={handleChange("guest2LastName")}
+                            onBlur={handleBlur("guest2LastName")}
+                            style={styles.input}
+                            mode="outlined"
+                            theme={{
+                              colors: {
+                                primary: colors.tint,
+                                background: colors.card,
+                                text: colors.text,
+                                placeholder: colors.secondaryText,
+                              },
+                              fonts: {
+                                regular: {
+                                  fontFamily: "Roobert",
+                                },
+                              },
+                            }}
+                            error={
+                              !!(
+                                touched.guest2LastName && errors.guest2LastName
+                              )
+                            }
+                          />
+                          <View style={styles.input}>
+                            <Text style={{ 
+                              color: colors.secondaryText, 
+                              fontSize: 12, 
+                              marginBottom: 4,
+                              fontFamily: "Roobert" 
+                            }}>
+                              Guest 2 Date of Birth
+                            </Text>
+                            <TouchableOpacity
+                              onPress={() => setGuest2DatePickerVisible(true)}
+                              style={{
+                                borderColor: touched.guest2Dob && errors.guest2Dob ? colors.error : colors.secondaryText,
+                                backgroundColor: colors.card,
+                                borderRadius: 4,
+                                borderWidth: 0.5,
+                                height: 48,
+                                paddingHorizontal: 12,
+                                justifyContent: "center",
+                              }}>
+                              <Text style={{
+                                color: values.guest2Dob ? colors.text : colors.secondaryText,
+                                fontSize: 16,
+                                fontFamily: "Roobert",
+                              }}>
+                                {values.guest2Dob || "Select Guest 2 Date of Birth"}
+                              </Text>
+                            </TouchableOpacity>
+                            <DateTimePickerModal
+                              isVisible={isGuest2DatePickerVisible}
+                              mode="date"
+                              onConfirm={(date) => {
+                                setFieldValue("guest2Dob", formatDateToString(date));
+                                setGuest2DatePickerVisible(false);
+                              }}
+                              onCancel={() => setGuest2DatePickerVisible(false)}
+                              maximumDate={new Date()}
+                              date={parseStringToDate(values.guest2Dob) || new Date(2000, 0, 1)}
+                              isDarkModeEnabled={colorScheme === "dark"}
+                              pickerContainerStyleIOS={{
+                                backgroundColor: colors.card,
+                              }}
+                              confirmTextIOS="Select"
+                              cancelTextIOS="Cancel"
+                            />
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginBottom: 12,
+                            }}>
+                            <View style={{ alignSelf: "center", zIndex: 10 }}>
+                              <Menu
+                                visible={guest2MenuVisible}
+                                onDismiss={() => setGuest2MenuVisible(false)}
+                                anchor={
+                                  <Button
+                                    mode="outlined"
+                                    onPress={() => setGuest2MenuVisible(true)}
+                                    style={{
+                                      marginRight: 8,
+                                      minWidth: 90,
+                                      borderColor: colors.secondaryText,
+                                      borderRadius: 25,
+                                      backgroundColor: colors.card,
+                                    }}
+                                    labelStyle={{ color: colors.text }}
+                                    contentStyle={{
+                                      flexDirection: "row",
+                                      alignItems: "center",
+                                    }}>
+                                    {
+                                      countryCodes.find(
+                                        (c) => c.value === values.guest2CountryCode
+                                      )?.label || "🇺🇸 +1"
+                                    }
+                                  </Button>
+                                }
+                                contentStyle={{
+                                  backgroundColor: colors.card,
+                                  minWidth: 120,
+                                }}>
+                                {countryCodes.map((c) => (
+                                  <Menu.Item
+                                    key={c.value + c.label + "guest2"}
+                                    onPress={() => {
+                                      setFieldValue("guest2CountryCode", c.value);
+                                      setFieldValue("guest2Phone", ""); // Clear phone when changing country
+                                      setGuest2MenuVisible(false);
+                                    }}
+                                    title={c.label}
+                                    titleStyle={{ color: colors.text }}
+                                  />
+                                ))}
+                              </Menu>
+                            </View>
+                            <TextInput
+                              label="Guest 2 Phone Number"
+                              value={values.guest2Phone}
+                              onChangeText={(text) => {
+                                const formatted = formatPhoneNumber(text, values.guest2CountryCode);
+                                setFieldValue("guest2Phone", formatted);
+                              }}
+                              onBlur={handleBlur("guest2Phone")}
+                              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                              mode="outlined"
+                              keyboardType="phone-pad"
+                              placeholder={countryCodes.find(c => c.value === values.guest2CountryCode)?.placeholder || "Phone number"}
+                              theme={{
+                                colors: {
+                                  primary: colors.tint,
+                                  background: colors.card,
+                                  text: colors.text,
+                                  placeholder: colors.secondaryText,
+                                },
+                                fonts: {
+                                  regular: {
+                                    fontFamily: "Roobert",
+                                  },
+                                },
+                              }}
+                              error={!!(touched.guest2Phone && errors.guest2Phone)}
+                            />
+                          </View>
+                        </View>
+                      )}
+                    </>
+                  )}
+                </View>
+
                 <Button
                   mode="contained"
                   onPress={() => handleSubmit()} // Fix: wrap in arrow function
@@ -366,33 +1075,50 @@ export function RegisterScreenFormik() {
                       color: colors.tint,
                       fontWeight: "bold",
                       marginBottom: 4,
+                      fontFamily: "Roobert",
                     }}>
                     Payload Preview
                   </Text>
-                  <Text style={{ color: colors.text, fontSize: 12 }}>
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontFamily: "Roobert",
+                    }}>
                     {JSON.stringify(
                       {
                         email: values.email,
                         password: values.password,
                         first_name: values.firstName,
                         last_name: values.lastName,
+                        phone: `${values.countryCode}${values.phone.replace(/\D/g, '')}`,
                         DOB: values.dob || "1920-05-05",
                         signed_waiver: values.signedWaiver ? "True" : "False",
                         signed_waiver_link: values.waiverLink,
-                        user_guests: [
-                          {
-                            guest_first_name: "Meeeindo",
-                            guest_last_name: "Meeeado",
-                            guest_DOB: "2102-05-05",
-                            guest_phone_num: "123231231231231231",
-                          },
-                          {
-                            guest_first_name: "MeeeAKO",
-                            guest_last_name: "LeeeAKO",
-                            guest_DOB: "2002-05-05",
-                            guest_phone_num: "34343423423242342",
-                          },
-                        ],
+                        user_guests: values.bringingGuests
+                            ? [
+                                ...(values.numberOfGuests >= 1
+                                  ? [
+                                      {
+                                        guest_first_name: values.guest1FirstName,
+                                        guest_last_name: values.guest1LastName,
+                                        guest_DOB: values.guest1Dob,
+                                        guest_phone_num: `${values.guest1CountryCode}${values.guest1Phone.replace(/\D/g, '')}`,
+                                      },
+                                    ]
+                                  : []),
+                                ...(values.numberOfGuests >= 2
+                                  ? [
+                                      {
+                                        guest_first_name: values.guest2FirstName,
+                                        guest_last_name: values.guest2LastName,
+                                        guest_DOB: values.guest2Dob,
+                                        guest_phone_num: `${values.guest2CountryCode}${values.guest2Phone.replace(/\D/g, '')}`,
+                                      },
+                                    ]
+                                  : []),
+                              ]
+                          : [],
                       },
                       null,
                       2
@@ -400,18 +1126,123 @@ export function RegisterScreenFormik() {
                   </Text>
                 </View>
                 {touched.phone && errors.phone && (
-                  <Text style={{ color: colors.error, marginTop: 4 }}>
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
                     {errors.phone}
                   </Text>
                 )}
                 {touched.password && errors.password && (
-                  <Text style={{ color: colors.error, marginTop: 4 }}>
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
                     {errors.password}
                   </Text>
                 )}
                 {touched.confirmPassword && errors.confirmPassword && (
-                  <Text style={{ color: colors.error, marginTop: 4 }}>
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
                     {errors.confirmPassword}
+                  </Text>
+                )}
+                {touched.numberOfGuests && errors.numberOfGuests && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.numberOfGuests}
+                  </Text>
+                )}
+                {touched.guest1FirstName && errors.guest1FirstName && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest1FirstName}
+                  </Text>
+                )}
+                {touched.guest1LastName && errors.guest1LastName && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest1LastName}
+                  </Text>
+                )}
+                {touched.guest1Dob && errors.guest1Dob && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest1Dob}
+                  </Text>
+                )}
+                {touched.guest1Phone && errors.guest1Phone && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest1Phone}
+                  </Text>
+                )}
+                {touched.guest2FirstName && errors.guest2FirstName && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest2FirstName}
+                  </Text>
+                )}
+                {touched.guest2LastName && errors.guest2LastName && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest2LastName}
+                  </Text>
+                )}
+                {touched.guest2Dob && errors.guest2Dob && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest2Dob}
+                  </Text>
+                )}
+                {touched.guest2Phone && errors.guest2Phone && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.guest2Phone}
                   </Text>
                 )}
               </>
@@ -429,6 +1260,7 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 12,
+    fontFamily: "Roobert",
   },
   button: {
     marginTop: 20,
