@@ -120,15 +120,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    fontFamily: 'RoobertSemi',
   },
   sectionHeading: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 10,
+    fontFamily: 'RoobertMedium',
   },
   bullet: {
     fontSize: 16,
     marginBottom: 8,
+    fontFamily: 'Roobert',
   },
   card: {
     padding: 16,
@@ -138,11 +141,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    fontFamily: 'RoobertMedium',
   },
   cardDescription: {
     fontSize: 15,
     lineHeight: 22,
     marginTop: 10,
+    fontFamily: 'Roobert',
   },
   image: {
     width: '100%',

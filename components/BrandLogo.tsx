@@ -8,9 +8,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Dark_Logo_f3a9db6483.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/Team_Penske_Dark_065c23a38d.png";
 const LOGO_LIGHT =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Light_Logo_640461bc89.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/Team_Penske_Light_50c419f34d.png";
 
 export default function BrandLogo({
   width = 250,

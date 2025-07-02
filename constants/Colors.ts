@@ -11,10 +11,10 @@ export const Colors = {
     text: "#222222",              // Dark grey for primary text
     textOnGreen: "#ffffff",       // White for primary text on green background
     background: "#fff",           // White background
-    tint: "#3A8610",              // Green for accents (buttons, links)
+    tint: "#E31837",              // Green for accents (buttons, links)
     icon: "#222222",              // Dark grey for icons
     tabIconDefault: "#2b2b2b",    // Light grey for inactive tab icons
-    tabIconSelected: "#00ff4f",   // Green for active tab icons
+    tabIconSelected: "#E31837",   // Green for active tab icons
     secondaryText: "#2b2b2b",     // Light grey for secondary text
     card: "#f7f7f7",              // Optional: very light grey for cards
     border: "#e0e0e0",            // Optional: subtle border color
@@ -24,10 +24,10 @@ export const Colors = {
     text: "#fff",                 // White for primary text
     textOnGreen: "#000000",       // Black for primary text on green background
     background: "#000",           // Black background
-    tint: "#00ff4f",              // Green for accents
+    tint: "#E31837",              // Green for accents
     icon: "#fff",                 // White for icons
     tabIconDefault: "#2b2b2b",    // Light grey for inactive tab icons
-    tabIconSelected: "#00ff4f",   // Green for active tab icons
+    tabIconSelected: "#E31837",   // Green for active tab icons
     secondaryText: "#919391",     // Light grey for secondary text
     card: "#2b2b2b",              // Light grey for cards
     border: "#333",               // Optional: subtle border color

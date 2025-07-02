@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { router } from "expo-router";
 import BrandLogo from "@/components/BrandLogo";
 import CedoLogo from "@/components/CedoLogo";
 import scheduleData from "@/race_data/scheduleData.json";
@@ -154,7 +155,7 @@ export default function HomeScreen() {
             <View style={styles.card}>
               <Image
                 source={{
-                  uri: "https://digbza2f4g9qo.cloudfront.net/-/media/IndyCar/News/Standard/2025/01/01-08-StPete.jpg?vs=1&d=20250108T213909Z",
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/levitt_NASH_091524_PS_23579_41681f0d4a.jpg",
                 }}
                 style={styles.cardImage}
               />
@@ -232,17 +233,23 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.gridContainer}>
-          <TouchableOpacity style={styles.gridItem}>
+          <TouchableOpacity 
+            style={styles.gridItem}
+            onPress={() => router.push('/(tabs)/team')}
+          >
             <Image
               source={{
-                uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg",
+                uri: "https://timely-actor-10dfb03957.media.strapiapp.com/02_05_Mc_Laughlin_7c42510aba.jpg",
               }}
               style={styles.gridImage}
             />
             <Text style={[styles.gridTitle, { color: colors.text }]}>Our Team</Text>
             <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Learn More</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem}>
+          <TouchableOpacity 
+            style={styles.gridItem}
+            onPress={() => router.push('/(tabs)/schedule')}
+          >
             <Image
               source={{
                 uri: "https://images.unsplash.com/photo-1667921686462-da83bb890fed?q=80&w=4031&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -252,17 +259,23 @@ export default function HomeScreen() {
             <Text style={[styles.gridTitle, { color: colors.text }]}>Weekend Schedule</Text>
             <Text style={[styles.gridSubtitle, { color: colors.tint }]}>See full schedule</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem}>
+          <TouchableOpacity 
+            style={styles.gridItem}
+            onPress={() => router.push('/experience')}
+          >
             <Image
               source={{
-                uri: "https://cdn-1.motorsport.com/images/amp/YMdy8432/s1200/callum-ilott-juncos-hollinger-.webp",
+                uri: "https://timely-actor-10dfb03957.media.strapiapp.com/2025overview_Indy_Car_d92dc0b6ba.jpg",
               }}
               style={styles.gridImage}
             />
             <Text style={[styles.gridTitle, { color: colors.text }]}>What to Expect</Text>
             <Text style={[styles.gridSubtitle, { color: colors.tint }]}>Learn more</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem}>
+          <TouchableOpacity 
+            style={styles.gridItem}
+            onPress={() => router.push('/directions')}
+          >
             <Image
               source={{
                 uri: "https://images.unsplash.com/photo-1590005608858-67892d55ae86?q=80&w=1586&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -284,7 +297,7 @@ export default function HomeScreen() {
             <View style={styles.card}>
               <Image
                 source={{
-                  uri: "https://i0.wp.com/speedsport.com/wp-content/uploads/2023/01/unnamed-2023-01-28T140339.484.jpg?fit=900%2C471&ssl=1",
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/Indianapolis_500_Pole_Day_and_Last_Chance_Qualifying_Sunday_May_18_2025_Ref_Image_Without_Watermark_m131147_e7058cb20a.webp",
                 }}
                 style={styles.cardImage}
               />
@@ -322,6 +335,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 10,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: "row",
@@ -437,7 +451,7 @@ const styles = StyleSheet.create({
   countdownLabel: {
     fontSize: 14,
     marginTop: 5,
-    fontFamily: 'Roobert',
+    fontFamily: 'RoobertSemi',
   },
   gridContainer: {
     flexDirection: "row",
