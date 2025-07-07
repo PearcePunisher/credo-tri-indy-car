@@ -4,22 +4,18 @@ import {
   Text,
   View,
   ActivityIndicator,
-  useWindowDimensions,
+  StyleSheet,
+  SafeAreaView,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useColorScheme } from '@/hooks/useColorScheme'; // assuming this returns 'light' | 'dark'
-import RenderHTML from 'react-native-render-html';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import BrandLogo from '@/components/BrandLogo';
 
 const VenueDirectionsScreen = () => {
   const [content, setContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { width } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-
-  const isDarkMode = colorScheme === 'dark';
-  const textColor = isDarkMode ? 'white' : 'black';
-  const bgColor = isDarkMode ? '#111' : '#fff';
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,13 +42,10 @@ const VenueDirectionsScreen = () => {
       return (
         <Text
           key={index}
-          style={{
-            fontSize: level === 3 ? 18 : 22,
-            fontWeight: 'bold',
-            marginTop: 20,
-            marginBottom: 10,
-            color: textColor,
-          }}>
+          style={[
+            level === 3 ? styles.heading3 : styles.heading2,
+            { color: colors.text }
+          ]}>
           {block.children[0].text}
         </Text>
       );
@@ -60,7 +53,7 @@ const VenueDirectionsScreen = () => {
 
     if (type === 'paragraph') {
       return (
-        <Text key={index} style={{ color: textColor, fontSize: 16, marginBottom: 10 }}>
+        <Text key={index} style={[styles.paragraph, { color: colors.text }]}>
           {block.children[0].text}
         </Text>
       );
@@ -68,9 +61,9 @@ const VenueDirectionsScreen = () => {
 
     if (type === 'list') {
       return (
-        <View key={index} style={{ marginBottom: 10 }}>
+        <View key={index} style={styles.listContainer}>
           {block.children.map((item: any, idx: number) => (
-            <Text key={idx} style={{ color: textColor, fontSize: 16, marginLeft: 10, marginBottom: 5 }}>
+            <Text key={idx} style={[styles.listItem, { color: colors.text }]}>
               • {item.children[0].text}
             </Text>
           ))}
@@ -83,28 +76,82 @@ const VenueDirectionsScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: bgColor, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={isDarkMode ? 'white' : 'black'} />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: bgColor }}>
-      <ScrollView
-        contentContainerStyle={{
-          // paddingTop: insets.top,
-          paddingBottom: insets.bottom + 20,
-          paddingHorizontal: 20,
-        }}
-      >
-        <Text style={{ fontSize: 26, fontWeight: 'bold', color: textColor, marginBottom: 20 }}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Branding */}
+        <BrandLogo style={styles.brand} />
+        
+        {/* Title */}
+        <Text style={[styles.title, { color: colors.text }]}>
           Venue Directions
         </Text>
+        
+        {/* Content */}
         {content.map((block, index) => renderBlock(block, index))}
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scroll: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  brand: {
+    width: 250,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 10,
+    objectFit: 'contain',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontFamily: 'RoobertSemi',
+  },
+  heading2: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    fontFamily: 'RoobertMedium',
+  },
+  heading3: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    fontFamily: 'RoobertMedium',
+  },
+  paragraph: {
+    fontSize: 16,
+    marginBottom: 10,
+    lineHeight: 24,
+    fontFamily: 'Roobert',
+  },
+  listContainer: {
+    marginBottom: 10,
+  },
+  listItem: {
+    fontSize: 16,
+    marginLeft: 10,
+    marginBottom: 5,
+    lineHeight: 24,
+    fontFamily: 'Roobert',
+  },
+});
 
 export default VenueDirectionsScreen;
