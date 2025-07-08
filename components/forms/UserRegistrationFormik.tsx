@@ -34,6 +34,11 @@ const validationSchema = Yup.object().shape({
     .required("Confirm Password Required"),
   firstName: Yup.string().required("First Name Required"),
   lastName: Yup.string().required("Last Name Required"),
+  invitationCode: Yup.string()
+    .required("Invitation Code Required")
+    .min(3, "Invitation code must be at least 3 characters")
+    .max(20, "Invitation code cannot exceed 20 characters")
+    .matches(/^[A-Za-z0-9\-_]+$/, "Invitation code can only contain letters, numbers, hyphens, and underscores"),
   phone: Yup.string()
     .required("Phone Number Required")
     .min(7, "Phone number too short")
@@ -199,6 +204,7 @@ export function RegisterScreenFormik() {
               confirmPassword: "",
               firstName: "",
               lastName: "",
+              invitationCode: "",
               phone: "",
               countryCode: "+1",
               dob: "",
@@ -526,6 +532,35 @@ export function RegisterScreenFormik() {
                     },
                   }}
                   error={!!(touched.confirmPassword && errors.confirmPassword)}
+                />
+                <TextInput
+                  label="Invitation Code"
+                  value={values.invitationCode}
+                  onChangeText={(text) => {
+                    // Clean and format invitation code: uppercase and remove invalid characters
+                    const cleaned = text.toUpperCase().replace(/[^A-Z0-9\-_]/g, '');
+                    setFieldValue("invitationCode", cleaned);
+                  }}
+                  onBlur={handleBlur("invitationCode")}
+                  style={styles.input}
+                  mode="outlined"
+                  autoCapitalize="characters"
+                  placeholder="Enter your invitation code"
+                  maxLength={20}
+                  theme={{
+                    colors: {
+                      primary: colors.tint,
+                      background: colors.card,
+                      text: colors.text,
+                      placeholder: colors.secondaryText,
+                    },
+                    fonts: {
+                      regular: {
+                        fontFamily: "Roobert",
+                      },
+                    },
+                  }}
+                  error={!!(touched.invitationCode && errors.invitationCode)}
                 />
 
                 {/* Guest Section */}
@@ -1095,6 +1130,7 @@ export function RegisterScreenFormik() {
                         DOB: values.dob || "1920-05-05",
                         signed_waiver: values.signedWaiver ? "True" : "False",
                         signed_waiver_link: values.waiverLink,
+                        invitation_code: values.invitationCode,
                         user_guests: values.bringingGuests
                             ? [
                                 ...(values.numberOfGuests >= 1
@@ -1153,6 +1189,16 @@ export function RegisterScreenFormik() {
                       fontFamily: "Roobert",
                     }}>
                     {errors.confirmPassword}
+                  </Text>
+                )}
+                {touched.invitationCode && errors.invitationCode && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.invitationCode}
                   </Text>
                 )}
                 {touched.numberOfGuests && errors.numberOfGuests && (
