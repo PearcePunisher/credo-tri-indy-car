@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -6,193 +6,358 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity, // Added
+  TouchableOpacity,
+  RefreshControl,
+  Alert,
+  Image,
 } from 'react-native';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, isSameDay, isPast, startOfDay } from 'date-fns';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import BrandLogo from '@/components/BrandLogo';
-// Corrected import path
-import scheduleData from '/Users/rileypearce/dev/credo-tri-indy-car/race_data/scheduleData.json';
+import { experiencesService, type Experience } from '@/services/ExperiencesService';
+import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
+import { Ionicons } from '@expo/vector-icons';
 
-interface Venue {
-  name?: string;
-  city?: string;
-  country?: string;
-}
-
-interface EventType {
-  id?: string | number; // Assuming id can be string or number, and is optional
-  scheduled: string;
-  description: string;
-  status?: string; // Assuming status is optional or might not always be 'cancelled'
-  venue?: Venue;
+interface GroupedExperiences {
+  [dateKey: string]: Experience[];
 }
 
 const ScheduleScreen = () => {
-  const [schedule, setSchedule] = useState<any[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
+  const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
+  const [notificationStates, setNotificationStates] = useState<{ [key: number]: boolean }>({});
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
-  const [isPastRacesOpen, setIsPastRacesOpen] = useState(false); // State for accordion
 
-  useEffect(() => {
+  const loadExperiences = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
-      setSchedule(scheduleData.stages || []);
+      const response = await experiencesService.getExperiences();
+      const scheduleData = response.data?.data;
+      const experiencesData = scheduleData?.schedule_experiences?.map(item => item.schedule_experience) || [];
+      setExperiences(experiencesData);
+      
+      // Load notification states for all experiences
+      const states: { [key: number]: boolean } = {};
+      for (const exp of experiencesData) {
+        states[exp.id] = await experiencesService.getNotificationStatus(exp.id);
+      }
+      setNotificationStates(states);
     } catch (error) {
-      console.error('Error loading schedule from local file:', error);
-      setSchedule([]);
+      console.error('Error loading experiences:', error);
+      Alert.alert(
+        'Connection Error',
+        'Unable to load experiences. Showing cached data if available.',
+        [{ text: 'OK' }]
+      );
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, []);
 
-  const monthOrder = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await experiencesService.refreshData();
+    await loadExperiences(false);
+    setRefreshing(false);
+  }, [loadExperiences]);
 
-  // Group schedule by 'yyyy-MMMM'
-  const groupedScheduleByYearMonth = schedule.reduce((acc, item) => {
-    const date = parseISO(item.scheduled);
-    const yearMonthKey = format(date, 'yyyy-MMMM'); // e.g., "2025-March"
-    if (!acc[yearMonthKey]) acc[yearMonthKey] = [];
-    acc[yearMonthKey].push(item);
-    return acc;
-  }, {});
+  useEffect(() => {
+    loadExperiences();
+  }, [loadExperiences]);
 
-  // Sort the 'yyyy-MMMM' keys chronologically
-  const sortedYearMonthKeys = Object.keys(groupedScheduleByYearMonth).sort((a, b) => {
-    const [yearAStr, monthAName] = a.split('-');
-    const [yearBStr, monthBName] = b.split('-');
-    const yearA = parseInt(yearAStr);
-    const yearB = parseInt(yearBStr);
-    const monthAIndex = monthOrder.indexOf(monthAName);
-    const monthBIndex = monthOrder.indexOf(monthBName);
-
-    if (yearA !== yearB) {
-      return yearA - yearB;
-    }
-    return monthAIndex - monthBIndex;
-  });
-
-  const today = new Date(); // Current date for comparison (June 9, 2025, as per context)
-  const currentActualMonthIndex = today.getMonth(); // 0-indexed (e.g., 5 for June)
-  const currentActualYear = today.getFullYear(); // e.g., 2025
-
-  const pastRacesCollection = [];
-  let currentMonthData = null;
-  const futureMonthsData = [];
-
-  if (!loading && schedule.length > 0) {
-    for (const yearMonthKey of sortedYearMonthKeys) {
-      const eventsInGroup = groupedScheduleByYearMonth[yearMonthKey];
-      if (!eventsInGroup || eventsInGroup.length === 0) continue;
-
-      const [yearStr, monthNameStr] = yearMonthKey.split('-');
-      const eventYear = parseInt(yearStr, 10);
-      const eventMonthIndex = monthOrder.indexOf(monthNameStr);
-
-      if (eventYear < currentActualYear || (eventYear === currentActualYear && eventMonthIndex < currentActualMonthIndex)) {
-        pastRacesCollection.push(...eventsInGroup);
-      } else if (eventYear === currentActualYear && eventMonthIndex === currentActualMonthIndex) {
-        currentMonthData = { yearMonthKey, monthName: monthNameStr, events: eventsInGroup };
+  const handleNotificationToggle = async (experienceId: number, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await experiencesService.scheduleNotifications(experienceId);
       } else {
-        futureMonthsData.push({ yearMonthKey, monthName: monthNameStr, events: eventsInGroup });
+        await experiencesService.cancelNotifications(experienceId);
       }
+      setNotificationStates(prev => ({ ...prev, [experienceId]: enabled }));
+    } catch (error) {
+      console.error('Error toggling notifications:', error);
+      Alert.alert('Error', 'Failed to update notification settings');
     }
-  }
+  };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
-      </SafeAreaView>
-    );
-  }
+  // Group experiences by date
+  const groupExperiencesByDate = (experiences: Experience[]): GroupedExperiences => {
+    return experiences.reduce((acc, experience) => {
+      if (!experience.experience_start_date_time) return acc;
+      const dateKey = format(new Date(experience.experience_start_date_time), 'yyyy-MM-dd');
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(experience);
+      return acc;
+    }, {} as GroupedExperiences);
+  };
 
-  const renderEventItem = (event: EventType, key: string) => {
-    const eventDate = format(parseISO(event.scheduled), 'MMMM d, yyyy, h:mm a');
-    const isCancelled = event.status === 'cancelled';
+  // Sort experiences within each day by time
+  const sortExperiencesByTime = (experiences: Experience[]): Experience[] => {
+    return experiences.sort((a, b) => {
+      const timeA = a.experience_start_date_time ? new Date(a.experience_start_date_time).getTime() : 0;
+      const timeB = b.experience_start_date_time ? new Date(b.experience_start_date_time).getTime() : 0;
+      return timeA - timeB;
+    });
+  };
+
+  const now = new Date();
+  const today = startOfDay(now);
+
+  // Separate experiences into past and future
+  const pastExperiences = experiences.filter(exp => 
+    exp.experience_start_date_time && isPast(new Date(exp.experience_start_date_time))
+  );
+  
+  const futureExperiences = experiences.filter(exp => 
+    exp.experience_start_date_time && !isPast(new Date(exp.experience_start_date_time))
+  );
+
+  const groupedPastExperiences = groupExperiencesByDate(pastExperiences);
+  const groupedFutureExperiences = groupExperiencesByDate(futureExperiences);
+
+  // Sort date keys chronologically
+  const sortedPastDates = Object.keys(groupedPastExperiences).sort((a, b) => 
+    new Date(b).getTime() - new Date(a).getTime() // Most recent first for past events
+  );
+  
+  const sortedFutureDates = Object.keys(groupedFutureExperiences).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime() // Earliest first for future events
+  );
+
+  const renderNotificationIcon = (experienceId: number) => {
+    const isEnabled = notificationStates[experienceId];
     return (
-      <View
-        key={key}
-        style={[
-          styles.card,
-          { backgroundColor: colors.card },
-          isCancelled && styles.cancelledCard,
-        ]}
-      >
-        <Text style={[styles.eventTitle, { color: colors.text }]}>{event.description}</Text>
-        {isCancelled && (
-          <Text style={[styles.cancelledText, { color: colors.error }]}>Cancelled</Text>
+      <View style={styles.notificationIcon}>
+        <Ionicons 
+          name={isEnabled ? "notifications" : "notifications-off"} 
+          size={16} 
+          color={isEnabled ? colors.tint : colors.tabIconDefault} 
+        />
+        {isEnabled && (
+          <Ionicons 
+            name="checkmark-circle" 
+            size={10} 
+            color={colors.tint} 
+            style={styles.notificationCheck}
+          />
         )}
-        <Text style={[styles.venue, { color: colors.text }]}>
-          {event.venue?.name} — {event.venue?.city}, {event.venue?.country}
-        </Text>
-        <Text style={[styles.date, { color: colors.text }]}>{eventDate}</Text>
       </View>
     );
   };
 
+  const renderExperienceItem = (experience: Experience, key: string) => {
+    if (!experience.experience_start_date_time) return null;
+    
+    const eventDate = new Date(experience.experience_start_date_time);
+    const timeString = format(eventDate, 'h:mm a');
+    const isToday = isSameDay(eventDate, now);
+    const isPastEvent = isPast(eventDate);
+    
+    return (
+      <TouchableOpacity
+        key={key}
+        style={[
+          styles.experienceCard,
+          { backgroundColor: colors.card },
+          isToday && styles.todayCard,
+          isPastEvent && styles.pastCard,
+        ]}
+        onPress={() => setSelectedExperience(experience)}
+        accessibilityLabel={`${experience.experience_title} at ${timeString}`}
+        accessibilityHint="Tap to view details"
+      >
+        <View style={styles.experienceHeader}>
+          <View style={styles.experienceInfo}>
+            <Text style={[styles.experienceTitle, { color: colors.text }]} numberOfLines={2}>
+              {experience.experience_title}
+            </Text>
+            <Text style={[styles.experienceTime, { color: colors.text }]}>
+              {timeString}
+            </Text>
+            <Text style={[styles.experienceLocation, { color: colors.text }]} numberOfLines={1}>
+              📍 {experience.experience_venue_location.venue_location_name}
+            </Text>
+          </View>
+          {renderNotificationIcon(experience.id)}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderDateSection = (dateKey: string, experiences: Experience[], isPast = false) => {
+    const date = new Date(dateKey);
+    const isToday = isSameDay(date, now);
+    const displayDate = isToday ? 'Today' : format(date, 'EEEE, MMMM d');
+    const sortedExperiences = sortExperiencesByTime(experiences);
+
+    return (
+      <View key={dateKey} style={styles.dateSection}>
+        <Text style={[
+          styles.dateTitle, 
+          { color: colors.tint },
+          isToday && styles.todayTitle
+        ]}>
+          {displayDate}
+        </Text>
+        {sortedExperiences.map((experience, idx) => 
+          renderExperienceItem(experience, `${dateKey}-${experience.id}-${idx}`)
+        )}
+      </View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading experiences...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <BrandLogo style={{ marginBottom: 16 }} />
-        <Text style={[styles.header, { color: colors.text }]}>2025 Schedule</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />
+        }
+      >
+        <BrandLogo style={styles.logo} />
+        <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
 
-        {/* Past Races Accordion */}
-        {pastRacesCollection.length > 0 && (
-          <View style={styles.monthSection}>
-            <TouchableOpacity
-              onPress={() => setIsPastRacesOpen(!isPastRacesOpen)}
-              style={styles.accordionHeader}
-            >
-              <Text style={[styles.monthTitle, { color: colors.tint }]}>Past Races</Text>
-              <Text style={[styles.accordionToggleText, { color: colors.tint }]}>
-                {isPastRacesOpen ? 'Hide' : 'Show'}
-              </Text>
+        {experiences.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={[styles.emptyStateText, { color: colors.tabIconDefault }]}>
+              No experiences available at this time.
+            </Text>
+            <TouchableOpacity style={[styles.refreshButton, { borderColor: colors.tint }]} onPress={onRefresh}>
+              <Text style={[styles.refreshButtonText, { color: colors.tint }]}>Refresh</Text>
             </TouchableOpacity>
-            {isPastRacesOpen &&
-              pastRacesCollection.map((event: EventType, idx: number) => renderEventItem(event, `past-${event.id || idx}`))}
           </View>
-        )}
-
-        {/* Current Month */}
-        {currentMonthData && (
-          <View key={currentMonthData.yearMonthKey} style={styles.monthSection}>
-            <Text style={[styles.monthTitle, { color: colors.tint }]}>
-              {currentMonthData.monthName} {currentMonthData.yearMonthKey.split('-')[0]}
-            </Text>
-            {currentMonthData.events.map((event: EventType, idx: number) =>
-              renderEventItem(event, `current-${event.id || idx}`)
+        ) : (
+          <>
+            {/* Future Events */}
+            {sortedFutureDates.map(dateKey => 
+              renderDateSection(dateKey, groupedFutureExperiences[dateKey], false)
             )}
-          </View>
-        )}
 
-        {/* Future Months */}
-        {futureMonthsData.map(({ yearMonthKey, monthName, events }) => (
-          <View key={yearMonthKey} style={styles.monthSection}>
-            <Text style={[styles.monthTitle, { color: colors.tint }]}>
-              {monthName} {yearMonthKey.split('-')[0]}
-            </Text>
-            {events.map((event: EventType, idx: number) => renderEventItem(event, `${yearMonthKey}-${event.id || idx}`))}
-          </View>
-        ))}
+            {/* Past Events (Collapsible) */}
+            {sortedPastDates.length > 0 && (
+              <View style={styles.pastEventsSection}>
+                <TouchableOpacity
+                  style={styles.pastEventsHeader}
+                  onPress={() => setIsPastEventsOpen(!isPastEventsOpen)}
+                  accessibilityLabel={`${isPastEventsOpen ? 'Hide' : 'Show'} past events`}
+                >
+                  <Text style={[styles.pastEventsTitle, { color: colors.tabIconDefault }]}>
+                    Past Events ({pastExperiences.length})
+                  </Text>
+                  <Ionicons 
+                    name={isPastEventsOpen ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color={colors.tabIconDefault} 
+                  />
+                </TouchableOpacity>
+                
+                {isPastEventsOpen && (
+                  <View style={styles.pastEventsContent}>
+                    {sortedPastDates.map(dateKey => 
+                      renderDateSection(dateKey, groupedPastExperiences[dateKey], true)
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          </>
+        )}
       </ScrollView>
+
+      {/* Experience Detail Tray */}
+      {selectedExperience && (
+        <ExperienceDetailTray
+          experience={selectedExperience}
+          visible={selectedExperience !== null}
+          onClose={() => setSelectedExperience(null)}
+          isNotificationEnabled={notificationStates[selectedExperience.id] || false}
+          onToggleNotification={(enabled: boolean) => handleNotificationToggle(selectedExperience.id, enabled)}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { padding: 16 },
-  header: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
-  monthSection: { marginBottom: 24 },
-  monthTitle: { fontSize: 18, fontWeight: '600', flex: 1 }, // Added flex: 1
-  card: {
+  container: { 
+    flex: 1,
+    paddingBottom: 120
+  },
+  scrollContent: { 
+    padding: 16 
+  },
+  logo: { 
+    marginBottom: 16 
+  },
+  header: { 
+    fontSize: 28, 
+    fontWeight: 'bold', 
+    marginBottom: 24 
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 64,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  refreshButton: {
+    borderWidth: 1,
     borderRadius: 8,
-    padding: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  refreshButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dateSection: { 
+    marginBottom: 24 
+  },
+  dateTitle: { 
+    fontSize: 20, 
+    fontWeight: '600', 
+    marginBottom: 12 
+  },
+  todayTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  experienceCard: {
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -200,27 +365,61 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  eventTitle: { fontSize: 16, fontWeight: 'bold' },
-  venue: { fontSize: 14 },
-  date: { fontSize: 12, color: '#888' },
-  cancelledCard: {
-    borderColor: 'red',
-    borderWidth: 1,
+  todayCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
   },
-  cancelledText: {
-    fontSize: 14,
+  pastCard: {
+    opacity: 0.7,
+  },
+  experienceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  experienceInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  experienceTitle: { 
+    fontSize: 16, 
     fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  experienceTime: { 
+    fontSize: 14,
+    fontWeight: '600',
     marginBottom: 4,
   },
-  accordionHeader: { // Added
+  experienceLocation: { 
+    fontSize: 12,
+  },
+  notificationIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationCheck: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+  },
+  pastEventsSection: {
+    marginTop: 24,
+  },
+  pastEventsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
-  accordionToggleText: { // Added
-    fontSize: 16,
-    fontWeight: '500',
+  pastEventsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  pastEventsContent: {
+    paddingTop: 8,
   },
 });
 

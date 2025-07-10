@@ -167,7 +167,7 @@ export default function HomeScreen() {
               <View style={styles.card}>
                 <Image
                   source={{
-                    uri: "https://digbza2f4g9qo.cloudfront.net/-/media/IndyCar/News/Standard/2025/01/01-08-StPete.jpg?vs=1&d=20250108T213909Z",
+                    uri: "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Laguna_98de1e39c8.png",
                   }}
                   style={styles.cardImage}
                 />
@@ -246,7 +246,7 @@ export default function HomeScreen() {
           </View>
 
           <Text style={[styles.countdownTitle, { color: colors.text }]}>
-            COUNTDOWN TO NEXT RACE:
+            COUNTDOWN TO RACE DAY:
           </Text>
           <View
             style={[
