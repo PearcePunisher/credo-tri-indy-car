@@ -62,6 +62,7 @@ A React Native mobile application for IndyCar racing fans, providing real-time r
 - **Metro**: React Native bundler
 - **Jest**: Testing framework
 - **ESLint**: Code linting and quality assurance
+- **NPM**: Package management (yarn usage is prevented)
 
 ## 📁 Project Structure
 
@@ -107,7 +108,7 @@ credo-tri-indy-car/
 
 ### Prerequisites
 - Node.js 18+ 
-- npm or yarn
+- npm
 - Expo CLI
 - iOS Simulator (for iOS development)
 - Android Studio & Android SDK (for Android development)

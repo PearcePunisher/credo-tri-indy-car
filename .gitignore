@@ -3,6 +3,11 @@
 # dependencies
 node_modules/
 
+# Prevent yarn usage (NPM only project)
+yarn.lock
+.yarn/
+.pnp.*
+
 # Expo
 .expo/
 dist/
@@ -22,8 +27,7 @@ expo-env.d.ts
 
 # debug
 npm-debug.*
-yarn-debug.*
-yarn-error.*
+*.log
 
 # macOS
 .DS_Store
