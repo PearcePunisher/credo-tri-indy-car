@@ -1,0 +1,20 @@
+{
+  "name": "strapi-notifications",
+  "version": "1.0.0",
+  "description": "Strapi backend configuration for push notifications",
+  "main": "index.js",
+  "scripts": {
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "build": "strapi build",
+    "strapi": "strapi"
+  },
+  "dependencies": {
+    "@strapi/strapi": "^4.25.0",
+    "@strapi/plugin-users-permissions": "^4.25.0",
+    "expo-server-sdk": "^3.10.0",
+    "node-cron": "^3.0.3"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}

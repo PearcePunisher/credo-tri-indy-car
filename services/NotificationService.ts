@@ -47,7 +47,7 @@ class NotificationService {
   async getPushToken(): Promise<string | null> {
     try {
       const token = await Notifications.getExpoPushTokenAsync({
-        projectId: 'your-expo-project-id', // Replace with your actual project ID
+        projectId: 'db70e71b-2bb8-4da5-9442-a8f0ce48fd2f', // Your actual Expo project ID
       });
       return token.data;
     } catch (error) {
@@ -199,6 +199,61 @@ class NotificationService {
       data: { type: 'parking_info' },
       badge: 1,
     });
+  }
+
+  async registerPushTokenWithBackend(userId: string, jwtToken: string, strapiUrl: string): Promise<boolean> {
+    try {
+      const token = await this.getPushToken();
+      if (!token) {
+        console.warn('No push token available');
+        return false;
+      }
+
+      // Send token to your Strapi backend
+      const response = await fetch(`${strapiUrl}/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({
+          expoPushToken: token,
+          lastActive: new Date().toISOString()
+        })
+      });
+
+      if (response.ok) {
+        console.log('Push token registered successfully');
+        return true;
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to register push token:', response.statusText, errorData);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error registering push token:', error);
+      return false;
+    }
+  }
+
+  async updateUserActivity(userId: string, jwtToken: string, strapiUrl: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${strapiUrl}/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({
+          lastActive: new Date().toISOString()
+        })
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error updating user activity:', error);
+      return false;
+    }
   }
 }
 

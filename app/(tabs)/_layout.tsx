@@ -87,7 +87,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="navigation"
+        name="navigation_new"
         options={{
           title: "Menu",
           tabBarIcon: ({ color }) => (

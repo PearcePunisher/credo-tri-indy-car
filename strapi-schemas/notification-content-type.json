@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "notifications",
+  "info": {
+    "singularName": "notification",
+    "pluralName": "notifications",
+    "displayName": "Notification",
+    "description": "Push notifications sent to users"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "body": {
+      "type": "text",
+      "required": true,
+      "maxLength": 500
+    },
+    "data": {
+      "type": "json",
+      "description": "Custom data payload for the notification"
+    },
+    "targetType": {
+      "type": "enumeration",
+      "enum": ["all", "vip", "specific"],
+      "default": "all",
+      "required": true
+    },
+    "targetUsers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user"
+    },
+    "sentAt": {
+      "type": "datetime"
+    },
+    "scheduledFor": {
+      "type": "datetime"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["draft", "scheduled", "sent", "failed"],
+      "default": "draft",
+      "required": true
+    },
+    "deliveryTickets": {
+      "type": "json",
+      "description": "Expo push notification delivery tickets"
+    },
+    "sentCount": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

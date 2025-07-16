@@ -43,6 +43,14 @@ const validationSchema = Yup.object().shape({
     .required("Phone Number Required")
     .min(7, "Phone number too short")
     .max(15, "Phone number too long"),
+  dob: Yup.string()
+    .required("Date of birth required")
+    .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+    .test('valid-date', 'Please enter a valid date', function(value) {
+      if (!value) return false;
+      const date = new Date(value);
+      return date instanceof Date && !isNaN(date.getTime()) && value === date.toISOString().split('T')[0];
+    }),
   bringingGuests: Yup.boolean(),
   numberOfGuests: Yup.number().when("bringingGuests", {
     is: true,
@@ -65,7 +73,14 @@ const validationSchema = Yup.object().shape({
   }),
   guest1Dob: Yup.string().when("numberOfGuests", {
     is: (val: number) => val >= 1,
-    then: (schema) => schema.required("Guest 1 date of birth required"),
+    then: (schema) => schema
+      .required("Guest 1 date of birth required")
+      .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+      .test('valid-date', 'Please enter a valid date', function(value) {
+        if (!value) return false;
+        const date = new Date(value);
+        return date instanceof Date && !isNaN(date.getTime()) && value === date.toISOString().split('T')[0];
+      }),
     otherwise: (schema) => schema.notRequired(),
   }),
   guest1Phone: Yup.string().when("numberOfGuests", {
@@ -88,7 +103,14 @@ const validationSchema = Yup.object().shape({
   }),
   guest2Dob: Yup.string().when("numberOfGuests", {
     is: (val: number) => val >= 2,
-    then: (schema) => schema.required("Guest 2 date of birth required"),
+    then: (schema) => schema
+      .required("Guest 2 date of birth required")
+      .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+      .test('valid-date', 'Please enter a valid date', function(value) {
+        if (!value) return false;
+        const date = new Date(value);
+        return date instanceof Date && !isNaN(date.getTime()) && value === date.toISOString().split('T')[0];
+      }),
     otherwise: (schema) => schema.notRequired(),
   }),
   guest2Phone: Yup.string().when("numberOfGuests", {
@@ -358,52 +380,84 @@ export function RegisterScreenFormik() {
                   }}
                   error={!!(touched.email && errors.email)}
                 />
-                <View style={styles.input}>
-                  <Text style={{ 
-                    color: colors.secondaryText, 
-                    fontSize: 12, 
-                    marginBottom: 4,
-                    fontFamily: "Roobert" 
-                  }}>
-                    Date of Birth
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setDatePickerVisible(true)}
-                    style={{
-                      borderColor: touched.dob && errors.dob ? colors.error : colors.secondaryText,
-                      backgroundColor: colors.card,
-                      borderRadius: 4,
-                      borderWidth: 0.5,
-                      height: 48,
-                      paddingHorizontal: 12,
-                      justifyContent: "center",
-                    }}>
-                    <Text style={{
-                      color: values.dob ? colors.text : colors.secondaryText,
-                      fontSize: 16,
-                      fontFamily: "Roobert",
-                    }}>
-                      {values.dob || "Select Date of Birth"}
-                    </Text>
-                  </TouchableOpacity>
-                  <DateTimePickerModal
-                    isVisible={isDatePickerVisible}
-                    mode="date"
-                    onConfirm={(date) => {
-                      setFieldValue("dob", formatDateToString(date));
-                      setDatePickerVisible(false);
+                {Platform.OS === 'web' ? (
+                  <TextInput
+                    label="Date of Birth"
+                    value={values.dob}                  onChangeText={(text) => {
+                    // Allow progressive typing and validate complete dates
+                    const cleanText = text.replace(/[^\d-]/g, ''); // Only allow digits and hyphens
+                    if (cleanText.length <= 10) {
+                      setFieldValue("dob", cleanText);
+                    }
+                  }}
+                    onBlur={handleBlur("dob")}
+                    style={styles.input}
+                    mode="outlined"
+                    placeholder="YYYY-MM-DD (e.g., 1990-12-25)"
+                    maxLength={10}
+                    theme={{
+                      colors: {
+                        primary: colors.tint,
+                        background: colors.card,
+                        text: colors.text,
+                        placeholder: colors.secondaryText,
+                      },
+                      fonts: {
+                        regular: {
+                          fontFamily: "Roobert",
+                        },
+                      },
                     }}
-                    onCancel={() => setDatePickerVisible(false)}
-                    maximumDate={new Date()}
-                    date={parseStringToDate(values.dob) || new Date(2000, 0, 1)}
-                    isDarkModeEnabled={colorScheme === "dark"}
-                    pickerContainerStyleIOS={{
-                      backgroundColor: colors.card,
-                    }}
-                    confirmTextIOS="Select"
-                    cancelTextIOS="Cancel"
+                    error={!!(touched.dob && errors.dob)}
                   />
-                </View>
+                ) : (
+                  <View style={styles.input}>
+                    <Text style={{ 
+                      color: colors.secondaryText, 
+                      fontSize: 12, 
+                      marginBottom: 4,
+                      fontFamily: "Roobert" 
+                    }}>
+                      Date of Birth
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setDatePickerVisible(true)}
+                      style={{
+                        borderColor: touched.dob && errors.dob ? colors.error : colors.secondaryText,
+                        backgroundColor: colors.card,
+                        borderRadius: 4,
+                        borderWidth: 0.5,
+                        height: 48,
+                        paddingHorizontal: 12,
+                        justifyContent: "center",
+                      }}>
+                      <Text style={{
+                        color: values.dob ? colors.text : colors.secondaryText,
+                        fontSize: 16,
+                        fontFamily: "Roobert",
+                      }}>
+                        {values.dob || "Select Date of Birth"}
+                      </Text>
+                    </TouchableOpacity>
+                    <DateTimePickerModal
+                      isVisible={isDatePickerVisible}
+                      mode="date"
+                      onConfirm={(date) => {
+                        setFieldValue("dob", formatDateToString(date));
+                        setDatePickerVisible(false);
+                      }}
+                      onCancel={() => setDatePickerVisible(false)}
+                      maximumDate={new Date()}
+                      date={parseStringToDate(values.dob) || new Date(2000, 0, 1)}
+                      isDarkModeEnabled={colorScheme === "dark"}
+                      pickerContainerStyleIOS={{
+                        backgroundColor: colors.card,
+                      }}
+                      confirmTextIOS="Select"
+                      cancelTextIOS="Cancel"
+                    />
+                  </View>
+                )}
                 <View
                   style={{
                     flexDirection: "row",
@@ -763,52 +817,85 @@ export function RegisterScreenFormik() {
                               )
                             }
                           />
-                          <View style={styles.input}>
-                            <Text style={{ 
-                              color: colors.secondaryText, 
-                              fontSize: 12, 
-                              marginBottom: 4,
-                              fontFamily: "Roobert" 
-                            }}>
-                              Guest 1 Date of Birth
-                            </Text>
-                            <TouchableOpacity
-                              onPress={() => setGuest1DatePickerVisible(true)}
-                              style={{
-                                borderColor: touched.guest1Dob && errors.guest1Dob ? colors.error : colors.secondaryText,
-                                backgroundColor: colors.card,
-                                borderRadius: 4,
-                                borderWidth: 0.5,
-                                height: 48,
-                                paddingHorizontal: 12,
-                                justifyContent: "center",
-                              }}>
-                              <Text style={{
-                                color: values.guest1Dob ? colors.text : colors.secondaryText,
-                                fontSize: 16,
-                                fontFamily: "Roobert",
-                              }}>
-                                {values.guest1Dob || "Select Guest 1 Date of Birth"}
-                              </Text>
-                            </TouchableOpacity>
-                            <DateTimePickerModal
-                              isVisible={isGuest1DatePickerVisible}
-                              mode="date"
-                              onConfirm={(date) => {
-                                setFieldValue("guest1Dob", formatDateToString(date));
-                                setGuest1DatePickerVisible(false);
+                          {Platform.OS === 'web' ? (
+                            <TextInput
+                              label="Guest 1 Date of Birth"
+                              value={values.guest1Dob}
+                              onChangeText={(text) => {
+                                // Allow progressive typing and validate complete dates
+                                const cleanText = text.replace(/[^\d-]/g, ''); // Only allow digits and hyphens
+                                if (cleanText.length <= 10) {
+                                  setFieldValue("guest1Dob", cleanText);
+                                }
                               }}
-                              onCancel={() => setGuest1DatePickerVisible(false)}
-                              maximumDate={new Date()}
-                              date={parseStringToDate(values.guest1Dob) || new Date(2000, 0, 1)}
-                              isDarkModeEnabled={colorScheme === "dark"}
-                              pickerContainerStyleIOS={{
-                                backgroundColor: colors.card,
+                              onBlur={handleBlur("guest1Dob")}
+                              style={styles.input}
+                              mode="outlined"
+                              placeholder="YYYY-MM-DD"
+                              maxLength={10}
+                              theme={{
+                                colors: {
+                                  primary: colors.tint,
+                                  background: colors.card,
+                                  text: colors.text,
+                                  placeholder: colors.secondaryText,
+                                },
+                                fonts: {
+                                  regular: {
+                                    fontFamily: "Roobert",
+                                  },
+                                },
                               }}
-                              confirmTextIOS="Select"
-                              cancelTextIOS="Cancel"
+                              error={!!(touched.guest1Dob && errors.guest1Dob)}
                             />
-                          </View>
+                          ) : (
+                            <View style={styles.input}>
+                              <Text style={{ 
+                                color: colors.secondaryText, 
+                                fontSize: 12, 
+                                marginBottom: 4,
+                                fontFamily: "Roobert" 
+                              }}>
+                                Guest 1 Date of Birth
+                              </Text>
+                              <TouchableOpacity
+                                onPress={() => setGuest1DatePickerVisible(true)}
+                                style={{
+                                  borderColor: touched.guest1Dob && errors.guest1Dob ? colors.error : colors.secondaryText,
+                                  backgroundColor: colors.card,
+                                  borderRadius: 4,
+                                  borderWidth: 0.5,
+                                  height: 48,
+                                  paddingHorizontal: 12,
+                                  justifyContent: "center",
+                                }}>
+                                <Text style={{
+                                  color: values.guest1Dob ? colors.text : colors.secondaryText,
+                                  fontSize: 16,
+                                  fontFamily: "Roobert",
+                                }}>
+                                  {values.guest1Dob || "Select Guest 1 Date of Birth"}
+                                </Text>
+                              </TouchableOpacity>
+                              <DateTimePickerModal
+                                isVisible={isGuest1DatePickerVisible}
+                                mode="date"
+                                onConfirm={(date) => {
+                                  setFieldValue("guest1Dob", formatDateToString(date));
+                                  setGuest1DatePickerVisible(false);
+                                }}
+                                onCancel={() => setGuest1DatePickerVisible(false)}
+                                maximumDate={new Date()}
+                                date={parseStringToDate(values.guest1Dob) || new Date(2000, 0, 1)}
+                                isDarkModeEnabled={colorScheme === "dark"}
+                                pickerContainerStyleIOS={{
+                                  backgroundColor: colors.card,
+                                }}
+                                confirmTextIOS="Select"
+                                cancelTextIOS="Cancel"
+                              />
+                            </View>
+                          )}
                           <View
                             style={{
                               flexDirection: "row",
@@ -957,52 +1044,85 @@ export function RegisterScreenFormik() {
                               )
                             }
                           />
-                          <View style={styles.input}>
-                            <Text style={{ 
-                              color: colors.secondaryText, 
-                              fontSize: 12, 
-                              marginBottom: 4,
-                              fontFamily: "Roobert" 
-                            }}>
-                              Guest 2 Date of Birth
-                            </Text>
-                            <TouchableOpacity
-                              onPress={() => setGuest2DatePickerVisible(true)}
-                              style={{
-                                borderColor: touched.guest2Dob && errors.guest2Dob ? colors.error : colors.secondaryText,
-                                backgroundColor: colors.card,
-                                borderRadius: 4,
-                                borderWidth: 0.5,
-                                height: 48,
-                                paddingHorizontal: 12,
-                                justifyContent: "center",
-                              }}>
-                              <Text style={{
-                                color: values.guest2Dob ? colors.text : colors.secondaryText,
-                                fontSize: 16,
-                                fontFamily: "Roobert",
-                              }}>
-                                {values.guest2Dob || "Select Guest 2 Date of Birth"}
-                              </Text>
-                            </TouchableOpacity>
-                            <DateTimePickerModal
-                              isVisible={isGuest2DatePickerVisible}
-                              mode="date"
-                              onConfirm={(date) => {
-                                setFieldValue("guest2Dob", formatDateToString(date));
-                                setGuest2DatePickerVisible(false);
+                          {Platform.OS === 'web' ? (
+                            <TextInput
+                              label="Guest 2 Date of Birth"
+                              value={values.guest2Dob}
+                              onChangeText={(text) => {
+                                // Allow progressive typing and validate complete dates
+                                const cleanText = text.replace(/[^\d-]/g, ''); // Only allow digits and hyphens
+                                if (cleanText.length <= 10) {
+                                  setFieldValue("guest2Dob", cleanText);
+                                }
                               }}
-                              onCancel={() => setGuest2DatePickerVisible(false)}
-                              maximumDate={new Date()}
-                              date={parseStringToDate(values.guest2Dob) || new Date(2000, 0, 1)}
-                              isDarkModeEnabled={colorScheme === "dark"}
-                              pickerContainerStyleIOS={{
-                                backgroundColor: colors.card,
+                              onBlur={handleBlur("guest2Dob")}
+                              style={styles.input}
+                              mode="outlined"
+                              placeholder="YYYY-MM-DD"
+                              maxLength={10}
+                              theme={{
+                                colors: {
+                                  primary: colors.tint,
+                                  background: colors.card,
+                                  text: colors.text,
+                                  placeholder: colors.secondaryText,
+                                },
+                                fonts: {
+                                  regular: {
+                                    fontFamily: "Roobert",
+                                  },
+                                },
                               }}
-                              confirmTextIOS="Select"
-                              cancelTextIOS="Cancel"
+                              error={!!(touched.guest2Dob && errors.guest2Dob)}
                             />
-                          </View>
+                          ) : (
+                            <View style={styles.input}>
+                              <Text style={{ 
+                                color: colors.secondaryText, 
+                                fontSize: 12, 
+                                marginBottom: 4,
+                                fontFamily: "Roobert" 
+                              }}>
+                                Guest 2 Date of Birth
+                              </Text>
+                              <TouchableOpacity
+                                onPress={() => setGuest2DatePickerVisible(true)}
+                                style={{
+                                  borderColor: touched.guest2Dob && errors.guest2Dob ? colors.error : colors.secondaryText,
+                                  backgroundColor: colors.card,
+                                  borderRadius: 4,
+                                  borderWidth: 0.5,
+                                  height: 48,
+                                  paddingHorizontal: 12,
+                                  justifyContent: "center",
+                                }}>
+                                <Text style={{
+                                  color: values.guest2Dob ? colors.text : colors.secondaryText,
+                                  fontSize: 16,
+                                  fontFamily: "Roobert",
+                                }}>
+                                  {values.guest2Dob || "Select Guest 2 Date of Birth"}
+                                </Text>
+                              </TouchableOpacity>
+                              <DateTimePickerModal
+                                isVisible={isGuest2DatePickerVisible}
+                                mode="date"
+                                onConfirm={(date) => {
+                                  setFieldValue("guest2Dob", formatDateToString(date));
+                                  setGuest2DatePickerVisible(false);
+                                }}
+                                onCancel={() => setGuest2DatePickerVisible(false)}
+                                maximumDate={new Date()}
+                                date={parseStringToDate(values.guest2Dob) || new Date(2000, 0, 1)}
+                                isDarkModeEnabled={colorScheme === "dark"}
+                                pickerContainerStyleIOS={{
+                                  backgroundColor: colors.card,
+                                }}
+                                confirmTextIOS="Select"
+                                cancelTextIOS="Cancel"
+                              />
+                            </View>
+                          )}
                           <View
                             style={{
                               flexDirection: "row",
@@ -1199,6 +1319,16 @@ export function RegisterScreenFormik() {
                       fontFamily: "Roobert",
                     }}>
                     {errors.invitationCode}
+                  </Text>
+                )}
+                {touched.dob && errors.dob && (
+                  <Text
+                    style={{
+                      color: colors.error,
+                      marginTop: 4,
+                      fontFamily: "Roobert",
+                    }}>
+                    {errors.dob}
                   </Text>
                 )}
                 {touched.numberOfGuests && errors.numberOfGuests && (
