@@ -78,7 +78,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="userID"
+        name="account"
         options={{
           title: "Account",
           tabBarIcon: ({ color }) => (

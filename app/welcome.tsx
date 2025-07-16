@@ -15,6 +15,8 @@ import * as Notifications from 'expo-notifications';
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'expo-router';
 
 export const options = {
   title: 'Welcome',
@@ -24,6 +26,8 @@ export const options = {
 const WelcomeScreen = () => {
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
+  const { updateNotificationSubscription, authState } = useAuth();
+  const router = useRouter();
 
   const [subscribed, setSubscribed] = useState(false);
 
@@ -36,38 +40,67 @@ const WelcomeScreen = () => {
   ];
 
   const handleSubscribe = async () => {
-    const existing = await Notifications.getPermissionsAsync();
+    try {
+      const existing = await Notifications.getPermissionsAsync();
 
-    if (existing.status === 'granted') {
-      setSubscribed(true);
-      Alert.alert('Already Subscribed', 'You are already subscribed to notifications.');
-      return;
-    }
+      if (existing.status === 'granted') {
+        setSubscribed(true);
+        await updateNotificationSubscription(true);
+        Alert.alert('Already Subscribed', 'You are already subscribed to notifications.', [
+          { text: 'Continue', onPress: () => router.push('/(tabs)') }
+        ]);
+        return;
+      }
 
-    const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await Notifications.requestPermissionsAsync();
 
-    if (status === 'granted') {
-      setSubscribed(true);
-      Alert.alert('Subscribed!', 'You will now receive updates.');
-    } else {
-      Alert.alert(
-        'Enable Notifications',
-        'Notifications are currently disabled. To enable them, go to your system settings.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Open Settings',
-            onPress: () => {
-              if (Platform.OS === 'ios') {
-                Linking.openURL('app-settings:');
-              } else {
-                Linking.openSettings();
-              }
+      if (status === 'granted') {
+        setSubscribed(true);
+        
+        // Get push token
+        const pushToken = await Notifications.getExpoPushTokenAsync({
+          projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+        });
+        
+        await updateNotificationSubscription(true, pushToken.data);
+        
+        Alert.alert('Subscribed!', 'You will now receive updates about track experiences and events.', [
+          { text: 'Continue', onPress: () => router.push('/(tabs)') }
+        ]);
+      } else {
+        Alert.alert(
+          'Enable Notifications',
+          'Notifications are currently disabled. To enable them, go to your system settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                if (Platform.OS === 'ios') {
+                  Linking.openURL('app-settings:');
+                } else {
+                  Linking.openSettings();
+                }
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error handling notification subscription:', error);
+      Alert.alert('Error', 'Failed to set up notifications. You can enable them later in settings.');
     }
+  };
+
+  const handleSkipNotifications = () => {
+    Alert.alert(
+      'Skip Notifications?',
+      'You may miss out on important track experiences, exclusive content, and event updates. Are you sure you want to skip?',
+      [
+        { text: 'Yes, Skip', onPress: () => router.push('/(tabs)'), style: 'destructive' },
+        { text: 'Enable Notifications', onPress: handleSubscribe }
+      ]
+    );
   };
 
   return (
@@ -119,9 +152,20 @@ const WelcomeScreen = () => {
                 { color: subscribed ? 'white' : 'black' },
               ]}
             >
-              {subscribed ? '✅ Subscribed' : 'Subscribe'}
+              {subscribed ? '✅ Subscribed' : 'Subscribe to Notifications'}
             </Text>
           </TouchableOpacity>
+          
+          {!subscribed && (
+            <TouchableOpacity
+              style={[styles.skipBtn, { borderColor: colors.border }]}
+              onPress={handleSkipNotifications}
+            >
+              <Text style={[styles.skipBtnText, { color: colors.secondaryText }]}>
+                Skip for now
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -154,6 +198,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+  skipBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 12,
+  },
+  skipBtnText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

@@ -1,7 +1,7 @@
 // Configuration for Strapi backend connection
 export const STRAPI_CONFIG = {
-  // Replace with your actual Strapi URL
-  baseUrl: process.env.EXPO_PUBLIC_STRAPI_URL || 'https://your-strapi-instance.com',
+  // Using the existing Strapi URL from the track.tsx file
+  baseUrl: process.env.EXPO_PUBLIC_STRAPI_URL || 'https://timely-actor-10dfb03957.strapiapp.com',
   
   // API endpoints
   endpoints: {

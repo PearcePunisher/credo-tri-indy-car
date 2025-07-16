@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, Text, View, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import BrandLogo from "@/components/BrandLogo";
-import { RegisterScreenFormik } from '../../components/forms/UserRegistrationFormik';
+import { RegisterScreenFormik } from '../components/forms/UserRegistrationFormik';
 
 export const options = {
   title: "Register",

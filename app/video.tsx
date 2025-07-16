@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/hooks/useAuth';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -13,6 +14,7 @@ export default function VideoPlayerScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
+  const { completeOnboarding } = useAuth();
   
   const [showContinue, setShowContinue] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,9 +58,16 @@ export default function VideoPlayerScreen() {
     };
   }, [player]);
 
-  const handleContinue = () => {
-    player.pause();
-    router.push('/welcome');
+  const handleContinue = async () => {
+    try {
+      player.pause();
+      // Complete onboarding when user finishes video
+      await completeOnboarding();
+      router.push('/welcome');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      router.push('/welcome');
+    }
   };
 
   const handleClose = () => {

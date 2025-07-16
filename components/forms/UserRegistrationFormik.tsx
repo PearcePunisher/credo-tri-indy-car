@@ -14,6 +14,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { useRouter } from "expo-router";
 
 const countryCodes = [
   { label: "🇺🇸 +1", value: "+1", placeholder: "(555) 123-4567", maxLength: 14 },
@@ -134,6 +135,8 @@ export function RegisterScreenFormik() {
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [isGuest1DatePickerVisible, setGuest1DatePickerVisible] = useState(false);
   const [isGuest2DatePickerVisible, setGuest2DatePickerVisible] = useState(false);
+
+  const router = useRouter();
 
   // Helper function to format date to YYYY-MM-DD
   function formatDateToString(date: Date): string {
@@ -278,6 +281,7 @@ export function RegisterScreenFormik() {
                   DOB: values.dob || "1920-05-05",
                   signed_waiver: values.signedWaiver ? "True" : "False",
                   signed_waiver_link: values.waiverLink,
+                  invitation_code: values.invitationCode,
                   user_guests: userGuests,
                 };
 
@@ -291,11 +295,33 @@ export function RegisterScreenFormik() {
                 );
 
                 if (response.status === 200) {
-                  alert("Registration successful!");
+                  // Store basic user info locally for the onboarding flow
+                  try {
+                    const userData = {
+                      email: values.email,
+                      firstName: values.firstName,
+                      lastName: values.lastName,
+                      dateOfBirth: values.dob || "1920-05-05",
+                      phoneNumber: `${values.countryCode}${values.phone.replace(/\D/g, '')}`,
+                      isAuthenticated: true,
+                      hasCompletedOnboarding: false,
+                      registeredAt: new Date().toISOString(),
+                    };
+                    
+                    // You can add AsyncStorage import and store this locally if needed
+                    // For now, just proceed to video
+                    alert("Registration successful!");
+                    router.push('/video');
+                  } catch (error) {
+                    console.error('Error storing user data:', error);
+                    alert("Registration successful!");
+                    router.push('/video');
+                  }
                 } else {
                   alert(`Registration failed. Error code: ${response.status}`);
                 }
               } catch (error) {
+                console.error('Registration error:', error);
                 alert("An unexpected error occurred.");
               }
             }}>
