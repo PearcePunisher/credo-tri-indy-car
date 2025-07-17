@@ -20,14 +20,16 @@ export default function VideoPlayerScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   // Video source
   const videoSource: VideoSource = require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4');
   
-  // Create video player with Android-specific configuration
+  // Create video player with improved lifecycle management
   const player = useVideoPlayer(videoSource, (player) => {
     try {
       player.loop = false;
+      setIsPlayerReady(true); // Mark player as ready after creation
       
       // Add error handling
       player.addListener('statusChange', (status) => {
@@ -35,29 +37,34 @@ export default function VideoPlayerScreen() {
         if (status.error) {
           setVideoError(`Video error: ${status.error}`);
           console.error('Video player error:', status.error);
+          setIsPlayerReady(false);
         }
       });
 
-      // Android-specific: Add a small delay before playing
+      // Android-specific: Add a small delay before playing with better error handling
       if (Platform.OS === 'android') {
         setTimeout(() => {
           try {
-            if (player && typeof player.play === 'function') {
+            if (player && typeof player.play === 'function' && !player.playing && isPlayerReady) {
               player.play();
+              console.log('Android video player started successfully');
             }
           } catch (error) {
             console.error('Error starting video on Android:', error);
             setVideoError('Failed to start video on Android');
+            setIsPlayerReady(false);
           }
-        }, 500);
+        }, 1000); // Increased delay for Android stability
       } else {
         try {
-          if (player && typeof player.play === 'function') {
+          if (player && typeof player.play === 'function' && !player.playing) {
             player.play();
+            console.log('iOS video player started successfully');
           }
         } catch (error) {
           console.error('Error starting video:', error);
           setVideoError('Failed to start video');
+          setIsPlayerReady(false);
         }
       }
     } catch (error) {
@@ -75,42 +82,68 @@ export default function VideoPlayerScreen() {
     }, loadingDelay);
 
     // Auto-show continue button after video duration 
-    // TODO: Adjust this timer to match your actual video length
-    // Current estimate: 30 seconds + 2 second buffer = 32 seconds
     const continueTimer = setTimeout(() => {
       setShowContinue(true);
-    }, 32000); // Adjust this value based on your video's actual duration
+    }, 32000); // 32 seconds for full video
+
+    // Fallback: Show continue button sooner if there's a video error
+    const errorFallbackTimer = setTimeout(() => {
+      if (videoError) {
+        console.log('Showing continue button due to video error');
+        setShowContinue(true);
+      }
+    }, 5000); // 5 seconds fallback
 
     return () => {
       clearTimeout(loadingTimer);
       clearTimeout(continueTimer);
+      clearTimeout(errorFallbackTimer);
     };
-  }, []);
+  }, [videoError]);
+
+  // Safe player interaction helper
+  const safePlayerAction = (action: () => void, actionName: string) => {
+    try {
+      if (player && isPlayerReady && typeof player === 'object') {
+        action();
+      } else {
+        console.log(`Player not ready for action: ${actionName}`, {
+          playerExists: !!player,
+          isPlayerReady,
+          playerType: typeof player
+        });
+      }
+    } catch (error) {
+      console.log(`Player action failed (${actionName}):`, error);
+      setIsPlayerReady(false);
+      setVideoError(`Player error during ${actionName}`);
+    }
+  };
 
   // Cleanup effect to pause video when component unmounts
   useEffect(() => {
     return () => {
-      // Safe cleanup: check if player exists and is still valid
-      try {
-        if (player && typeof player.pause === 'function') {
+      // Safe cleanup using the helper function
+      safePlayerAction(() => {
+        if (typeof player.pause === 'function') {
           player.pause();
         }
-      } catch (error) {
-        console.log('Video player already cleaned up:', error);
-      }
+      }, 'cleanup');
     };
-  }, [player]);
+  }, [player, safePlayerAction]);
 
   const handleContinue = async () => {
     console.log('Continue button pressed - iOS:', Platform.OS === 'ios');
     console.log('Starting navigation process...');
     
     try {
-      // Safe pause: check if player exists and is still valid
-      if (player && typeof player.pause === 'function') {
-        console.log('Pausing video player...');
-        player.pause();
-      }
+      // Safe pause using the helper function
+      safePlayerAction(() => {
+        if (typeof player.pause === 'function') {
+          player.pause();
+          console.log('Video paused successfully');
+        }
+      }, 'pause');
       
       // Navigate to welcome first, then complete onboarding there
       console.log('Navigating to welcome...');
@@ -125,30 +158,24 @@ export default function VideoPlayerScreen() {
   };
 
   const handleClose = () => {
-    try {
-      // Safe pause: check if player exists and is still valid
-      if (player && typeof player.pause === 'function') {
+    safePlayerAction(() => {
+      if (typeof player.pause === 'function') {
         player.pause();
       }
-    } catch (error) {
-      console.log('Video player already cleaned up:', error);
-    }
+    }, 'close');
     router.back();
   };
 
   const togglePlayPause = () => {
-    try {
-      if (player && typeof player.pause === 'function' && typeof player.play === 'function') {
+    safePlayerAction(() => {
+      if (typeof player.pause === 'function' && typeof player.play === 'function') {
         if (player.playing) {
           player.pause();
         } else {
           player.play();
         }
       }
-    } catch (error) {
-      console.error('Error toggling video playback:', error);
-      setVideoError('Video player error occurred');
-    }
+    }, 'togglePlayPause');
   };
 
   const handleVideoPress = () => {
