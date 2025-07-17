@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STRAPI_CONFIG } from '@/constants/StrapiConfig';
+import QRCodeService from './QRCodeService';
 
 export interface User {
   id: string;
@@ -13,6 +14,10 @@ export interface User {
   notificationSubscribed: boolean;
   createdAt: string;
   updatedAt: string;
+  // Additional server data from Railway
+  serverId?: string;
+  eventCodeDocumentId?: string;
+  eventScheduleDocumentId?: string;
 }
 
 export interface AuthState {
@@ -134,7 +139,7 @@ class AuthService {
   async createLocalAuthState(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'isFirstTimeUser' | 'hasCompletedOnboarding' | 'notificationSubscribed'>): Promise<User> {
     try {
       const user: User = {
-        id: `local_${Date.now()}`, // Generate local ID
+        id: userData.serverId || `local_${Date.now()}`, // Use server ID if available, fallback to local ID
         email: userData.email,
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -145,10 +150,24 @@ class AuthService {
         notificationSubscribed: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        // Include additional server data if provided
+        serverId: userData.serverId,
+        eventCodeDocumentId: userData.eventCodeDocumentId,
+        eventScheduleDocumentId: userData.eventScheduleDocumentId,
       };
 
       // Store user data locally
       await this.storeUserData(user);
+      
+      // Generate and store QR code
+      try {
+        const qrCodeService = QRCodeService.getInstance();
+        await qrCodeService.storeQRCodeData(user);
+        console.log('QR code generated and stored for user:', user.id);
+      } catch (qrError) {
+        console.error('Error generating QR code:', qrError);
+        // Don't throw error as QR code generation is not critical for auth
+      }
       
       // Mark that app has been launched
       await AsyncStorage.setItem('@has_launched_before', 'true');
@@ -308,8 +327,22 @@ class AuthService {
   // Logout user
   async logout(): Promise<void> {
     try {
+      const currentUser = this.authState.user;
+      
       await AsyncStorage.removeItem('@user_data');
       await AsyncStorage.removeItem('@onboarding_status');
+      
+      // Clear QR code data if user exists
+      if (currentUser) {
+        try {
+          const qrCodeService = QRCodeService.getInstance();
+          await qrCodeService.clearQRCodeData(currentUser.id);
+          console.log('QR code data cleared for user:', currentUser.id);
+        } catch (qrError) {
+          console.error('Error clearing QR code data:', qrError);
+          // Don't throw error as QR code cleanup is not critical for logout
+        }
+      }
       
       this.authState = {
         isAuthenticated: false,

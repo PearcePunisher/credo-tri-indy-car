@@ -141,6 +141,16 @@ export const UserActivationFormik = () => {
                 {authState.user.email}
               </Text>
             </View>
+            {authState.user.serverId && (
+              <View style={styles.testingField}>
+                <Text style={[styles.testingLabel, { color: colors.secondaryText }]}>
+                  Server ID:
+                </Text>
+                <Text style={[styles.testingValue, { color: colors.text }]}>
+                  {authState.user.serverId}
+                </Text>
+              </View>
+            )}
           </View>
         )}
         

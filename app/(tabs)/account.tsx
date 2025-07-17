@@ -13,6 +13,8 @@ import { Colors } from "@/constants/Colors";
 import BrandLogo from "@/components/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
+import UserQRCode from "@/components/UserQRCode";
+import { useRouter } from "expo-router";
 
 export const options = {
   title: "Account",
@@ -22,6 +24,7 @@ const AccountScreen = () => {
   const colorScheme = useColorScheme() || "light";
   const colors = Colors[colorScheme];
   const { authState, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
     Alert.alert(
@@ -105,7 +108,43 @@ const AccountScreen = () => {
               {authState.user.email}
             </Text>
           </View>
+
+          {authState.user.serverId && (
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>
+                Server ID:
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                {authState.user.serverId}
+              </Text>
+            </View>
+          )}
+
+          {authState.user.eventCodeDocumentId && (
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>
+                Event Code Doc ID:
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                {authState.user.eventCodeDocumentId}
+              </Text>
+            </View>
+          )}
+
+          {authState.user.eventScheduleDocumentId && (
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>
+                Event Schedule Doc ID:
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                {authState.user.eventScheduleDocumentId}
+              </Text>
+            </View>
+          )}
         </View>
+
+        {/* QR Code Section */}
+        <UserQRCode user={authState.user} size={180} showActions={true} />
 
         {/* Account Details */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
@@ -178,6 +217,14 @@ const AccountScreen = () => {
             </Text>
           </View>
         </View>
+
+        {/* QR Code Actions */}
+        <TouchableOpacity
+          style={[styles.qrButton, { backgroundColor: colors.tint }]}
+          onPress={() => router.push('/userQR')}>
+          <Ionicons name="qr-code-outline" size={20} color="white" />
+          <Text style={styles.qrButtonText}>View Full QR Code</Text>
+        </TouchableOpacity>
 
         {/* Logout Button */}
         <TouchableOpacity
@@ -263,6 +310,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoutButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  qrButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 20,
+    marginBottom: 10,
+    gap: 8,
+  },
+  qrButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",

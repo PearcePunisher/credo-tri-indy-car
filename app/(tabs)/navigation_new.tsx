@@ -48,7 +48,7 @@ export default function VIPHomeScreen() {
 
         <View style={styles.grid}>
           <View style={styles.tile}>
-            <VIPTile icon="qr-code" label="My ID" iconColor={iconColor} onPress={() => {}} />
+            <VIPTile icon="qr-code" label="My ID" iconColor={iconColor} onPress={() => router.push("/userQR")} />
           </View>
           <View style={styles.tile}>
             <VIPTile iconComponent={<DoorIcon />} label="Welcome" onPress={() => router.push("/welcome")} />

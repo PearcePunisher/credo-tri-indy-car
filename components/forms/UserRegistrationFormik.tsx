@@ -297,26 +297,37 @@ export function RegisterScreenFormik() {
                 );
 
                 if (response.status === 200) {
-                  // Railway registration successful - now create local auth state
+                  // Get the response data from the server
+                  const responseData = await response.json();
+                  console.log('Server response:', responseData);
+                  
+                  // Railway registration successful - now create local auth state with server data
                   try {
-                    // Create local auth state without trying to register with Strapi
+                    // Use server response data if available, otherwise fall back to form values
+                    const serverUser = responseData?.response;
                     await createLocalAuthState({
-                      email: values.email,
-                      firstName: values.firstName,
-                      lastName: values.lastName,
+                      email: serverUser?.email || values.email,
+                      firstName: serverUser?.fname || values.firstName,
+                      lastName: serverUser?.lname || values.lastName,
                       dateOfBirth: values.dob || "1920-05-05",
                       phoneNumber: `${values.countryCode}${values.phone.replace(/\D/g, '')}`,
+                      // Store additional server data in a way that can be accessed later
+                      serverId: serverUser?.user_id?.toString(),
+                      eventCodeDocumentId: serverUser?.event_code_document_id,
+                      eventScheduleDocumentId: serverUser?.event_schedule_document_id,
                     });
                     
                     alert("Registration successful!");
-                    router.push('/video');
+                    router.push('/welcome');
                   } catch (authError) {
                     console.error('Error setting up local auth state:', authError);
                     // Even if local auth fails, Railway registration succeeded
                     alert("Registration successful!");
-                    router.push('/video');
+                    router.push('/welcome');
                   }
                 } else {
+                  const errorText = await response.text();
+                  console.error('Registration failed:', response.status, errorText);
                   alert(`Registration failed. Error code: ${response.status}`);
                 }
               } catch (error) {

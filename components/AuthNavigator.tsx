@@ -19,6 +19,8 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     const inTabsGroup = segments[0] === '(tabs)';
     const currentPath = segments.join('/');
     const inAuthFlow = currentPath.includes('userID') || currentPath.includes('welcome');
+    const allowedStandalonePages = ['userQR', 'experience', 'directions', 'track', 'team', 'car', 'schedule'];
+    const inAllowedStandalonePage = allowedStandalonePages.some(page => currentPath.includes(page));
 
     // Route users based on authentication and onboarding state
     if (!authState.isAuthenticated && authState.isFirstTimeUser) {
@@ -32,8 +34,8 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         router.replace('/welcome');
       }
     } else if (authState.isAuthenticated && authState.hasCompletedOnboarding) {
-      // User has completed onboarding - go to main app (but allow welcome page)
-      if (!inTabsGroup && !inAuthFlow) {
+      // User has completed onboarding - go to main app (but allow welcome page and standalone pages)
+      if (!inTabsGroup && !inAuthFlow && !inAllowedStandalonePage) {
         router.replace('/(tabs)');
       }
     } else {
