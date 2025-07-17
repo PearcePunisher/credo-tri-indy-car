@@ -15,6 +15,7 @@ import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
 
 const countryCodes = [
   { label: "🇺🇸 +1", value: "+1", placeholder: "(555) 123-4567", maxLength: 14 },
@@ -137,6 +138,7 @@ export function RegisterScreenFormik() {
   const [isGuest2DatePickerVisible, setGuest2DatePickerVisible] = useState(false);
 
   const router = useRouter();
+  const { createLocalAuthState } = useAuth();
 
   // Helper function to format date to YYYY-MM-DD
   function formatDateToString(date: Date): string {
@@ -295,25 +297,22 @@ export function RegisterScreenFormik() {
                 );
 
                 if (response.status === 200) {
-                  // Store basic user info locally for the onboarding flow
+                  // Railway registration successful - now create local auth state
                   try {
-                    const userData = {
+                    // Create local auth state without trying to register with Strapi
+                    await createLocalAuthState({
                       email: values.email,
                       firstName: values.firstName,
                       lastName: values.lastName,
                       dateOfBirth: values.dob || "1920-05-05",
                       phoneNumber: `${values.countryCode}${values.phone.replace(/\D/g, '')}`,
-                      isAuthenticated: true,
-                      hasCompletedOnboarding: false,
-                      registeredAt: new Date().toISOString(),
-                    };
+                    });
                     
-                    // You can add AsyncStorage import and store this locally if needed
-                    // For now, just proceed to video
                     alert("Registration successful!");
                     router.push('/video');
-                  } catch (error) {
-                    console.error('Error storing user data:', error);
+                  } catch (authError) {
+                    console.error('Error setting up local auth state:', authError);
+                    // Even if local auth fails, Railway registration succeeded
                     alert("Registration successful!");
                     router.push('/video');
                   }

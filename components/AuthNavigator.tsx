@@ -28,12 +28,12 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       }
     } else if (authState.isAuthenticated && !authState.hasCompletedOnboarding) {
       // User created account but hasn't completed onboarding (watched video)
-      if (!currentPath.includes('video')) {
+      if (!currentPath.includes('video') && !currentPath.includes('welcome')) {
         router.replace('/video');
       }
     } else if (authState.isAuthenticated && authState.hasCompletedOnboarding) {
-      // User has completed onboarding - go to main app
-      if (!inTabsGroup || currentPath.includes('userID')) {
+      // User has completed onboarding - go to main app (but allow welcome page)
+      if (!inTabsGroup && !inAuthFlow) {
         router.replace('/(tabs)');
       }
     } else {
@@ -56,6 +56,11 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         } else {
           router.replace('/video');
         }
+      }
+      
+      // Prevent going back to video after completing onboarding (unless specifically navigated)
+      if (authState.isAuthenticated && authState.hasCompletedOnboarding && currentPath.includes('video')) {
+        router.replace('/(tabs)');
       }
     }, [authState, segments])
   );

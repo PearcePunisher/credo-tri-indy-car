@@ -130,6 +130,43 @@ class AuthService {
     }
   }
 
+  // Create local authenticated state (for users registered via external service like Railway)
+  async createLocalAuthState(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'isFirstTimeUser' | 'hasCompletedOnboarding' | 'notificationSubscribed'>): Promise<User> {
+    try {
+      const user: User = {
+        id: `local_${Date.now()}`, // Generate local ID
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        dateOfBirth: userData.dateOfBirth,
+        phoneNumber: userData.phoneNumber,
+        isFirstTimeUser: true,
+        hasCompletedOnboarding: false,
+        notificationSubscribed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Store user data locally
+      await this.storeUserData(user);
+      
+      // Mark that app has been launched
+      await AsyncStorage.setItem('@has_launched_before', 'true');
+      
+      this.authState = {
+        isAuthenticated: true,
+        user,
+        isFirstTimeUser: true,
+        hasCompletedOnboarding: false,
+      };
+
+      return user;
+    } catch (error) {
+      console.error('Error creating local auth state:', error);
+      throw error;
+    }
+  }
+
   // Complete onboarding process
   async completeOnboarding(): Promise<void> {
     try {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -26,10 +26,27 @@ export const options = {
 const WelcomeScreen = () => {
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
-  const { updateNotificationSubscription, authState } = useAuth();
+  const { updateNotificationSubscription, authState, completeOnboarding } = useAuth();
   const router = useRouter();
 
   const [subscribed, setSubscribed] = useState(false);
+
+  // Complete onboarding when welcome page loads (if not already completed)
+  useEffect(() => {
+    const completeOnboardingProcess = async () => {
+      if (!authState.hasCompletedOnboarding) {
+        try {
+          console.log('Completing onboarding from welcome page...');
+          await completeOnboarding();
+          console.log('Onboarding completed successfully');
+        } catch (error) {
+          console.error('Error completing onboarding:', error);
+        }
+      }
+    };
+
+    completeOnboardingProcess();
+  }, [authState.hasCompletedOnboarding, completeOnboarding]);
 
   const bulletItems = [
     'Event Schedule',

@@ -5,6 +5,7 @@ interface AuthContextType {
   authState: AuthState;
   isLoading: boolean;
   createUser: (userData: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'isFirstTimeUser' | 'hasCompletedOnboarding' | 'notificationSubscribed'>) => Promise<User>;
+  createLocalAuthState: (userData: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'isFirstTimeUser' | 'hasCompletedOnboarding' | 'notificationSubscribed'>) => Promise<User>;
   completeOnboarding: () => Promise<void>;
   updateNotificationSubscription: (subscribed: boolean, pushToken?: string) => Promise<void>;
   fetchUserDataFromStrapi: (userId: string) => Promise<User>;
@@ -65,6 +66,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const createLocalAuthState = async (userData: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'isFirstTimeUser' | 'hasCompletedOnboarding' | 'notificationSubscribed'>): Promise<User> => {
+    try {
+      const user = await authService.createLocalAuthState(userData);
+      setAuthState(authService.getAuthState());
+      return user;
+    } catch (error) {
+      console.error('Error creating local auth state:', error);
+      throw error;
+    }
+  };
+
   const completeOnboarding = async (): Promise<void> => {
     try {
       await authService.completeOnboarding();
@@ -115,6 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     authState,
     isLoading,
     createUser,
+    createLocalAuthState,
     completeOnboarding,
     updateNotificationSubscription,
     fetchUserDataFromStrapi,
