@@ -19,7 +19,7 @@ export const UserActivationFormik = () => {
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
   const router = useRouter();
-  const { createLocalAuthState } = useAuth();
+  const { createLocalAuthState, authState } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('register');
 
   const handleGuestContinue = async () => {
@@ -40,10 +40,10 @@ export const UserActivationFormik = () => {
                 dateOfBirth: "1990-01-01",
                 phoneNumber: "",
               });
-              router.push('/video');
+              router.push('/welcome');
             } catch (error) {
               console.error('Error creating guest state:', error);
-              router.push('/video');
+              router.push('/welcome');
             }
           }
         }
@@ -118,6 +118,31 @@ export const UserActivationFormik = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <BrandLogo style={styles.brand} />
+        
+        {/* Testing Section - User ID Display */}
+        {authState.user && (
+          <View style={[styles.testingSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.testingTitle, { color: colors.text }]}>
+              Testing Info
+            </Text>
+            <View style={styles.testingField}>
+              <Text style={[styles.testingLabel, { color: colors.secondaryText }]}>
+                User ID:
+              </Text>
+              <Text style={[styles.testingValue, { color: colors.text }]}>
+                {authState.user.id}
+              </Text>
+            </View>
+            <View style={styles.testingField}>
+              <Text style={[styles.testingLabel, { color: colors.secondaryText }]}>
+                Email:
+              </Text>
+              <Text style={[styles.testingValue, { color: colors.text }]}>
+                {authState.user.email}
+              </Text>
+            </View>
+          </View>
+        )}
         
         {renderAuthModeSelector()}
         {renderContent()}
@@ -219,6 +244,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     fontFamily: 'Roobert',
+  },
+  testingSection: {
+    marginBottom: 20,
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  testingTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontFamily: 'Roobert',
+  },
+  testingField: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  testingLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'Roobert',
+  },
+  testingValue: {
+    fontSize: 12,
+    fontWeight: '400',
+    fontFamily: 'Roobert',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 8,
   },
 });
 

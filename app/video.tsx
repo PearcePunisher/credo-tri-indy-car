@@ -21,6 +21,7 @@ export default function VideoPlayerScreen() {
   const [showControls, setShowControls] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
+  const [loadingStartTime] = useState(Date.now()); // Track when loading started
 
   // Video source
   const videoSource: VideoSource = require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4');
@@ -76,7 +77,7 @@ export default function VideoPlayerScreen() {
   // Simplified event handling
   useEffect(() => {
     // Auto-hide loading after platform-specific delay
-    const loadingDelay = Platform.OS === 'android' ? 4000 : 2000; // Longer delay on Android
+    const loadingDelay = Platform.OS === 'android' ? 6000 : 2000; // Longer delay on Android
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
     }, loadingDelay);
@@ -191,15 +192,19 @@ export default function VideoPlayerScreen() {
     }
   };
 
-  // Android-specific: Check if video is actually playing
+  // Android-specific: Check if video is actually loading properly
   useEffect(() => {
     if (Platform.OS === 'android') {
       const checkVideoStatus = setInterval(() => {
         try {
-          if (player && !videoError) {
-            // If we have a player but no video error and it's been loading for too long
-            if (isLoading && Date.now() > 10000) { // 10 seconds
-              console.log('Video taking too long to load on Android, showing fallback');
+          if (player && !videoError && isLoading) {
+            const loadingDuration = Date.now() - loadingStartTime;
+            
+            // If loading for more than 10 seconds, show continue button as fallback
+            if (loadingDuration > 10000) {
+              console.log('Video taking too long to load on Android, enabling continue button');
+              setIsLoading(false);
+              setShowContinue(true);
             }
           }
         } catch (error) {
@@ -209,7 +214,7 @@ export default function VideoPlayerScreen() {
 
       return () => clearInterval(checkVideoStatus);
     }
-  }, [player, videoError, isLoading]);
+  }, [player, videoError, isLoading, loadingStartTime]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: 'black' }]}>
@@ -272,6 +277,7 @@ export default function VideoPlayerScreen() {
               {Platform.OS === 'android' && (
                 <Text style={styles.androidNote}>
                   Initializing video on Android...
+                  {'\n'}This may take a few seconds longer on Android devices.
                 </Text>
               )}
               {__DEV__ && (

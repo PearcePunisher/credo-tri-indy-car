@@ -10,13 +10,15 @@ import {
   Alert,
   Platform,
   Linking,
+  Dimensions,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { VideoView, useVideoPlayer, VideoSource } from 'expo-video';
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 export const options = {
   title: 'Welcome',
@@ -30,6 +32,76 @@ const WelcomeScreen = () => {
   const router = useRouter();
 
   const [subscribed, setSubscribed] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  
+  // Screen dimensions for video sizing
+  const { width: screenWidth } = Dimensions.get('window');
+  const videoHeight = (screenWidth * 9) / 16; // 16:9 aspect ratio
+
+  // Initialize video player with local video source
+  const videoSource: VideoSource = Platform.select({
+    ios: require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4'),
+    android: require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4'),
+  }) as VideoSource;
+
+  const player = useVideoPlayer(videoSource, (player) => {
+    player.loop = false;
+    player.muted = false;
+    player.play(); // Autoplay the video
+  });
+
+  // Add video event listeners
+  useEffect(() => {
+    const subscription = player.addListener('statusChange', (status) => {
+      console.log('Video status changed:', status);
+      if (status.status === 'error') {
+        console.log('Video playback error');
+        setVideoError(true);
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, [player]);
+
+  // Cleanup video player on unmount
+  useEffect(() => {
+    return () => {
+      try {
+        player.release();
+      } catch (error) {
+        console.log('Video player cleanup error:', error);
+      }
+    };
+  }, [player]);
+
+  // Handle video play/pause based on screen focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Screen is focused - resume video if it was paused
+      if (player && !videoError) {
+        try {
+          player.play();
+          console.log('Video resumed on screen focus');
+        } catch (error) {
+          console.log('Error resuming video:', error);
+        }
+      }
+
+      return () => {
+        // Screen is losing focus - pause video
+        if (player && !videoError) {
+          try {
+            player.pause();
+            console.log('Video paused on screen blur');
+          } catch (error) {
+            console.log('Error pausing video:', error);
+          }
+        }
+      };
+    }, [player, videoError])
+  );
 
   // Complete onboarding when welcome page loads (if not already completed)
   useEffect(() => {
@@ -126,6 +198,24 @@ const WelcomeScreen = () => {
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
+        {/* Embedded Video */}
+        <View style={[styles.videoContainer, { width: screenWidth - 40 }]}>
+          {!videoError ? (
+            <VideoView
+              style={[styles.video, { height: videoHeight }]}
+              player={player}
+              allowsFullscreen={false}
+              allowsPictureInPicture={false}
+            />
+          ) : (
+            <View style={[styles.videoPlaceholder, { height: videoHeight }]}>
+              <Text style={[styles.videoErrorText, { color: colors.secondaryText }]}>
+                Video unavailable
+              </Text>
+            </View>
+          )}
+        </View>
+
         {/* Title */}
         <Text style={[styles.title, { color: colors.text }]}>Welcome</Text>
 
@@ -193,6 +283,28 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { padding: 20, paddingBottom: 40 },
   brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 20, objectFit: 'contain' },
+  videoContainer: {
+    alignSelf: 'center',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 20,
+    backgroundColor: '#000',
+  },
+  video: {
+    width: '100%',
+    borderRadius: 12,
+  },
+  videoPlaceholder: {
+    width: '100%',
+    borderRadius: 12,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoErrorText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
   title: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
   paragraph: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
   subheading: { fontSize: 18, fontWeight: '600', marginTop: 10, marginBottom: 6 },
