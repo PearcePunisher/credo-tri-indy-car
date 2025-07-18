@@ -19,7 +19,9 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     const inTabsGroup = segments[0] === '(tabs)';
     const currentPath = segments.join('/');
     const inAuthFlow = currentPath.includes('userID') || currentPath.includes('welcome');
-    const allowedStandalonePages = ['userQR', 'experience', 'directions', 'track', 'team', 'car', 'schedule'];
+    // Define allowed standalone pages that can be accessed without authentication
+    const allowedStandalonePages = ['userQR', 'experience', 'directions', 'track', 'team', 'car', 'schedule', 'faq'];
+    
     const inAllowedStandalonePage = allowedStandalonePages.some(page => currentPath.includes(page));
 
     // Route users based on authentication and onboarding state

@@ -143,11 +143,13 @@ export default function HomeScreen() {
           style={styles.container}
           showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Ionicons
-              name="person-circle-outline"
-              size={28}
-              color={colors.tint}
-            />
+            <TouchableOpacity onPress={() => router.push("/(tabs)/account")}>
+              <Ionicons
+                name="person-circle-outline"
+                size={28}
+                color={colors.tint}
+              />
+            </TouchableOpacity>
             <NotificationBell size={24} />
           </View>
 

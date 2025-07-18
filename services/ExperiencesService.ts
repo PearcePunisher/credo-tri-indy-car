@@ -1,4 +1,5 @@
 import { notificationService } from './NotificationService';
+import AuthService from './AuthService';
 
 export interface VenueLocation {
   id: number;
@@ -52,15 +53,36 @@ class ExperiencesService {
 
   async fetchExperiences(): Promise<ScheduleResponse | null> {
     try {
-      const response = await fetch(this.API_URL);
+      // Get current user to access their Event Schedule Document ID
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser?.eventScheduleDocumentId) {
+        console.warn('No eventScheduleDocumentId found for user, cannot fetch user-specific experiences');
+        return null;
+      }
+
+      // Prepare the request payload with the user's Event Schedule Document ID
+      const requestBody = {
+        event_schedule_document_id: currentUser.eventScheduleDocumentId
+      };
+
+      const response = await fetch(this.API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data: ScheduleResponse = await response.json();
       
-      // Cache the data locally
-      await this.cacheExperiences(data);
+      // Cache the data locally with user-specific key
+      await this.cacheExperiences(data, currentUser.id);
       
       return data;
     } catch (error) {
@@ -71,9 +93,21 @@ class ExperiencesService {
 
   async getCachedExperiences(): Promise<ScheduleResponse | null> {
     try {
+      // Get current user to access user-specific cache
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser) {
+        return null;
+      }
+
+      // User-specific cache keys
+      const userCacheKey = `${this.CACHE_KEY}_${currentUser.id}`;
+      const userTimestampKey = `${this.CACHE_TIMESTAMP_KEY}_${currentUser.id}`;
+      
       // Simple in-memory cache for now - in production, use AsyncStorage
-      const cachedData = (globalThis as any).experiencesCache;
-      const cachedTimestamp = (globalThis as any).experiencesCacheTimestamp;
+      const cachedData = (globalThis as any)[userCacheKey];
+      const cachedTimestamp = (globalThis as any)[userTimestampKey];
       
       if (cachedData && cachedTimestamp) {
         const now = Date.now();
@@ -89,11 +123,15 @@ class ExperiencesService {
     }
   }
 
-  private async cacheExperiences(data: ScheduleResponse): Promise<void> {
+  private async cacheExperiences(data: ScheduleResponse, userId: string): Promise<void> {
     try {
+      // User-specific cache keys
+      const userCacheKey = `${this.CACHE_KEY}_${userId}`;
+      const userTimestampKey = `${this.CACHE_TIMESTAMP_KEY}_${userId}`;
+      
       // Simple in-memory cache for now - in production, use AsyncStorage
-      (globalThis as any).experiencesCache = data;
-      (globalThis as any).experiencesCacheTimestamp = Date.now();
+      (globalThis as any)[userCacheKey] = data;
+      (globalThis as any)[userTimestampKey] = Date.now();
     } catch (error) {
       console.error('Error caching experiences:', error);
     }
@@ -214,8 +252,17 @@ class ExperiencesService {
 
   async getNotificationStatus(experienceId: number): Promise<boolean> {
     try {
-      // Simple in-memory storage for now - in production, use AsyncStorage
-      const statuses = (globalThis as any).notificationStatuses || {};
+      // Get current user for user-specific notification statuses
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser) {
+        return false;
+      }
+
+      // User-specific notification statuses
+      const userStatusKey = `notificationStatuses_${currentUser.id}`;
+      const statuses = (globalThis as any)[userStatusKey] || {};
       return statuses[experienceId] || false;
     } catch (error) {
       console.error('Error getting notification status:', error);
@@ -225,21 +272,45 @@ class ExperiencesService {
 
   async setNotificationStatus(experienceId: number, enabled: boolean): Promise<void> {
     try {
-      // Simple in-memory storage for now - in production, use AsyncStorage
-      if (!(globalThis as any).notificationStatuses) {
-        (globalThis as any).notificationStatuses = {};
+      // Get current user for user-specific notification statuses
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser) {
+        console.warn('No current user found, cannot set notification status');
+        return;
       }
-      (globalThis as any).notificationStatuses[experienceId] = enabled;
+
+      // User-specific notification statuses
+      const userStatusKey = `notificationStatuses_${currentUser.id}`;
+      if (!(globalThis as any)[userStatusKey]) {
+        (globalThis as any)[userStatusKey] = {};
+      }
+      (globalThis as any)[userStatusKey][experienceId] = enabled;
     } catch (error) {
       console.error('Error setting notification status:', error);
     }
   }
 
   async refreshData(): Promise<void> {
-    // Clear cache and fetch fresh data
-    (globalThis as any).experiencesCache = null;
-    (globalThis as any).experiencesCacheTimestamp = null;
-    await this.fetchExperiences();
+    try {
+      // Get current user to clear user-specific cache
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (currentUser) {
+        // Clear user-specific cache and fetch fresh data
+        const userCacheKey = `${this.CACHE_KEY}_${currentUser.id}`;
+        const userTimestampKey = `${this.CACHE_TIMESTAMP_KEY}_${currentUser.id}`;
+        
+        (globalThis as any)[userCacheKey] = null;
+        (globalThis as any)[userTimestampKey] = null;
+      }
+      
+      await this.fetchExperiences();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
   }
 }
 

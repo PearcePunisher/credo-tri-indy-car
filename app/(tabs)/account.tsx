@@ -240,7 +240,7 @@ const AccountScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingBottom: 60 },
-  scroll: { padding: 20, paddingBottom: 40 },
+  scroll: { padding: 20, paddingBottom: 60 },
   centerContent: { flex: 1, justifyContent: "center", alignItems: "center" },
   brand: {
     width: 250,

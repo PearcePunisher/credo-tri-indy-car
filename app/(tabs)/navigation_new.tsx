@@ -72,13 +72,7 @@ export default function VIPHomeScreen() {
             <VIPTile iconComponent={<CarIcon />} label="The Car" onPress={() => router.push("/car")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile iconComponent={<CalendarIcon />} label="2025 Indy Car Calendar" onPress={() => {}} />
-          </View>
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<QuizIcon />} label="FAQ's" onPress={() => {}} />
-          </View>
-          <View style={styles.tile}>
-            <VIPTile icon="play-circle" label="Watch Video" iconColor={iconColor} onPress={() => router.push("/video")} />
+            <VIPTile iconComponent={<QuizIcon />} label="FAQ's" onPress={() => router.push("/faq")} />
           </View>
           <View style={styles.tile}>
             <VIPTile iconComponent={<CommentIcon />} label="Feedback" onPress={() => {}} />
@@ -97,6 +91,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 20,
     backgroundColor: "transparent",
+    paddingBottom: 60, // Ensure enough space for bottom tabs
   },
   header: {
     fontSize: 24,
