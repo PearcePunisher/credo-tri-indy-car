@@ -13,11 +13,8 @@ yarn.lock
 dist/
 web-build/
 expo-env.d.ts
-/android
-/ios
 
-
-# Native
+# Native build artifacts
 *.orig.*
 *.jks
 *.p8
