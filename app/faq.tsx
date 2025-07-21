@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,127 +7,193 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import BrandLogo from '@/components/BrandLogo';
 
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
+interface RichTextChild {
+  text?: string;
+  type: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  url?: string;
+  children?: RichTextChild[]; // Add this to handle nested structure
 }
 
-const faqData: FAQItem[] = [
-  {
-    id: '1',
-    question: 'What is the NTT INDYCAR SERIES?',
-    answer: 'The NTT INDYCAR SERIES is the premier level of open-wheel racing in North America, featuring world-class drivers, cutting-edge engineering, and high-speed competition on a mix of road, street, and oval tracks.',
-  },
-  {
-    id: '2',
-    question: 'Where is WeatherTech Raceway Laguna Seca located?',
-answer: 'The track is located in Monterey County, California, near Salinas and Monterey. The exact address is:\n1021 Monterey-Salinas Hwy, Salinas, CA 93908',
-  },
-  {
-    id: '3',
-    question: 'What is an invitation code and where do I find it?',
-    answer: 'Your invitation code is provided with your VIP ticket purchase or event invitation. Check your email confirmation, ticket, or contact the event organizer if you can\'t locate it.',
-  },
-  {
-    id: '4',
-    question: 'How do I upload my signed waiver?',
-    answer: 'During registration, you\'ll be prompted to upload your signed waiver. You can take a photo of the document or upload a PDF file. Make sure the document is clearly visible and all signatures are legible.',
-  },
-  {
-    id: '5',
-    question: 'Can I bring guests to the event?',
-    answer: 'Yes, if your ticket allows guests, you can register them during the sign-up process. You\'ll need to provide their full name, date of birth, and phone number. Each guest must also have a signed waiver.',
-  },
-  {
-    id: '6',
-    question: 'How do I access my QR code?',
-    answer: 'Once registered, your QR code will be generated automatically. You can view it on your Account page or tap "View Full QR Code" for a larger version. This code is required for event entry.',
-  },
-  {
-    id: '7',
-    question: 'What if I lose my QR code or my phone dies?',
-    answer: 'Your QR code is stored in the app and linked to your account. If your phone dies, you can use any device to log into the app and access your code. For backup, you can also screenshot your QR code.',
-  },
-  {
-    id: '8',
-    question: 'How do I enable notifications?',
-    answer: 'The app will ask for notification permissions when you first open it. You can also enable them in your device settings. Notifications keep you updated on schedule changes and important event information.',
-  },
-  {
-    id: '9',
-    question: 'What kind of notifications will I receive?',
-    answer: 'You\'ll receive notifications about schedule changes, event reminders, exclusive content updates, and important announcements. You can customize which notifications you want to receive in the app settings.',
-  },
-  {
-    id: '10',
-    question: 'How do I view the event schedule?',
-    answer: 'Tap the "Schedule" tab at the bottom of the app to view the full event schedule. You can see race times, practice sessions, and special events. The schedule is personalized based on your ticket type.',
-  },
-  {
-    id: '11',
-    question: 'Can I view directions to the venue?',
-    answer: 'Yes, the app includes venue information and directions. You can find this in the "Getting to the Circuit" section on the home page or by tapping the directions button on specific event details.',
-  },
-  {
-    id: '12',
-    question: 'What if I have technical issues with the app?',
-    answer: 'If you experience technical issues, try restarting the app first. If problems persist, contact support through the app or reach out to the event organizer. Make sure you have the latest version installed.',
-  },
-  {
-    id: '13',
-    question: 'Is my personal information secure?',
-    answer: 'Yes, we take privacy seriously. Your personal information is encrypted and stored securely. We only collect necessary information for event access and communication. Review our privacy policy for complete details.',
-  },
-  {
-    id: '14',
-    question: 'Can I modify my registration information?',
-    answer: 'Currently, you can view your registration information in the Account section. To make changes, please contact the event organizer or support team with your updated information.',
-  },
-  {
-    id: '15',
-    question: 'What happens if I miss my scheduled experience?',
-    answer: 'Experiences are typically scheduled for specific times. If you miss your scheduled time, contact event staff on-site to see if alternative arrangements can be made, though this isn\'t guaranteed.',
-  },
-  {
-    id: '16',
-    question: 'How do I know what experiences are included with my ticket?',
-    answer: 'Your personalized schedule shows only the experiences you\'re invited to based on your ticket type. The app automatically filters content to show what\'s relevant to you.',
-  },
-  {
-    id: '17',
-    question: 'Can I share my QR code with others?',
-    answer: 'No, your QR code is unique to you and should not be shared. Each person needs their own registration and QR code for event access. Sharing codes may result in access being denied.',
-  },
-  {
-    id: '18',
-    question: 'What should I do if my QR code won\'t scan?',
-    answer: 'Ensure your screen brightness is turned up and the QR code is clearly visible. Clean your screen and try again. If it still doesn\'t work, show your registration information to event staff who can assist you.',
-  },
-  {
-    id: '19',
-    question: 'How early should I arrive at the venue?',
-    answer: 'Arrive at least 30-60 minutes before your first scheduled experience to allow time for parking, security checks, and finding your way around the venue. Check your schedule for specific timing recommendations.',
-  },
-  {
-    id: '20',
-    question: 'Who do I contact for support during the event?',
-    answer: 'For immediate assistance during the event, look for event staff wearing official credentials. You can also contact support through the app or use the emergency contact information provided in your registration confirmation.',
-  },
-];
+interface RichTextBlock {
+  type: string;
+  children: RichTextChild[];
+}
+
+interface FAQItem {
+  id: number;
+  Question: string;
+  Answer: RichTextBlock[];
+}
+
+interface FAQResponse {
+  data: Array<{
+    id: number;
+    documentId: string;
+    FAQs: FAQItem[];
+  }>;
+}
+
+// Component to render rich text with formatting and links
+const RichTextRenderer = ({ 
+  richText, 
+  colors 
+}: { 
+  richText: RichTextBlock[], 
+  colors: any 
+}) => {
+  const renderTextWithFormatting = (child: RichTextChild, index: number) => {
+    let textStyle: any = { 
+      color: colors.secondaryText,
+      fontSize: 15,
+      lineHeight: 22,
+      fontFamily: 'Roobert',
+    };
+    
+    // Apply formatting
+    if (child.bold) {
+      textStyle.fontWeight = 'bold';
+      textStyle.fontFamily = 'RoobertSemi';
+    }
+    if (child.italic) {
+      textStyle.fontStyle = 'italic';
+    }
+    if (child.underline) {
+      textStyle.textDecorationLine = 'underline';
+    }
+    
+    // Handle links - check for type "link" and url property
+    if (child.type === 'link' && child.url) {
+      // Extract text from nested children structure
+      let linkText = child.text;
+      if (!linkText && child.children && child.children.length > 0) {
+        linkText = child.children.map(c => c.text || '').join('');
+      }
+      
+      console.log('Link found:', { text: linkText, url: child.url, textLength: linkText?.length, type: child.type });
+      
+      return (
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            console.log('Opening URL:', child.url);
+            Linking.openURL(child.url!).catch(err => {
+              console.error('Error opening URL:', err);
+            });
+          }}
+          style={[styles.linkContainer, { backgroundColor: 'rgba(0,0,255,0.1)', minHeight: 20, paddingVertical: 2 }]} // Debug: add background and min height
+        >
+          <Text
+            style={{
+              color: '#0066FF', // Force blue color for debugging
+              textDecorationLine: 'underline',
+              fontWeight: 'bold',
+              fontSize: 15,
+              lineHeight: 22,
+              fontFamily: 'RoobertSemi',
+            }}
+          >
+            {linkText || '1021 Monterey-Salinas Hwy, Salinas, CA 93908'}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+    
+    return (
+      <Text key={index} style={textStyle}>
+        {child.text}
+      </Text>
+    );
+  };
+
+  return (
+    <View>
+      {richText.map((block, blockIndex) => (
+        <View key={blockIndex} style={styles.richTextBlock}>
+          <View style={styles.richTextContent}>
+            {block.children.map((child, childIndex) => 
+              renderTextWithFormatting(child, childIndex)
+            )}
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+// Helper function to convert rich text to plain text (fallback)
+const convertRichTextToPlainText = (richText: FAQItem['Answer']): string => {
+  if (!richText || !Array.isArray(richText)) return '';
+  
+  return richText
+    .map(block => {
+      if (block.children) {
+        return block.children
+          .map(child => {
+            if (child.url) {
+              // For links, use the text content
+              return child.text || child.url;
+            }
+            return child.text || '';
+          })
+          .join('');
+      }
+      return '';
+    })
+    .join('\n')
+    .trim();
+};
 
 export default function FAQScreen() {
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [faqData, setFaqData] = useState<FAQItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleExpanded = (id: string) => {
+  useEffect(() => {
+    fetchFAQs();
+  }, []);
+
+  const fetchFAQs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('https://strapi.wickedthink.com/api/faqs?populate=*');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data: FAQResponse = await response.json();
+      
+      // Extract FAQs from the response
+      if (data.data && data.data.length > 0 && data.data[0].FAQs) {
+        setFaqData(data.data[0].FAQs);
+      } else {
+        setError('No FAQ data found');
+      }
+    } catch (err) {
+      console.error('Error fetching FAQs:', err);
+      setError('Failed to load FAQs. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleExpanded = (id: number) => {
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
@@ -137,7 +203,7 @@ export default function FAQScreen() {
     setExpandedItems(newExpanded);
   };
 
-  const FAQItem = ({ item }: { item: FAQItem }) => {
+  const FAQItemComponent = ({ item }: { item: FAQItem }) => {
     const isExpanded = expandedItems.has(item.id);
     
     return (
@@ -148,7 +214,7 @@ export default function FAQScreen() {
           activeOpacity={0.7}
         >
           <Text style={[styles.questionText, { color: colors.text }]}>
-            {item.question}
+            {item.Question}
           </Text>
           <Ionicons
             name={isExpanded ? 'chevron-up' : 'chevron-down'}
@@ -159,14 +225,44 @@ export default function FAQScreen() {
         
         {isExpanded && (
           <View style={styles.answerContainer}>
-            <Text style={[styles.answerText, { color: colors.secondaryText }]}>
-              {item.answer}
-            </Text>
+            <RichTextRenderer richText={item.Answer} colors={colors} />
           </View>
         )}
       </View>
     );
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading FAQs...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.errorContainer}>
+          <Ionicons name="warning-outline" size={48} color={colors.tint} />
+          <Text style={[styles.errorText, { color: colors.text }]}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: colors.tint }]}
+            onPress={fetchFAQs}
+          >
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <>
@@ -187,14 +283,14 @@ export default function FAQScreen() {
               Frequently Asked Questions
             </Text>
             <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
-              Find answers to common questions about the IndyCar Experience App
+              Find answers to common questions about the IndyCar Experience
             </Text>
           </View>
 
           {/* FAQ Items */}
           <View style={styles.faqContainer}>
             {faqData.map((item) => (
-              <FAQItem key={item.id} item={item} />
+              <FAQItemComponent key={item.id} item={item} />
             ))}
           </View>
 
@@ -221,6 +317,41 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    marginTop: 16,
+    fontFamily: 'Roobert',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+    fontFamily: 'Roobert',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'RoobertMedium',
   },
   header: {
     alignItems: 'center',
@@ -271,6 +402,17 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  richTextBlock: {
+    marginBottom: 8,
+  },
+  richTextContent: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+  },
+  linkContainer: {
+    marginHorizontal: 2,
   },
   answerText: {
     fontSize: 15,
