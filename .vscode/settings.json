@@ -1,4 +1,16 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.project.sourcePaths": [],
+    "java.project.referencedLibraries": [],
+    "files.exclude": {
+        "**/node_modules/**/android": true,
+        "**/node_modules/**/.settings": true,
+        "**/node_modules/**/.project": true,
+        "**/node_modules/**/.classpath": true
+    },
+    "java.import.exclusions": [
+        "**/node_modules/**",
+        "**/android/app/build/**"
+    ]
 }
