@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+console.log('✅ React imported');
 import {
   StyleSheet,
   Image,
@@ -10,17 +11,29 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
+console.log('✅ React Native components imported');
 import { SafeAreaView } from "react-native-safe-area-context";
+console.log('✅ SafeAreaView imported');
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+console.log('✅ Expo vector icons imported');
 import { router } from "expo-router";
+console.log('✅ Expo router imported');
 import BrandLogo from "@/components/BrandLogo";
+console.log('✅ BrandLogo component imported');
 import CedoLogo from "@/components/CedoLogo";
+console.log('✅ CedoLogo component imported');
 // import { NotificationBell } from "@/components/NotificationBell";
 // import { TestNotificationButton } from "@/components/TestNotificationButton";
 import scheduleData from "@/race_data/scheduleData.json";
+console.log('✅ Schedule data imported');
 import { Colors } from "@/constants/Colors";
+console.log('✅ Colors constants imported');
 import { useColorScheme } from "@/hooks/useColorScheme";
+console.log('✅ useColorScheme hook imported');
 import { Button } from "@/components/Button";
+console.log('✅ Button component imported');
+
+console.log('🚀 All imports completed for Index page');
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side

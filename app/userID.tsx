@@ -1,12 +1,23 @@
 import React, { useState } from "react";
+console.log('✅ React imported');
 import { SafeAreaView, ScrollView, Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
+console.log('✅ React Native components imported');
 import { useColorScheme } from "@/hooks/useColorScheme";
+console.log('✅ useColorScheme hook imported');
 import { Colors } from "@/constants/Colors";
+console.log('✅ Colors constants imported');
 import BrandLogo from "@/components/BrandLogo";
+console.log('✅ BrandLogo component imported');
 import { RegisterScreenFormik } from '@/components/forms/UserRegistrationFormik';
+console.log('✅ RegisterScreenFormik component imported');
 import { LoginForm } from '@/components/forms/LoginForm';
+console.log('✅ LoginForm component imported');
 import { useRouter } from 'expo-router';
+console.log('✅ useRouter hook imported');
 import { useAuth } from '@/hooks/useAuth';
+console.log('✅ useAuth hook imported');
+
+console.log('🚀 All imports completed for UserID page');
 
 export const options = {
   title: "Welcome",
