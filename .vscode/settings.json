@@ -1,6 +1,6 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.updateBuildConfiguration": "automatic",
     "java.project.sourcePaths": [],
     "java.project.referencedLibraries": [],
     "files.exclude": {
