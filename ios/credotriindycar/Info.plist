@@ -53,6 +53,14 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>This app uses the camera to scan QR codes for accessing exclusive experiences and checking in at events.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app uses location services to provide location-based event information and directions.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app may access the microphone for video recording features.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app may access your photo library to save QR codes and event photos.</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
