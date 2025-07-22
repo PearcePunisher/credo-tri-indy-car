@@ -22,13 +22,25 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const [showTray, setShowTray] = useState(false);
 
   useEffect(() => {
-    // Initialize notification service and request permissions
-    initializeNotifications();
+    // Delay notification initialization to prevent crashes
+    const initializeWithDelay = async () => {
+      try {
+        // Wait for app to fully load
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Initialize notification service and request permissions
+        await initializeNotifications();
+        
+        // Load initial notification count
+        await loadUnreadCount();
+      } catch (error) {
+        console.error('Error initializing notifications in bell:', error);
+      }
+    };
+
+    initializeWithDelay();
     
-    // Load initial notification count
-    loadUnreadCount();
-    
-    // Listen for new notifications
+    // Listen for new notifications (this is safe to set up immediately)
     const receivedSubscription = Notifications.addNotificationReceivedListener(() => {
       setUnreadCount(prev => prev + 1);
     });
@@ -46,9 +58,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
   const initializeNotifications = async () => {
     try {
-      await notificationService.requestPermissions();
+      const hasPermission = await notificationService.requestPermissions();
+      if (!hasPermission) {
+        console.log('Notification permissions not granted');
+        return;
+      }
     } catch (error) {
-      console.error('Failed to initialize notifications:', error);
+      console.error('Error requesting notification permissions:', error);
+      // Don't throw - just log and continue
     }
   };
 

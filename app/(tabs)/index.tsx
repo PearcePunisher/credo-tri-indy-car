@@ -15,8 +15,8 @@ import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import BrandLogo from "@/components/BrandLogo";
 import CedoLogo from "@/components/CedoLogo";
-import { NotificationBell } from "@/components/NotificationBell";
-import { TestNotificationButton } from "@/components/TestNotificationButton";
+// import { NotificationBell } from "@/components/NotificationBell";
+// import { TestNotificationButton } from "@/components/TestNotificationButton";
 import scheduleData from "@/race_data/scheduleData.json";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -150,7 +150,8 @@ export default function HomeScreen() {
                 color={colors.tint}
               />
             </TouchableOpacity>
-            <NotificationBell size={24} />
+            {/* Temporarily disabled to prevent crashes */}
+            {/* <NotificationBell size={24} /> */}
           </View>
 
           <View style={styles.logoContainer}>
@@ -408,7 +409,8 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TestNotificationButton />
+          {/* Temporarily disabled to prevent crashes */}
+          {/* <TestNotificationButton /> */}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>

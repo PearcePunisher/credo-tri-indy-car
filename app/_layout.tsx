@@ -23,14 +23,20 @@ SplashScreen.preventAutoHideAsync();
 
 // Error fallback component
 function ErrorFallback({error, resetErrorBoundary}: {error: Error, resetErrorBoundary: () => void}) {
+  console.error('App Error Boundary caught:', error);
+  console.error('Error stack:', error.stack);
+  
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Something went wrong</Text>
-      <Text style={{ fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>App Error</Text>
+      <Text style={{ fontSize: 12, textAlign: 'center', marginBottom: 10 }}>
         {error.message || 'An unexpected error occurred'}
       </Text>
+      <Text style={{ fontSize: 10, textAlign: 'center', marginBottom: 20, color: 'gray' }}>
+        {error.stack ? error.stack.substring(0, 200) + '...' : ''}
+      </Text>
       <Text 
-        style={{ fontSize: 16, color: 'blue', textDecorationLine: 'underline' }}
+        style={{ fontSize: 16, color: 'blue', textDecorationLine: 'underline', padding: 10 }}
         onPress={resetErrorBoundary}
       >
         Try again
