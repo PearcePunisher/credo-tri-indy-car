@@ -8,18 +8,21 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
+        "NODE_ENV": "development",
         "EXPO_PUBLIC_DEV_MODE": "true"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
+        "NODE_ENV": "production",
         "EXPO_PUBLIC_DEV_MODE": "false"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
+        "NODE_ENV": "production",
         "EXPO_PUBLIC_DEV_MODE": "false",
         "EXPO_PUBLIC_STRAPI_URL": "https://timely-actor-10dfb03957.strapiapp.com",
         "EXPO_PUBLIC_PROJECT_ID": "db70e71b-2bb8-4da5-9442-a8f0ce48fd2f"

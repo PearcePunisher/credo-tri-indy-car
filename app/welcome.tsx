@@ -18,6 +18,7 @@ import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/hooks/useAuth';
+import ENV_CONFIG from '@/constants/Environment';
 import { useRouter, useFocusEffect } from 'expo-router';
 
 export const options = {
@@ -148,9 +149,9 @@ const WelcomeScreen = () => {
         
         try {
           // Get push token with fallback for missing project ID
-          const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+          const projectId = ENV_CONFIG.PROJECT_ID;
           if (!projectId) {
-            console.warn('⚠️ EXPO_PUBLIC_PROJECT_ID not found, skipping push token registration');
+            console.warn('⚠️ PROJECT_ID not found, skipping push token registration');
             await updateNotificationSubscription(true);
           } else {
             const pushToken = await Notifications.getExpoPushTokenAsync({

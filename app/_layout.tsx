@@ -11,12 +11,32 @@ import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from 'react-error-boundary';
 import { Text, View } from 'react-native';
-import "react-native-reanimated";
+
+// Check if reanimated import causes issues in production
+try {
+  console.log('📦 Importing react-native-reanimated...');
+  // Temporarily disable reanimated import for production debugging
+  // require("react-native-reanimated");
+  console.log('⚠️ Reanimated import temporarily disabled for debugging');
+} catch (error) {
+  console.error('❌ Reanimated import failed:', error);
+}
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { TeamThemeProvider } from "@/theme/TeamThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthNavigator from "../components/AuthNavigator";
+
+// Add native crash logging and environment validation
+console.log('📱 App starting - Native level');
+console.log('🌍 Environment check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DEV_MODE: process.env.EXPO_PUBLIC_DEV_MODE,
+  hasProjectId: !!process.env.EXPO_PUBLIC_PROJECT_ID
+});
+
+// Import environment config early to validate
+import ENV_CONFIG from '@/constants/Environment';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -46,38 +66,51 @@ function ErrorFallback({error, resetErrorBoundary}: {error: Error, resetErrorBou
 }
 
 export default function RootLayout() {
+  console.log('🚀 RootLayout starting...');
   const colorScheme = useColorScheme();
+  
+  console.log('📝 Loading fonts...');
   const [loaded] = useFonts({
     Roobert: require("../assets/fonts/Roobert-Regular.ttf"),
     RoobertSemi: require("../assets/fonts/Roobert-SemiBold.ttf"),
     RoobertMedium: require("../assets/fonts/Roobert-Medium.ttf"),
   });
+  
+  console.log('✅ Fonts loaded status:', loaded);
 
   useEffect(() => {
+    console.log('📱 useEffect triggered, loaded:', loaded);
     if (loaded) {
+      console.log('🎯 Hiding splash screen...');
       // Add a small delay to ensure everything is ready before hiding splash
       setTimeout(() => {
         SplashScreen.hideAsync();
+        console.log('✅ Splash screen hidden');
       }, 100);
     }
   }, [loaded]);
 
   if (!loaded) {
+    console.log('⏳ Fonts not loaded yet, returning null');
     return null;
   }
 
-  return (
-    <ErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onError={(error, errorInfo) => {
-        console.error('App crashed:', error, errorInfo);
-      }}
-    >
-      <AuthProvider>
-        <TeamThemeProvider>
-          <SafeAreaProvider>
-            <ThemeProvider
-              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+  console.log('🏗️ Rendering main app structure...');
+
+  try {
+    console.log('🔧 Starting app render...');
+    return (
+      <ErrorBoundary
+        FallbackComponent={ErrorFallback}
+        onError={(error, errorInfo) => {
+          console.error('💥 App crashed in ErrorBoundary:', error, errorInfo);
+        }}
+      >
+        <AuthProvider>
+          <TeamThemeProvider>
+            <SafeAreaProvider>
+              <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
               <AuthNavigator>
                 <Stack>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -130,4 +163,18 @@ export default function RootLayout() {
       </AuthProvider>
     </ErrorBoundary>
   );
+  } catch (error) {
+    console.error('💥 Critical app render error:', error);
+    // Return a minimal fallback UI
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+          App failed to start
+        </Text>
+        <Text style={{ fontSize: 14, textAlign: 'center', color: 'gray' }}>
+          {error instanceof Error ? error.message : 'Unknown error'}
+        </Text>
+      </View>
+    );
+  }
 }

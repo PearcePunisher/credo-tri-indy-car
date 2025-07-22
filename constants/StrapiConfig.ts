@@ -1,7 +1,9 @@
+import ENV_CONFIG from './Environment';
+
 // Configuration for Strapi backend connection
 export const STRAPI_CONFIG = {
-  // Using the existing Strapi URL from the track.tsx file
-  baseUrl: process.env.EXPO_PUBLIC_STRAPI_URL || 'https://timely-actor-10dfb03957.strapiapp.com',
+  // Using environment configuration
+  baseUrl: ENV_CONFIG.STRAPI_URL,
   
   // API endpoints
   endpoints: {
@@ -19,7 +21,7 @@ if (!STRAPI_CONFIG.baseUrl) {
 
 console.log('🔧 Strapi Config loaded:', {
   baseUrl: STRAPI_CONFIG.baseUrl,
-  hasEnvVar: !!process.env.EXPO_PUBLIC_STRAPI_URL
+  environment: ENV_CONFIG.NODE_ENV
 });
 
 // Notification types for better organization
