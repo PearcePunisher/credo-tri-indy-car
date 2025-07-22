@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   lastUpdated: {
     fontSize: 12,
-    fontFamily: 'Roobert',
+    
     marginTop: 16,
     marginBottom: 16,
   },
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     lineHeight: 24,
-    fontFamily: 'Roobert',
+    
     marginBottom: 24,
   },
   notificationButton: {

@@ -16,7 +16,7 @@ import CarIcon from "@/assets/icons/carIcon.svg";
 import CalendarIcon from "@/assets/icons/calendarIcon.svg";
 import QuizIcon from "@/assets/icons/quizIcon.svg";
 import CommentIcon from "@/assets/icons/commentIcon.svg";
-import LogoutIcon from "@/assets/icons/logoutIcon.svg";
+// import LogoutIcon from "@/assets/icons/logoutIcon.svg"; // TEMPORARILY REMOVED FOR CRASH TESTING
 
 // Importing the brand logo component
 import BrandLogo from "@/components/BrandLogo";
@@ -77,9 +77,10 @@ export default function VIPHomeScreen() {
           <View style={styles.tile}>
             <VIPTile iconComponent={<CommentIcon />} label="Feedback" onPress={() => {}} />
           </View>
-          <View style={styles.tile}>
+          {/* TEMPORARILY REMOVED FOR CRASH TESTING */}
+          {/* <View style={styles.tile}>
             <VIPTile iconComponent={<LogoutIcon />} label="Log Out" onPress={() => {}} />
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>

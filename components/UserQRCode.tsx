@@ -173,16 +173,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 4,
-    fontFamily: 'Roobert',
+    
   },
   userEmail: {
     fontSize: 14,
     marginBottom: 2,
-    fontFamily: 'Roobert',
+    
   },
   userId: {
     fontSize: 12,
-    fontFamily: 'Roobert',
+    
   },
   actionsContainer: {
     flexDirection: 'row',
@@ -200,17 +200,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
-    fontFamily: 'Roobert',
+    
   },
   loadingText: {
     fontSize: 16,
-    fontFamily: 'Roobert',
+    
   },
   errorText: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 12,
-    fontFamily: 'Roobert',
+    
   },
 });
 

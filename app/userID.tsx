@@ -201,20 +201,18 @@ const styles = StyleSheet.create({
     fontSize: 26, 
     fontWeight: "bold", 
     marginBottom: 16, 
-    textAlign: "center", 
-    fontFamily: 'Roobert' 
+    textAlign: "center"
   },
   paragraph: { 
     fontSize: 15, 
     lineHeight: 22, 
     marginBottom: 12, 
-    textAlign: "center", 
-    fontFamily: 'Roobert' 
+    textAlign: "center"
   },
   bulletList: { marginBottom: 24 },
   bulletRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 8 },
-  bullet: { fontSize: 18, marginRight: 8, fontFamily: 'Roobert' },
-  bulletText: { fontSize: 15, flex: 1, lineHeight: 22, fontFamily: 'Roobert' },
+  bullet: { fontSize: 18, marginRight: 8 },
+  bulletText: { fontSize: 15, flex: 1, lineHeight: 22 },
   modeSelector: {
     flexDirection: 'row',
     marginBottom: 24,
@@ -239,7 +237,6 @@ const styles = StyleSheet.create({
   modeButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Roobert',
   },
   guestSection: {
     marginTop: 32,
@@ -252,7 +249,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 16,
-    fontFamily: 'Roobert',
   },
   guestButton: {
     paddingVertical: 12,
@@ -264,7 +260,6 @@ const styles = StyleSheet.create({
   guestButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'Roobert',
   },
   testingSection: {
     marginBottom: 20,
@@ -277,7 +272,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
     textAlign: 'center',
-    fontFamily: 'Roobert',
   },
   testingField: {
     flexDirection: 'row',
@@ -288,12 +282,10 @@ const styles = StyleSheet.create({
   testingLabel: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Roobert',
   },
   testingValue: {
     fontSize: 12,
     fontWeight: '400',
-    fontFamily: 'Roobert',
     flex: 1,
     textAlign: 'right',
     marginLeft: 8,

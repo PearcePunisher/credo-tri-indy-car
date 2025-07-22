@@ -7,14 +7,21 @@ import { Colors } from '@/constants/Colors';
 import { useFocusEffect } from '@react-navigation/native';
 
 const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('🔧 AuthNavigator component starting...');
+  
   const { authState, isLoading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
 
+  console.log('✅ AuthNavigator hooks initialized successfully');
+
   useEffect(() => {
     try {
+      console.log('🚨 TESTING MODE: Skipping all navigation for crash testing');
+      return; // TEMPORARILY DISABLED FOR CRASH TESTING
+      
       if (isLoading) return; // Don't navigate while loading
 
       const inTabsGroup = segments[0] === '(tabs)';
@@ -74,6 +81,9 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   // Prevent going back to userID after authentication
   useFocusEffect(
     React.useCallback(() => {
+      console.log('🚨 TESTING MODE: Skipping focus navigation for crash testing');
+      return; // TEMPORARILY DISABLED FOR CRASH TESTING
+      
       const currentPath = segments.join('/');
       
       // If user is authenticated and tries to go back to userID, redirect them

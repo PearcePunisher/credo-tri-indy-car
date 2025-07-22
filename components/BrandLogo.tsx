@@ -17,8 +17,12 @@ export default function BrandLogo({
   height = 120,
   style,
 }: BrandLogoProps) {
+  console.log('🖼️ BrandLogo component starting...');
+  
   const colorScheme = useColorScheme();
   const logoUri = colorScheme === "light" ? LOGO_LIGHT : LOGO_DARK;
+
+  console.log('✅ BrandLogo initialized, colorScheme:', colorScheme);
 
   return (
     <View style={styles.container}>

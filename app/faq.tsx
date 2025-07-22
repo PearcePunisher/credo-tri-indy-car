@@ -57,7 +57,7 @@ const RichTextRenderer = ({
       color: colors.secondaryText,
       fontSize: 15,
       lineHeight: 22,
-      fontFamily: 'Roobert',
+      
     };
     
     // Apply formatting
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     marginTop: 16,
-    fontFamily: 'Roobert',
+    
   },
   errorContainer: {
     flex: 1,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 16,
     marginBottom: 24,
-    fontFamily: 'Roobert',
+    
   },
   retryButton: {
     paddingHorizontal: 24,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     paddingHorizontal: 20,
-    fontFamily: 'Roobert',
+    
   },
   faqContainer: {
     marginTop: 20,
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   answerText: {
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'Roobert',
+    
   },
   supportCard: {
     marginTop: 30,
@@ -436,6 +436,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
-    fontFamily: 'Roobert',
+    
   },
 });

@@ -126,19 +126,27 @@ const validationSchema = Yup.object().shape({
 });
 
 export function RegisterScreenFormik() {
+  console.log('🔧 RegisterScreenFormik component starting...');
+  
   const colorScheme = useColorScheme() || "light";
   const colors = Colors[colorScheme];
   const [menuVisible, setMenuVisible] = useState(false);
   const [guest1MenuVisible, setGuest1MenuVisible] = useState(false);
   const [guest2MenuVisible, setGuest2MenuVisible] = useState(false);
   
+  console.log('📱 RegisterScreenFormik state initialized...');
+  
   // Date picker states
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [isGuest1DatePickerVisible, setGuest1DatePickerVisible] = useState(false);
   const [isGuest2DatePickerVisible, setGuest2DatePickerVisible] = useState(false);
 
+  console.log('📅 RegisterScreenFormik date picker states initialized...');
+  
   const router = useRouter();
   const { createLocalAuthState } = useAuth();
+  
+  console.log('✅ RegisterScreenFormik hooks initialized successfully');
 
   // Helper function to format date to YYYY-MM-DD
   function formatDateToString(date: Date): string {
@@ -1253,8 +1261,8 @@ export function RegisterScreenFormik() {
                 >
                   Register
                 </Button>
-                {/* Payload Preview */}
-                <View
+                {/* TEMPORARILY REMOVED FOR CRASH TESTING - Payload Preview causes JSON.stringify issues */}
+                {/* <View
                   style={{
                     marginTop: 24,
                     backgroundColor: colors.card,
@@ -1316,7 +1324,7 @@ export function RegisterScreenFormik() {
                       2
                     )}
                   </Text>
-                </View>
+                </View> */}
                 {touched.phone && errors.phone && (
                   <Text
                     style={{

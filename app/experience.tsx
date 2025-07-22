@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   bullet: {
     fontSize: 16,
     marginBottom: 8,
-    fontFamily: 'Roobert',
+    
   },
   card: {
     padding: 16,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginTop: 10,
-    fontFamily: 'Roobert',
+    
   },
   image: {
     width: '100%',

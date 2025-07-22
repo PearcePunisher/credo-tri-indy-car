@@ -479,11 +479,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 4,
-    fontFamily: 'Roobert',
+    
   },
   notificationTime: {
     fontSize: 12,
-    fontFamily: 'Roobert',
+    
   },
   deleteButton: {
     padding: 4,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
-    fontFamily: 'Roobert',
+    
   },
   clearAllButton: {
     padding: 20,

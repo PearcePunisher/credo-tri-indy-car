@@ -3,7 +3,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { useFonts } from "expo-font";
+// import { useFonts } from 'expo-font'; // TEMPORARILY DISABLED FOR CRASH TESTING
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -69,14 +69,16 @@ export default function RootLayout() {
   console.log('🚀 RootLayout starting...');
   const colorScheme = useColorScheme();
   
-  console.log('📝 Loading fonts...');
-  const [loaded] = useFonts({
-    Roobert: require("../assets/fonts/Roobert-Regular.ttf"),
-    RoobertSemi: require("../assets/fonts/Roobert-SemiBold.ttf"),
-    RoobertMedium: require("../assets/fonts/Roobert-Medium.ttf"),
-  });
+  console.log('📝 Skipping font loading for crash testing...');
+  // TEMPORARILY DISABLED FOR CRASH TESTING
+  // const [loaded] = useFonts({
+  //   Roobert: require("../assets/fonts/Roobert-Regular.ttf"),
+  //   RoobertSemi: require("../assets/fonts/Roobert-SemiBold.ttf"),
+  //   RoobertMedium: require("../assets/fonts/Roobert-Medium.ttf"),
+  // });
+  const loaded = true; // Force to true for testing
   
-  console.log('✅ Fonts loaded status:', loaded);
+  console.log('✅ Fonts loaded status (forced for testing):', loaded);
 
   useEffect(() => {
     console.log('📱 useEffect triggered, loaded:', loaded);

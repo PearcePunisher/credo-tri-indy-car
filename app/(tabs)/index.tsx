@@ -116,12 +116,16 @@ function getCountdownParts(targetDate: string): {
 }
 
 export default function HomeScreen() {
+  console.log('🏠 HomeScreen component starting...');
+  
   const [countdown, setCountdown] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
+  
+  console.log('📊 HomeScreen state initialized...');
   const [nextRace, setNextRace] = useState<{
     race: Stage;
     event: Event;
@@ -480,7 +484,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 20,
     marginBottom: 10,
-    fontFamily: "RoobertSemi",
+    
   },
   carouselContainer: {
     // height: 200,
@@ -513,7 +517,7 @@ const styles = StyleSheet.create({
   upNextText: {
     color: "black",
     fontWeight: "bold",
-    fontFamily: "Roobert",
+    
   },
   raceInfo: {
     marginTop: 15,
@@ -522,19 +526,19 @@ const styles = StyleSheet.create({
   raceTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    fontFamily: "RoobertMedium",
+    
   },
   raceDate: {
     fontSize: 14,
     marginTop: 5,
-    fontFamily: "Roobert",
+    
   },
   countdownTitle: {
     fontSize: 14,
     fontWeight: "bold",
     marginTop: 30,
     marginBottom: 10,
-    fontFamily: "RoobertMedium",
+    
   },
   countdownContainer: {
     flexDirection: "row",
@@ -550,12 +554,12 @@ const styles = StyleSheet.create({
   countdownValue: {
     fontSize: 32,
     fontWeight: "bold",
-    fontFamily: "RoobertSemi",
+    
   },
   countdownLabel: {
     fontSize: 14,
     marginTop: 5,
-    fontFamily: "Roobert",
+    
   },
   gridContainer: {
     flexDirection: "row",
@@ -578,12 +582,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
-    fontFamily: "RoobertMedium",
+    
   },
   gridSubtitle: {
     fontSize: 14,
     marginTop: 5,
-    fontFamily: "Roobert",
+    
   },
   eventInfo: {
     marginTop: 15,
@@ -592,17 +596,17 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    fontFamily: "RoobertSemi",
+    
   },
   eventDetails: {
     fontSize: 14,
     marginTop: 5,
-    fontFamily: "Roobert",
+    
   },
   eventSubDetails: {
     fontSize: 14,
     marginTop: 5,
-    fontFamily: "Roobert",
+    
   },
   shareButton: {
     borderRadius: 25,
@@ -614,7 +618,7 @@ const styles = StyleSheet.create({
   shareButtonText: {
     fontSize: 18,
     fontWeight: "bold",
-    fontFamily: "RoobertSemi",
+    
   },
   footer: {
     alignItems: "center",
@@ -624,6 +628,6 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#888",
     fontSize: 12,
-    fontFamily: "Roobert",
+    
   },
 });

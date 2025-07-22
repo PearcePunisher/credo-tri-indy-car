@@ -23,11 +23,15 @@ interface LoginFormValues {
 }
 
 export const LoginForm: React.FC = () => {
+  console.log('🔧 LoginForm component starting...');
+  
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { createLocalAuthState } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  
+  console.log('✅ LoginForm hooks initialized successfully');
 
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);

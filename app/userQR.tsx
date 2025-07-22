@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', 
     marginBottom: 12, 
     textAlign: 'center',
-    fontFamily: 'Roobert'
+    
   },
   description: {
     fontSize: 16,
@@ -107,13 +107,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 20,
-    fontFamily: 'Roobert'
+    
   },
   errorText: { 
     fontSize: 18, 
     textAlign: 'center', 
     marginBottom: 20,
-    fontFamily: 'Roobert'
+    
   },
   infoCard: {
     padding: 20,
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 8,
-    fontFamily: 'Roobert'
+    
   },
   infoList: {
     paddingLeft: 8,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 8,
-    fontFamily: 'Roobert'
+    
   },
   backButton: {
     flexDirection: 'row',
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Roobert'
+    
   },
 });
 

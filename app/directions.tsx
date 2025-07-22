@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
     lineHeight: 24,
-    fontFamily: 'Roobert',
+    
   },
   listContainer: {
     marginBottom: 10,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginBottom: 5,
     lineHeight: 24,
-    fontFamily: 'Roobert',
+    
   },
 });
 
