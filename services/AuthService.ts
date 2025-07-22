@@ -46,6 +46,11 @@ class AuthService {
   // Initialize auth state from local storage
   async initializeAuth(): Promise<AuthState> {
     try {
+      console.log('🔧 Initializing AuthService...');
+      
+      // Add delay to prevent race conditions
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const storedUser = await AsyncStorage.getItem('@user_data');
       const onboardingStatus = await AsyncStorage.getItem('@onboarding_status');
       
@@ -71,7 +76,13 @@ class AuthService {
       return this.authState;
     } catch (error) {
       console.error('Error initializing auth:', error);
-      return this.authState;
+      // Return safe default state on error
+      return {
+        isAuthenticated: false,
+        user: null,
+        isFirstTimeUser: true,
+        hasCompletedOnboarding: false,
+      };
     }
   }
 

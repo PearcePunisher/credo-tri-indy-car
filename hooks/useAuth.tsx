@@ -18,6 +18,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
+    console.error('❌ useAuth must be used within an AuthProvider');
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
@@ -46,10 +47,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initializeAuth = async () => {
     try {
       setIsLoading(true);
+      console.log('🔧 Starting auth initialization...');
+      
+      // Add a small delay to ensure all modules are loaded
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       const initialAuthState = await authService.initializeAuth();
+      console.log('✅ Auth initialization complete:', initialAuthState);
       setAuthState(initialAuthState);
     } catch (error) {
-      console.error('Error initializing auth:', error);
+      console.error('❌ Error initializing auth:', error);
+      // Set safe fallback state
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        isFirstTimeUser: true,
+        hasCompletedOnboarding: false,
+      });
     } finally {
       setIsLoading(false);
     }
