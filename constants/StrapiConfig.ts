@@ -12,6 +12,16 @@ export const STRAPI_CONFIG = {
   }
 };
 
+// Validate configuration on app start
+if (!STRAPI_CONFIG.baseUrl) {
+  console.error('❌ STRAPI_CONFIG.baseUrl is not defined');
+}
+
+console.log('🔧 Strapi Config loaded:', {
+  baseUrl: STRAPI_CONFIG.baseUrl,
+  hasEnvVar: !!process.env.EXPO_PUBLIC_STRAPI_URL
+});
+
 // Notification types for better organization
 export const NOTIFICATION_TYPES = {
   RACE_UPDATE: 'race_update',

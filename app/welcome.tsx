@@ -146,12 +146,23 @@ const WelcomeScreen = () => {
       if (status === 'granted') {
         setSubscribed(true);
         
-        // Get push token
-        const pushToken = await Notifications.getExpoPushTokenAsync({
-          projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-        });
-        
-        await updateNotificationSubscription(true, pushToken.data);
+        try {
+          // Get push token with fallback for missing project ID
+          const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+          if (!projectId) {
+            console.warn('⚠️ EXPO_PUBLIC_PROJECT_ID not found, skipping push token registration');
+            await updateNotificationSubscription(true);
+          } else {
+            const pushToken = await Notifications.getExpoPushTokenAsync({
+              projectId: projectId,
+            });
+            await updateNotificationSubscription(true, pushToken.data);
+          }
+        } catch (tokenError) {
+          console.error('❌ Error getting push token:', tokenError);
+          // Still update subscription without token
+          await updateNotificationSubscription(true);
+        }
         
         Alert.alert('Subscribed!', 'You will now receive updates about track experiences and events.', [
           { text: 'Continue', onPress: () => router.push('/(tabs)') }
