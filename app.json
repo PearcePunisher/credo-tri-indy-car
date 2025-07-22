@@ -16,7 +16,8 @@
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for accessing exclusive experiences and checking in at events.",
         "NSMicrophoneUsageDescription": "This app may access the microphone for video recording features.",
         "NSPhotoLibraryUsageDescription": "This app may access your photo library to save QR codes and event photos.",
-        "NSLocationWhenInUseUsageDescription": "This app uses location services to provide location-based event information and directions."
+        "NSLocationWhenInUseUsageDescription": "This app uses location services to provide location-based event information and directions.",
+        "NSUserNotificationsUsageDescription": "This app sends push notifications to keep you updated about race events, VIP experiences, and important announcements."
       }
     },
     "android": {

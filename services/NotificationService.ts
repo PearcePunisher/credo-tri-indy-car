@@ -13,13 +13,21 @@ class NotificationService {
   
   async requestPermissions(): Promise<boolean> {
     try {
+      // Add a small delay to ensure React Native bridge is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       
       let finalStatus = existingStatus;
       
       if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+        try {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        } catch (permissionError) {
+          console.error('Error requesting permissions:', permissionError);
+          return false;
+        }
       }
       
       if (finalStatus !== 'granted') {
@@ -29,12 +37,17 @@ class NotificationService {
       
       // Get push token for remote notifications
       if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
+        try {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        } catch (channelError) {
+          console.error('Error setting notification channel:', channelError);
+          // Don't return false here as permissions might still work
+        }
       }
       
       return true;

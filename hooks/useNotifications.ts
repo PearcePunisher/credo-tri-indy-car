@@ -26,31 +26,51 @@ export function useNotifications({ userId, jwtToken, isVIP }: UseNotificationsPr
   const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
-    if (userId && jwtToken) {
-      // Register for push notifications
-      registerForPushNotifications();
-    }
+    // Delay initialization to avoid crashes during app startup
+    const initializeNotifications = async () => {
+      try {
+        // Wait for app to fully initialize
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (userId && jwtToken) {
+          // Register for push notifications
+          await registerForPushNotifications();
+        }
+      } catch (error) {
+        console.error('Error initializing notifications:', error);
+      }
+    };
+
+    initializeNotifications();
 
     // Listen for incoming notifications
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received:', notification);
-      // Handle the notification when app is in foreground
-      handleNotificationReceived(notification);
-    });
+    try {
+      notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        console.log('Notification received:', notification);
+        // Handle the notification when app is in foreground
+        handleNotificationReceived(notification);
+      });
 
-    // Listen for notification responses (when user taps notification)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
-      // Handle navigation based on notification data
-      handleNotificationResponse(response);
-    });
+      // Listen for notification responses (when user taps notification)
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+        console.log('Notification response:', response);
+        // Handle navigation based on notification data
+        handleNotificationResponse(response);
+      });
+    } catch (error) {
+      console.error('Error setting up notification listeners:', error);
+    }
 
     return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+      try {
+        if (notificationListener.current) {
+          Notifications.removeNotificationSubscription(notificationListener.current);
+        }
+        if (responseListener.current) {
+          Notifications.removeNotificationSubscription(responseListener.current);
+        }
+      } catch (error) {
+        console.error('Error cleaning up notification listeners:', error);
       }
     };
   }, [userId, jwtToken]);
