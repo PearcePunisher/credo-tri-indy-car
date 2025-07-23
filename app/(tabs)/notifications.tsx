@@ -4,9 +4,6 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
-const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-const pushTokenString = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
