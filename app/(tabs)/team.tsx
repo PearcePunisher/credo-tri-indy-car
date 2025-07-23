@@ -35,6 +35,7 @@ type Media = {
 };
 
 type CarImageSide = {
+  url: string;
   formats?: {
     medium?: ImageFormat;
   };
@@ -151,8 +152,7 @@ const TeamScreen = () => {
             driver.driver_image?.url;
 
           const carImage =
-            driver.car?.car_images?.[0]?.car_image_side?.formats?.medium
-              ?.url || "https://placehold.co/300x100?text=Car+Image";
+            driver.car?.car_images?.[0]?.car_image_side?.url || "https://placehold.co/300x100?text=Car+Image";
 
           const socialLinks = driver.driver_social_medias || [];
 
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   driverImage: {
     width: "100%",
     aspectRatio: 3 / 4,
-    resizeMode: "cover",
+    resizeMode: "contain",
   },
   cardInner: {
     padding: 16,

@@ -25,7 +25,7 @@ try {
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { TeamThemeProvider } from "@/theme/TeamThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
-import AuthNavigator from "../components/AuthNavigator";
+import AppStateManager from "../components/AppStateManager";
 
 // Add native crash logging and environment validation
 console.log('📱 App starting - Native level');
@@ -36,7 +36,7 @@ console.log('🌍 Environment check:', {
 });
 
 // Import environment config early to validate
-import ENV_CONFIG from '@/constants/Environment';
+import { ENV_CONFIG } from '@/constants/Environment';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -113,7 +113,7 @@ export default function RootLayout() {
             <SafeAreaProvider>
               <ThemeProvider
                 value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-              <AuthNavigator>
+              <AppStateManager>
                 <Stack>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen
@@ -158,7 +158,7 @@ export default function RootLayout() {
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 <StatusBar style="auto" />
-              </AuthNavigator>
+              </AppStateManager>
             </ThemeProvider>
           </SafeAreaProvider>
         </TeamThemeProvider>

@@ -53,24 +53,33 @@ class AuthService {
       
       const storedUser = await AsyncStorage.getItem('@user_data');
       const onboardingStatus = await AsyncStorage.getItem('@onboarding_status');
+      const hasLaunchedBefore = await AsyncStorage.getItem('@has_launched_before');
+      const hasEverRegistered = await AsyncStorage.getItem('@has_ever_registered');
+      
+      // Mark that the app has been launched
+      if (!hasLaunchedBefore) {
+        await AsyncStorage.setItem('@has_launched_before', 'true');
+      }
       
       if (storedUser) {
         const user: User = JSON.parse(storedUser);
         this.authState = {
           isAuthenticated: true,
           user,
-          isFirstTimeUser: false,
+          isFirstTimeUser: false, // Has account, so not first time
           hasCompletedOnboarding: onboardingStatus === 'completed',
         };
+        console.log('✅ Found existing user, authenticated');
       } else {
-        // Check if this is truly first time or returning user without account
-        const hasLaunchedBefore = await AsyncStorage.getItem('@has_launched_before');
+        // Determine if this is first time vs returning user who logged out
+        const isFirstTime = !hasLaunchedBefore && !hasEverRegistered;
         this.authState = {
           isAuthenticated: false,
           user: null,
-          isFirstTimeUser: !hasLaunchedBefore,
+          isFirstTimeUser: isFirstTime,
           hasCompletedOnboarding: false,
         };
+        console.log(`🆕 No user account found, isFirstTime: ${isFirstTime}`);
       }
       
       return this.authState;
@@ -180,8 +189,9 @@ class AuthService {
         // Don't throw error as QR code generation is not critical for auth
       }
       
-      // Mark that app has been launched
+      // Mark that app has been launched and user has registered
       await AsyncStorage.setItem('@has_launched_before', 'true');
+      await AsyncStorage.setItem('@has_ever_registered', 'true');
       
       this.authState = {
         isAuthenticated: true,

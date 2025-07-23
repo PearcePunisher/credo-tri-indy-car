@@ -14,7 +14,6 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 
 const countryCodes = [
@@ -143,7 +142,6 @@ export function RegisterScreenFormik() {
 
   console.log('📅 RegisterScreenFormik date picker states initialized...');
   
-  const router = useRouter();
   const { createLocalAuthState } = useAuth();
   
   console.log('✅ RegisterScreenFormik hooks initialized successfully');
@@ -325,15 +323,15 @@ export function RegisterScreenFormik() {
                       eventScheduleDocumentId: serverUser?.event_schedule_document_id,
                     });
                     
-                    console.log('✅ Registration successful! AuthNavigator disabled, manual navigation to welcome');
+                    console.log('✅ Registration successful! Local auth state created');
                     alert("Registration successful!");
-                    router.push('/welcome');
+                    // AppStateManager will automatically handle the UI change based on auth state
+                    // No navigation needed - conditional rendering takes care of it!
                   } catch (authError) {
                     console.error('Error setting up local auth state:', authError);
                     // Even if local auth fails, Railway registration succeeded
-                    console.log('⚠️ Registration succeeded but local auth failed, navigating to welcome anyway');
-                    alert("Registration successful!");
-                    router.push('/welcome');
+                    console.log('⚠️ Registration succeeded but local auth failed');
+                    alert("Registration successful, but there was an issue setting up your account locally. Please restart the app.");
                   }
                 } else {
                   const errorText = await response.text();

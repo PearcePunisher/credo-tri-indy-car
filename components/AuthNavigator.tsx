@@ -4,6 +4,7 @@ import { useRouter, useSegments } from 'expo-router';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { ENV_CONFIG } from '@/constants/Environment';
 import { useFocusEffect } from '@react-navigation/native';
 
 const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -19,8 +20,16 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     try {
-      console.log('🚨 TESTING MODE: Skipping all navigation for crash testing');
-      return; // TEMPORARILY DISABLED FOR CRASH TESTING
+      console.log('🚨 CRASH PREVENTION: Disabling all navigation after C++ exception in Expo Go');
+      return; // DISABLED AGAIN - C++ exception crash detected
+      
+      // Check if we're in production environment and skip navigation if so
+      if (ENV_CONFIG.IS_PRODUCTION) {
+        console.log('🚨 PRODUCTION MODE: Skipping navigation for stability');
+        return;
+      }
+      
+      console.log('🔧 LOCAL DEV MODE: Re-enabling AuthNavigator for testing');
       
       if (isLoading) return; // Don't navigate while loading
 
@@ -46,25 +55,41 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         // First time user - redirect to userID page
         if (!inAuthFlow) {
           console.log('🔄 Redirecting first-time user to userID');
-          router.replace('/userID');
+          try {
+            router.replace('/userID');
+          } catch (navError) {
+            console.error('❌ Navigation error to userID:', navError);
+          }
         }
       } else if (authState.isAuthenticated && !authState.hasCompletedOnboarding) {
         // User created account but hasn't completed onboarding - go to welcome page with video
         if (!currentPath.includes('welcome')) {
           console.log('🔄 Redirecting authenticated user to welcome (onboarding)');
-          router.replace('/welcome');
+          try {
+            router.replace('/welcome');
+          } catch (navError) {
+            console.error('❌ Navigation error to welcome:', navError);
+          }
         }
       } else if (authState.isAuthenticated && authState.hasCompletedOnboarding) {
         // User has completed onboarding - go to main app (but allow welcome page and standalone pages)
         if (!inTabsGroup && !inAuthFlow && !inAllowedStandalonePage) {
           console.log('🔄 Redirecting to main app (tabs)');
-          router.replace('/(tabs)');
+          try {
+            router.replace('/(tabs)');
+          } catch (navError) {
+            console.error('❌ Navigation error to tabs:', navError);
+          }
         }
       } else {
         // Returning user without account - redirect to userID page
         if (!inAuthFlow) {
           console.log('🔄 Redirecting returning user to userID');
-          router.replace('/userID');
+          try {
+            router.replace('/userID');
+          } catch (navError) {
+            console.error('❌ Navigation error to userID:', navError);
+          }
         }
       }
     } catch (error) {
@@ -81,17 +106,29 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   // Prevent going back to userID after authentication
   useFocusEffect(
     React.useCallback(() => {
-      console.log('🚨 TESTING MODE: Skipping focus navigation for crash testing');
-      return; // TEMPORARILY DISABLED FOR CRASH TESTING
+      console.log('🚨 CRASH PREVENTION: Disabling focus navigation after C++ exception in Expo Go');
+      return; // DISABLED AGAIN - C++ exception crash detected
+      
+      // Check if we're in production environment and skip navigation if so
+      if (ENV_CONFIG.IS_PRODUCTION) {
+        console.log('🚨 PRODUCTION MODE: Skipping focus navigation for stability');
+        return;
+      }
+      
+      console.log('🔧 LOCAL DEV MODE: Re-enabling focus navigation for testing');
       
       const currentPath = segments.join('/');
       
       // If user is authenticated and tries to go back to userID, redirect them
       if (authState.isAuthenticated && currentPath.includes('userID')) {
-        if (authState.hasCompletedOnboarding) {
-          router.replace('/(tabs)');
-        } else {
-          router.replace('/welcome');
+        try {
+          if (authState.hasCompletedOnboarding) {
+            router.replace('/(tabs)');
+          } else {
+            router.replace('/welcome');
+          }
+        } catch (navError) {
+          console.error('❌ Focus navigation error:', navError);
         }
       }
     }, [authState, segments])
