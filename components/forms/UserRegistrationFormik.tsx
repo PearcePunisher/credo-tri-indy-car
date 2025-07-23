@@ -325,11 +325,13 @@ export function RegisterScreenFormik() {
                       eventScheduleDocumentId: serverUser?.event_schedule_document_id,
                     });
                     
+                    console.log('✅ Registration successful! AuthNavigator disabled, manual navigation to welcome');
                     alert("Registration successful!");
                     router.push('/welcome');
                   } catch (authError) {
                     console.error('Error setting up local auth state:', authError);
                     // Even if local auth fails, Railway registration succeeded
+                    console.log('⚠️ Registration succeeded but local auth failed, navigating to welcome anyway');
                     alert("Registration successful!");
                     router.push('/welcome');
                   }

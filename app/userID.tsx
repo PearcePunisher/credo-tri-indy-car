@@ -27,11 +27,15 @@ export const options = {
 type AuthMode = 'register' | 'login' | 'guest';
 
 export const UserActivationFormik = () => {
+  console.log('🔧 UserActivationFormik component starting for registration testing...');
+  
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { createLocalAuthState, authState } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('register');
+
+  console.log('✅ UserActivationFormik hooks initialized - AuthNavigator is disabled, manual testing mode');
 
   const handleGuestContinue = async () => {
     Alert.alert(
