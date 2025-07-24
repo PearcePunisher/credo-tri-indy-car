@@ -1,4 +1,4 @@
-import { notificationService } from './NotificationService';
+import { enhancedNotificationService } from './EnhancedNotificationService';
 import AuthService from './AuthService';
 
 export interface VenueLocation {
@@ -189,30 +189,8 @@ class ExperiencesService {
   async scheduleExperienceNotifications(experience: Experience): Promise<void> {
     if (!experience.experience_start_date_time) return;
 
-    const startTime = new Date(experience.experience_start_date_time);
-    const now = new Date();
-
-    // Don't schedule notifications for past events
-    if (startTime <= now) return;
-
     try {
-      // For now, we'll schedule immediate notifications
-      // In production, you'd want to use proper date triggers
-      // 20 minutes before
-      await notificationService.scheduleLocalNotification(
-        {
-          title: `${experience.experience_title} - Reminder`,
-          body: 'Experience notification scheduled successfully!',
-          data: { 
-            type: 'experience_reminder', 
-            experienceId: experience.id,
-            scheduledFor: experience.experience_start_date_time
-          },
-          badge: 1,
-        },
-        null // Immediate for now - in production use date triggers
-      );
-
+      await enhancedNotificationService.scheduleExperienceNotifications(experience);
     } catch (error) {
       console.error('Error scheduling experience notifications:', error);
     }
@@ -221,13 +199,7 @@ class ExperiencesService {
   // Cancel all notifications for an experience
   async cancelExperienceNotifications(experienceId: number): Promise<void> {
     try {
-      const scheduledNotifications = await notificationService.getAllScheduledNotifications();
-      
-      for (const notification of scheduledNotifications) {
-        if (notification.content.data?.experienceId === experienceId) {
-          await notificationService.cancelNotification(notification.identifier);
-        }
-      }
+      await enhancedNotificationService.cancelExperienceNotifications(experienceId);
     } catch (error) {
       console.error('Error canceling experience notifications:', error);
     }
