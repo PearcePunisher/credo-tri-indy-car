@@ -14,6 +14,7 @@ import {
   Linking,
   ActivityIndicator,
   Dimensions,
+  Platform,
 } from "react-native";
 
 // Type definitions based on API structure
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   scrollContent: {
-    paddingBottom: 55,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 16, // iOS needs more space for tab bar
   },
   title: {
     fontSize: 28,

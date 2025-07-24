@@ -11,6 +11,7 @@ interface AuthContextType {
   fetchUserDataFromStrapi: (userId: string) => Promise<User>;
   logout: () => Promise<void>;
   refreshAuthState: () => Promise<void>;
+  debugUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -137,6 +138,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setAuthState(currentState);
   };
 
+  const debugUserData = async (): Promise<void> => {
+    await authService.debugUserData();
+  };
+
   const value: AuthContextType = {
     authState,
     isLoading,
@@ -147,6 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     fetchUserDataFromStrapi,
     logout,
     refreshAuthState,
+    debugUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

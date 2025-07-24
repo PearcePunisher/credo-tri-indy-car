@@ -30,6 +30,8 @@ import { Colors } from "@/constants/Colors";
 console.log('✅ Colors constants imported');
 import { useColorScheme } from "@/hooks/useColorScheme";
 console.log('✅ useColorScheme hook imported');
+import { useAuth } from "@/hooks/useAuth";
+console.log('✅ useAuth hook imported');
 import { Button } from "@/components/Button";
 console.log('✅ Button component imported');
 
@@ -116,7 +118,8 @@ function getCountdownParts(targetDate: string): {
 }
 
 export default function HomeScreen() {
-  console.log('🏠 HomeScreen component starting...');
+  
+  const { debugUserData } = useAuth();
   
   const [countdown, setCountdown] = useState({
     days: 0,
@@ -125,7 +128,6 @@ export default function HomeScreen() {
     seconds: 0,
   });
   
-  console.log('📊 HomeScreen state initialized...');
   const [nextRace, setNextRace] = useState<{
     race: Stage;
     event: Event;
@@ -443,7 +445,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 10,
-    paddingBottom: 60,
+    // Platform-specific bottom padding to account for tab bar
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
   },
   header: {
     flexDirection: "row",

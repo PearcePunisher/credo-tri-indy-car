@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
@@ -239,8 +240,8 @@ const AccountScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingBottom: 60 },
-  scroll: { padding: 20, paddingBottom: 60 },
+  container: { flex: 1, paddingBottom: Platform.OS === 'ios' ? 20 : 0 }, // Platform-specific tab bar spacing
+  scroll: { padding: 20, paddingBottom: Platform.OS === 'ios' ? 32 : 16 }, // Platform-specific scroll padding
   centerContent: { flex: 1, justifyContent: "center", alignItems: "center" },
   brand: {
     width: 250,

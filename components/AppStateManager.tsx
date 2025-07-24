@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { useRouter } from 'expo-router';
 
 // Import the different app screens
 import { RegisterScreenFormik } from '@/components/forms/UserRegistrationFormik';
@@ -20,6 +21,7 @@ const AppStateManager: React.FC<AppStateManagerProps> = ({ children }) => {
   const { authState, isLoading } = useAuth();
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
+  const router = useRouter();
 
   console.log('📱 Auth State:', {
     isAuthenticated: authState.isAuthenticated,
@@ -27,6 +29,14 @@ const AppStateManager: React.FC<AppStateManagerProps> = ({ children }) => {
     hasCompletedOnboarding: authState.hasCompletedOnboarding,
     isLoading
   });
+
+  // Handle navigation based on auth state
+  useEffect(() => {
+    if (!isLoading && authState.isAuthenticated && !authState.hasCompletedOnboarding) {
+      console.log('👋 Navigating to welcome page for onboarding...');
+      router.replace('/welcome');
+    }
+  }, [authState.isAuthenticated, authState.hasCompletedOnboarding, isLoading, router]);
 
   // Show loading spinner while checking auth state
   if (isLoading) {

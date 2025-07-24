@@ -76,7 +76,7 @@ export default function VIPHomeScreen() {
             <VIPTile icon="map" label="Track Info" onPress={() => router.push("/track")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="group" label="The Team" onPress={() => router.push("/team")} />
+            <VIPTile icon="people" label="The Team" onPress={() => router.push("/team")} />
           </View>
           <View style={styles.tile}>
             <VIPTile icon="car" label="The Car" onPress={() => router.push("/car")} />
@@ -85,7 +85,7 @@ export default function VIPHomeScreen() {
             <VIPTile icon="help" label="FAQ's" onPress={() => router.push("/faq")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="message" label="Feedback" onPress={() => {}} />
+            <VIPTile icon="mail" label="Feedback" onPress={() => {}} />
           </View>
         </View>
       </ScrollView>
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 20,
     backgroundColor: "transparent",
-    paddingBottom: 60, // Ensure enough space for bottom tabs
+    // Remove excessive paddingBottom - tab navigator handles spacing
   },
   header: {
     fontSize: 24,

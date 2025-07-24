@@ -18,6 +18,8 @@ export interface User {
   serverId?: string;
   eventCodeDocumentId?: string;
   eventScheduleDocumentId?: string;
+  // Store invitation code locally for future API calls
+  invitationCode?: string;
 }
 
 export interface AuthState {
@@ -174,6 +176,7 @@ class AuthService {
         serverId: userData.serverId,
         eventCodeDocumentId: userData.eventCodeDocumentId,
         eventScheduleDocumentId: userData.eventScheduleDocumentId,
+        invitationCode: userData.invitationCode,
       };
 
       // Store user data locally
@@ -346,6 +349,27 @@ class AuthService {
   }
 
   // Logout user
+  // Debugging: Check what data is stored locally
+  async debugUserData(): Promise<void> {
+    try {
+      const storedUser = await AsyncStorage.getItem('@user_data');
+      const onboardingStatus = await AsyncStorage.getItem('@onboarding_status');
+      
+      console.log('🔍 DEBUG - Stored user data:', storedUser ? JSON.parse(storedUser) : 'No data');
+      console.log('🔍 DEBUG - Onboarding status:', onboardingStatus);
+      console.log('🔍 DEBUG - Current auth state:', this.authState);
+      
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        console.log('🔍 DEBUG - User invitation code:', user.invitationCode);
+        console.log('🔍 DEBUG - User eventScheduleDocumentId:', user.eventScheduleDocumentId);
+        console.log('🔍 DEBUG - User eventCodeDocumentId:', user.eventCodeDocumentId);
+      }
+    } catch (error) {
+      console.error('🔍 DEBUG - Error reading user data:', error);
+    }
+  }
+
   async logout(): Promise<void> {
     try {
       const currentUser = this.authState.user;

@@ -24,7 +24,7 @@ export default function VideoPlayerScreen() {
   const [loadingStartTime] = useState(Date.now()); // Track when loading started
 
   // Video source
-  const videoSource: VideoSource = require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4');
+  const videoSource: VideoSource = require('@/assets/videos/SplashVideo.mp4');
   
   // Create video player with improved lifecycle management
   const player = useVideoPlayer(videoSource, (player) => {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import { View, ScrollView, StyleSheet, Platform, TouchableOpacity, ActivityIndicator } from "react-native";
 import {
   TextInput,
   Button,
@@ -15,6 +15,7 @@ import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useAuth } from "@/hooks/useAuth";
+import BrandLogo from "../BrandLogo";
 
 const countryCodes = [
   { label: "🇺🇸 +1", value: "+1", placeholder: "(555) 123-4567", maxLength: 14 },
@@ -219,6 +220,7 @@ export function RegisterScreenFormik() {
             styles.container,
             { backgroundColor: colors.background },
           ]}>
+            <BrandLogo />
           <Text
             style={{
               fontSize: 24,
@@ -321,12 +323,14 @@ export function RegisterScreenFormik() {
                       serverId: serverUser?.user_id?.toString(),
                       eventCodeDocumentId: serverUser?.event_code_document_id,
                       eventScheduleDocumentId: serverUser?.event_schedule_document_id,
+                      // Store invitation code locally for future use
+                      invitationCode: values.invitationCode,
                     });
                     
                     console.log('✅ Registration successful! Local auth state created');
                     alert("Registration successful!");
-                    // AppStateManager will automatically handle the UI change based on auth state
-                    // No navigation needed - conditional rendering takes care of it!
+                    // Navigate to welcome page for onboarding
+                    // Note: The app will automatically route to welcome since user is authenticated but hasn't completed onboarding
                   } catch (authError) {
                     console.error('Error setting up local auth state:', authError);
                     // Even if local auth fails, Railway registration succeeded
@@ -351,6 +355,7 @@ export function RegisterScreenFormik() {
               values,
               errors,
               touched,
+              isSubmitting,
             }) => (
               <>
                 <TextInput
@@ -1258,8 +1263,10 @@ export function RegisterScreenFormik() {
                   style={styles.button}
                   contentStyle={{ backgroundColor: colors.tint }}
                   labelStyle={{ color: colors.textOnGreen }} // Use a valid color from your Colors object
+                  disabled={isSubmitting}
+                  loading={isSubmitting}
                 >
-                  Register
+                  {isSubmitting ? 'Registering...' : 'Register'}
                 </Button>
                 {/* Payload Preview section removed to prevent Hermes compilation issues */}
               </>

@@ -1,5 +1,7 @@
 import React from "react";
-import { Image, StyleSheet, View, ImageStyle, useColorScheme } from "react-native";
+import { Image, StyleSheet, View, ImageStyle } from "react-native";
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 type BrandLogoProps = {
   width?: number;
@@ -17,12 +19,10 @@ export default function BrandLogo({
   height = 120,
   style,
 }: BrandLogoProps) {
-  console.log('🖼️ BrandLogo component starting...');
   
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() || 'light';
+  const colors = Colors[colorScheme];
   const logoUri = colorScheme === "light" ? LOGO_LIGHT : LOGO_DARK;
-
-  console.log('✅ BrandLogo initialized, colorScheme:', colorScheme);
 
   return (
     <View style={styles.container}>

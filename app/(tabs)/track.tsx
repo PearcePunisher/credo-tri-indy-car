@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -112,7 +113,10 @@ const TrackDetailScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { padding: 20, paddingBottom: 40 },
+  scroll: { 
+    padding: 20, 
+    paddingBottom: Platform.OS === 'ios' ? 36 : 16 // iOS needs more space for tab bar
+  },
   brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 10, objectFit: 'contain' },
   title: { fontSize: 26, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
   description: { fontSize: 15, lineHeight: 22, marginBottom: 20, textAlign: 'left' },

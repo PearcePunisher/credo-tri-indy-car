@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -34,42 +34,157 @@ const WelcomeScreen = () => {
 
   const [subscribed, setSubscribed] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [showStaticContent, setShowStaticContent] = useState(false);
   
   // Screen dimensions for video sizing
   const { width: screenWidth } = Dimensions.get('window');
-  const videoHeight = (screenWidth * 9) / 16; // 16:9 aspect ratio
+  const videoHeight = (screenWidth * 16) / 9; // 16:9 aspect ratio
 
-  // Initialize video player with local video source
-  const videoSource: VideoSource = Platform.select({
-    ios: require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4'),
-    android: require('@/assets/videos/justin-bell-cedo-motorsport-intro.mp4'),
-  }) as VideoSource;
+  // Initialize video player with better iOS compatibility
+  const [currentVideoSource, setCurrentVideoSource] = useState<VideoSource | null>(null);
+  const [hasTriedAlternative, setHasTriedAlternative] = useState(false);
+  const [playerKey, setPlayerKey] = useState(0); // Key to force player recreation
+  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const player = useVideoPlayer(videoSource, (player) => {
+  // Debug logging for static content state
+  useEffect(() => {
+    console.log(`📊 showStaticContent changed to: ${showStaticContent}`);
+  }, [showStaticContent]);
+
+  // Initialize video source
+  useEffect(() => {
+    const loadVideoSource = async () => {
+      try {
+        // Using the working Justin Bell intro video
+        const primarySource = Platform.select({
+          ios: require('@/assets/videos/Justin Bell CEDO Motorsport intro.mp4'),
+          android: require('@/assets/videos/Justin Bell CEDO Motorsport intro.mp4'),
+          default: require('@/assets/videos/Justin Bell CEDO Motorsport intro.mp4'),
+        }) as VideoSource;
+        setCurrentVideoSource(primarySource);
+        console.log('📹 Primary video source loaded (Justin Bell CEDO Motorsport intro.mp4) - Working Justin Bell video');
+        console.log('📹 Platform-specific source for:', Platform.OS);
+      } catch (error) {
+        console.error('❌ Error loading primary video source:', error);
+        console.log('📹 Falling back to static content due to source loading error');
+        setShowStaticContent(true);
+      }
+    };
+
+    loadVideoSource();
+  }, []);
+
+  const player = useVideoPlayer(currentVideoSource, (player) => {
+    if (!player || !currentVideoSource) return;
+    
     player.loop = false;
-    player.muted = false;
-    player.play(); // Autoplay the video
+    player.muted = true; // Start muted to avoid iOS autoplay restrictions
+    player.playbackRate = 1.0;
+    console.log('📹 Video player initialized with key:', playerKey);
+    // Don't autoplay immediately - let component mount first
   });
 
   // Add video event listeners
   useEffect(() => {
+    if (!player || !currentVideoSource) return;
+
     const subscription = player.addListener('statusChange', (status) => {
-      console.log('Video status changed:', status);
+      console.log('📹 Video status changed:', status);
+      console.log('📹 Platform:', Platform.OS);
+      
       if (status.status === 'error') {
-        console.log('Video playback error');
+        console.error('❌ Video playback error:', status.error);
+        console.error('❌ Error details:', JSON.stringify(status, null, 2));
+        
+        // Check for specific iOS codec/format errors
+        const errorMessage = status.error?.message || '';
+        const isCodecError = errorMessage.includes('Failed to load the player item') || 
+                           errorMessage.includes('unknown cause') ||
+                           errorMessage.includes('codec') ||
+                           errorMessage.includes('format');
+        
+        console.log(`🔍 Error analysis - Message: "${errorMessage}", isCodecError: ${isCodecError}, Platform: ${Platform.OS}`);
+        
+        if (Platform.OS === 'ios' && isCodecError) {
+          console.log('🚨 Detected iOS codec/format error, switching to static content immediately...');
+          
+          // Clear any pending video play timeouts
+          if (playTimeoutRef.current) {
+            clearTimeout(playTimeoutRef.current);
+            playTimeoutRef.current = null;
+            console.log('⏰ Cleared pending video play timeout');
+          }
+          
+          setShowStaticContent(true);
+          setVideoError(false); // Don't show error UI, show static content instead
+          setIsVideoReady(false);
+          setHasTriedAlternative(true); // Mark as tried to prevent retry loops
+          
+          // Stop the video player to prevent background playback attempts
+          try {
+            if (player) {
+              player.pause();
+              console.log('⏹️ Video player paused due to codec error');
+            }
+          } catch (pauseError) {
+            console.log('Video pause error (expected):', pauseError);
+          }
+          
+          return;
+        }
+        
+        // For other errors, show error state with retry option
+        console.log('❌ Non-codec video error occurred');
         setVideoError(true);
+        setIsVideoReady(false);
+      } else if (status.status === 'readyToPlay') {
+        console.log('✅ Video ready to play');
+        setIsVideoReady(true);
+        setVideoError(false);
+        // Start playing once ready (but not if showing static content)
+        try {
+          // Clear any existing timeout
+          if (playTimeoutRef.current) {
+            clearTimeout(playTimeoutRef.current);
+          }
+          
+          playTimeoutRef.current = setTimeout(() => {
+            // Double-check the current state before playing
+            if (player && !videoError && currentVideoSource && !showStaticContent) {
+              console.log('🎬 Attempting to start video playback...');
+              player.play();
+              console.log('▶️ Video playback started');
+            } else {
+              console.log('Skipping auto-play: showStaticContent =', showStaticContent, 'videoError =', videoError);
+            }
+            playTimeoutRef.current = null; // Clear the ref
+          }, Platform.OS === 'ios' ? 500 : 100); // Longer delay for iOS
+        } catch (error) {
+          console.error('❌ Error starting video playback:', error);
+          setVideoError(true);
+        }
+      } else if (status.status === 'loading') {
+        console.log('⏳ Video loading...');
+      } else if (status.status === 'idle') {
+        console.log('⏸️ Video idle');
       }
     });
 
     return () => {
       subscription?.remove();
     };
-  }, [player]);
+  }, [player, videoError, currentVideoSource, hasTriedAlternative, showStaticContent]);
 
   // Cleanup video player on unmount
   useEffect(() => {
     return () => {
       try {
+        // Clear any pending timeout
+        if (playTimeoutRef.current) {
+          clearTimeout(playTimeoutRef.current);
+          playTimeoutRef.current = null;
+        }
         player.release();
       } catch (error) {
         console.log('Video player cleanup error:', error);
@@ -80,19 +195,29 @@ const WelcomeScreen = () => {
   // Handle video play/pause based on screen focus
   useFocusEffect(
     React.useCallback(() => {
-      // Screen is focused - resume video if it was paused
-      if (player && !videoError) {
+      // Screen is focused - resume video if it was paused (but not if showing static content)
+      if (player && !videoError && !showStaticContent && currentVideoSource) {
         try {
-          player.play();
-          console.log('Video resumed on screen focus');
+          // Add a small delay to ensure the screen is fully focused
+          setTimeout(() => {
+            if (player && !videoError && !showStaticContent && currentVideoSource) {
+              player.play();
+              console.log('Video resumed on screen focus');
+            } else {
+              console.log('Skipping video resume: showStaticContent =', showStaticContent);
+            }
+          }, 100);
         } catch (error) {
           console.log('Error resuming video:', error);
+          setVideoError(true);
         }
+      } else {
+        console.log('Video resume conditions not met: showStaticContent =', showStaticContent, 'videoError =', videoError);
       }
 
       return () => {
-        // Screen is losing focus - pause video
-        if (player && !videoError) {
+        // Screen is losing focus - pause video (but not if showing static content)
+        if (player && !videoError && !showStaticContent && currentVideoSource) {
           try {
             player.pause();
             console.log('Video paused on screen blur');
@@ -101,25 +226,26 @@ const WelcomeScreen = () => {
           }
         }
       };
-    }, [player, videoError])
+    }, [player, videoError, showStaticContent, currentVideoSource])
   );
 
   // Complete onboarding when welcome page loads (if not already completed)
-  useEffect(() => {
-    const completeOnboardingProcess = async () => {
-      if (!authState.hasCompletedOnboarding) {
-        try {
-          console.log('Completing onboarding from welcome page...');
-          await completeOnboarding();
-          console.log('Onboarding completed successfully');
-        } catch (error) {
-          console.error('Error completing onboarding:', error);
-        }
-      }
-    };
+  // REMOVED: We now wait for user to make notification choice before completing onboarding
+  // useEffect(() => {
+  //   const completeOnboardingProcess = async () => {
+  //     if (!authState.hasCompletedOnboarding) {
+  //       try {
+  //         console.log('Completing onboarding from welcome page...');
+  //         await completeOnboarding();
+  //         console.log('Onboarding completed successfully');
+  //       } catch (error) {
+  //         console.error('Error completing onboarding:', error);
+  //       }
+  //     }
+  //   };
 
-    completeOnboardingProcess();
-  }, [authState.hasCompletedOnboarding, completeOnboarding]);
+  //   completeOnboardingProcess();
+  // }, [authState.hasCompletedOnboarding, completeOnboarding]);
 
   const bulletItems = [
     'Event Schedule',
@@ -137,7 +263,13 @@ const WelcomeScreen = () => {
         setSubscribed(true);
         await updateNotificationSubscription(true);
         Alert.alert('Already Subscribed', 'You are already subscribed to notifications.', [
-          { text: 'Continue', onPress: () => router.push('/(tabs)') }
+          { 
+            text: 'Continue', 
+            onPress: async () => {
+              await completeOnboarding();
+              router.push('/(tabs)');
+            }
+          }
         ]);
         return;
       }
@@ -166,7 +298,13 @@ const WelcomeScreen = () => {
         }
         
         Alert.alert('Subscribed!', 'You will now receive updates about track experiences and events.', [
-          { text: 'Continue', onPress: () => router.push('/(tabs)') }
+          { 
+            text: 'Continue', 
+            onPress: async () => {
+              await completeOnboarding();
+              router.push('/(tabs)');
+            }
+          }
         ]);
       } else {
         Alert.alert(
@@ -198,7 +336,14 @@ const WelcomeScreen = () => {
       'Skip Notifications?',
       'You may miss out on important track experiences, exclusive content, and event updates. Are you sure you want to skip?',
       [
-        { text: 'Yes, Skip', onPress: () => router.push('/(tabs)'), style: 'destructive' },
+        { 
+          text: 'Yes, Skip', 
+          onPress: async () => {
+            await completeOnboarding();
+            router.push('/(tabs)');
+          }, 
+          style: 'destructive' 
+        },
         { text: 'Enable Notifications', onPress: handleSubscribe }
       ]
     );
@@ -212,23 +357,92 @@ const WelcomeScreen = () => {
 
         {/* Embedded Video */}
         <View style={[styles.videoContainer, { width: screenWidth - 40 }]}>
-          {!videoError ? (
+          {!videoError && !showStaticContent && currentVideoSource ? (
             <VideoView
+              key={`video-player-${playerKey}`} // Force recreation when playerKey changes
               style={[styles.video, { height: videoHeight }]}
               player={player}
               allowsFullscreen={false}
               allowsPictureInPicture={false}
+              nativeControls={Platform.OS === 'ios'} // Enable native controls on iOS for debugging
+              contentFit="contain"
+              showsTimecodes={false}
             />
+          ) : showStaticContent ? (
+            <View style={[styles.videoPlaceholder, { height: videoHeight }]}>
+              <BrandLogo 
+                width={200}
+                height={100}
+                style={{ marginBottom: 20 }}
+              />
+              <Text style={[styles.videoErrorText, { color: colors.text }]}>
+                Welcome to the Experience
+              </Text>
+            </View>
           ) : (
             <View style={[styles.videoPlaceholder, { height: videoHeight }]}>
               <Text style={[styles.videoErrorText, { color: colors.secondaryText }]}>
-                Video unavailable
+                Video unavailable {Platform.OS === 'ios' ? '(iOS)' : '(Android)'}
               </Text>
+              <Text style={[{ color: colors.secondaryText, fontSize: 12, marginTop: 5 }]}>
+                Check console for error details
+              </Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  console.log('🔄 User requested video retry');
+                  setVideoError(false);
+                  setIsVideoReady(false);
+                  
+                  // Since we don't have alternative video, just try to recreate the player
+                  console.log('� Recreating video player...');
+                  try {
+                    const originalSource = Platform.select({
+                      ios: require('@/assets/videos/Justin Bell CEDO Motorsport intro.mp4'),
+                      android: require('@/assets/videos/Justin Bell CEDO Motorsport intro.mp4'),
+                      default: require('@/assets/videos/Justin Bell CEDO Motorsport intro.mp4'),
+                    }) as VideoSource;
+                    
+                    // Force complete player recreation
+                    setPlayerKey(prev => prev + 1);
+                    setCurrentVideoSource(originalSource);
+                    setHasTriedAlternative(false);
+                  } catch (origError) {
+                    console.error('❌ Video source failed on retry:', origError);
+                    console.log('📹 Showing static content as final fallback');
+                    setShowStaticContent(true);
+                    setVideoError(false);
+                  }
+                }}
+                style={{ 
+                  marginTop: 10, 
+                  padding: 8, 
+                  backgroundColor: colors.tint, 
+                  borderRadius: 6 
+                }}>
+                <Text style={{ color: 'white', fontSize: 14 }}>
+                  🔄 Retry Video
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={() => {
+                  console.log('👤 User chose to skip video');
+                  setShowStaticContent(true);
+                  setVideoError(false);
+                }}
+                style={{ 
+                  marginTop: 10, 
+                  padding: 8, 
+                  backgroundColor: colors.secondaryText, 
+                  borderRadius: 6 
+                }}>
+                <Text style={{ color: 'white', fontSize: 14 }}>
+                  ⏭️ Skip Video
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
-        </View>
-
-        {/* Title */}
+        </View>        {/* Title */}
         <Text style={[styles.title, { color: colors.text }]}>Welcome</Text>
 
         {/* Intro Paragraphs */}

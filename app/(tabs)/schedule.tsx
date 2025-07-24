@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Alert,
   Image,
+  Platform,
 } from 'react-native';
 import { parseISO, format, isSameDay, isPast, startOfDay } from 'date-fns';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -38,13 +39,17 @@ const ScheduleScreen = () => {
     try {
       const response = await experiencesService.getExperiences();
       const scheduleData = response.data?.data;
-      const experiencesData = scheduleData?.schedule_experiences?.map(item => item.schedule_experience) || [];
+      const experiencesData = scheduleData?.schedule_experiences
+        ?.map(item => item.schedule_experience)
+        .filter(exp => exp && exp.id && exp.experience_start_date_time) || [];
       setExperiences(experiencesData);
       
       // Load notification states for all experiences
       const states: { [key: number]: boolean } = {};
       for (const exp of experiencesData) {
-        states[exp.id] = await experiencesService.getNotificationStatus(exp.id);
+        if (exp && exp.id) {
+          states[exp.id] = await experiencesService.getNotificationStatus(exp.id);
+        }
       }
       setNotificationStates(states);
     } catch (error) {
@@ -87,7 +92,7 @@ const ScheduleScreen = () => {
   // Group experiences by date
   const groupExperiencesByDate = (experiences: Experience[]): GroupedExperiences => {
     return experiences.reduce((acc, experience) => {
-      if (!experience.experience_start_date_time) return acc;
+      if (!experience || !experience.experience_start_date_time) return acc;
       const dateKey = format(new Date(experience.experience_start_date_time), 'yyyy-MM-dd');
       if (!acc[dateKey]) {
         acc[dateKey] = [];
@@ -99,11 +104,13 @@ const ScheduleScreen = () => {
 
   // Sort experiences within each day by time
   const sortExperiencesByTime = (experiences: Experience[]): Experience[] => {
-    return experiences.sort((a, b) => {
-      const timeA = a.experience_start_date_time ? new Date(a.experience_start_date_time).getTime() : 0;
-      const timeB = b.experience_start_date_time ? new Date(b.experience_start_date_time).getTime() : 0;
-      return timeA - timeB;
-    });
+    return experiences
+      .filter(exp => exp && exp.experience_start_date_time)
+      .sort((a, b) => {
+        const timeA = new Date(a.experience_start_date_time).getTime();
+        const timeB = new Date(b.experience_start_date_time).getTime();
+        return timeA - timeB;
+      });
   };
 
   const now = new Date();
@@ -111,11 +118,11 @@ const ScheduleScreen = () => {
 
   // Separate experiences into past and future
   const pastExperiences = experiences.filter(exp => 
-    exp.experience_start_date_time && isPast(new Date(exp.experience_start_date_time))
+    exp && exp.experience_start_date_time && isPast(new Date(exp.experience_start_date_time))
   );
   
   const futureExperiences = experiences.filter(exp => 
-    exp.experience_start_date_time && !isPast(new Date(exp.experience_start_date_time))
+    exp && exp.experience_start_date_time && !isPast(new Date(exp.experience_start_date_time))
   );
 
   const groupedPastExperiences = groupExperiencesByDate(pastExperiences);
@@ -152,12 +159,13 @@ const ScheduleScreen = () => {
   };
 
   const renderExperienceItem = (experience: Experience, key: string) => {
-    if (!experience.experience_start_date_time) return null;
+    if (!experience || !experience.experience_start_date_time) return null;
     
     const eventDate = new Date(experience.experience_start_date_time);
     const timeString = format(eventDate, 'h:mm a');
     const isToday = isSameDay(eventDate, now);
     const isPastEvent = isPast(eventDate);
+    const venueLocationName = experience.experience_venue_location?.venue_location_name || 'Location TBD';
     
     return (
       <TouchableOpacity
@@ -175,13 +183,13 @@ const ScheduleScreen = () => {
         <View style={styles.experienceHeader}>
           <View style={styles.experienceInfo}>
             <Text style={[styles.experienceTitle, { color: colors.text }]} numberOfLines={2}>
-              {experience.experience_title}
+              {experience.experience_title || 'Untitled Experience'}
             </Text>
             <Text style={[styles.experienceTime, { color: colors.text }]}>
               {timeString}
             </Text>
             <Text style={[styles.experienceLocation, { color: colors.text }]} numberOfLines={1}>
-              📍 {experience.experience_venue_location.venue_location_name}
+              📍 {venueLocationName}
             </Text>
           </View>
           {renderNotificationIcon(experience.id)}
@@ -298,11 +306,13 @@ const ScheduleScreen = () => {
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    paddingBottom: 120
+    // Platform-specific bottom padding to account for tab bar on iOS
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
   },
   scrollContent: { 
     padding: 16,
-    paddingBottom: 60
+    // Additional scroll padding for content breathing room
+    paddingBottom: Platform.OS === 'ios' ? 32 : 16
   },
   logo: { 
     marginBottom: 16 

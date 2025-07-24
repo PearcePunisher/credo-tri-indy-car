@@ -100,12 +100,17 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   };
 
   const getDescriptionText = () => {
+    if (!experience) return '';
     return experiencesService.convertRichTextToPlainText(experience.experience_description);
   };
 
   const getImageUrl = () => {
     return experiencesService.getImageUrl();
   };
+
+  if (!experience) {
+    return null;
+  }
 
   return (
     <Modal
