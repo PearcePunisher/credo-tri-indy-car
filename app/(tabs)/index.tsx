@@ -26,6 +26,8 @@ import CedoLogo from "@/components/CedoLogo";
 console.log('✅ CedoLogo component imported');
 // import { NotificationBell } from "@/components/NotificationBell"; // TEMPORARILY COMMENTED OUT
 // import { TestNotificationButton } from "@/components/TestNotificationButton";
+import EnhancedNotificationBell from "@/components/EnhancedNotificationBell";
+console.log('✅ Enhanced Notification Bell Imported')
 import scheduleData from "@/race_data/scheduleData.json";
 console.log('✅ Schedule data imported');
 import { Colors } from "@/constants/Colors";
@@ -172,7 +174,7 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
 
-            {/* <NotificationBell size={24} /> */}
+            <EnhancedNotificationBell size={24} />
           </View>
 
           <View style={styles.logoContainer}>

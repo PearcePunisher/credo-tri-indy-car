@@ -205,7 +205,7 @@ const TeamScreen = () => {
                 <Image
                   source={{ uri: carImage }}
                   style={styles.carImage}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
 
                 <Text style={[styles.subHeader, { color: colors.text }]}>Achievements</Text>
