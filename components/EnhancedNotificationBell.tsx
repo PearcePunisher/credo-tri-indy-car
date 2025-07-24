@@ -21,7 +21,7 @@ const EnhancedNotificationBell: React.FC<EnhancedNotificationBellProps> = ({
   size = 24,
   onPress,
 }) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
   

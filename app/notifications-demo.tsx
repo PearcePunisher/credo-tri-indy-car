@@ -17,7 +17,7 @@ import NotificationHistoryComponent from '@/components/NotificationHistory';
 import EnhancedNotificationBell from '@/components/EnhancedNotificationBell';
 
 const NotificationDemoScreen = () => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const { authState } = useAuth();
   

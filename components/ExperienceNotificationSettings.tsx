@@ -26,7 +26,7 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
   jwtToken,
   isVIP,
 }) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);

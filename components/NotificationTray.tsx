@@ -48,7 +48,7 @@ interface NotificationTrayProps {
 }
 
 export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onClose }) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);

@@ -6,16 +6,35 @@ import { useColorScheme as useRNColorScheme } from 'react-native';
  */
 export function useColorScheme() {
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light'); // Default to light
 
   useEffect(() => {
     setHasHydrated(true);
   }, []);
 
-  const colorScheme = useRNColorScheme();
+  const systemColorScheme = useRNColorScheme();
+
+  const toggleColorScheme = () => {
+    setColorScheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  const setColorSchemePreference = (scheme: 'light' | 'dark') => {
+    setColorScheme(scheme);
+  };
 
   if (hasHydrated) {
-    return colorScheme;
+    return {
+      colorScheme: colorScheme,
+      toggleColorScheme,
+      setColorSchemePreference,
+      isLoaded: true,
+    };
   }
 
-  return 'light';
+  return {
+    colorScheme: 'light' as const,
+    toggleColorScheme,
+    setColorSchemePreference,
+    isLoaded: false,
+  };
 }

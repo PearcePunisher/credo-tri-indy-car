@@ -14,7 +14,7 @@ export const options = {
 };
 
 const UserQRScreen = () => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const { authState } = useAuth();
   const router = useRouter();

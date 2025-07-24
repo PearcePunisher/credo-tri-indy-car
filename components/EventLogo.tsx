@@ -10,9 +10,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Dark_Logo_f3a9db6483.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/Java_House_G_Pof_Monterey_3_55e11e91a5.png";
 const LOGO_LIGHT =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Light_Logo_640461bc89.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/Java_House_G_Pof_Monterey_3_55e11e91a5.png";
 
 export default function BrandLogo({
   width = 250,
@@ -38,7 +38,7 @@ export default function BrandLogo({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   logo: {
     alignSelf: "center",

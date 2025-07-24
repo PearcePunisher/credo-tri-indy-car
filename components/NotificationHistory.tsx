@@ -24,7 +24,7 @@ const NotificationHistoryComponent: React.FC<NotificationHistoryComponentProps> 
   jwtToken,
   isVIP,
 }) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   
   const {

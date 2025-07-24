@@ -20,7 +20,7 @@ export const options = {
 const ExperienceScreen = () => {
   const [experience, setExperience] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   useEffect(() => {

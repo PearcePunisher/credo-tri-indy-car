@@ -128,7 +128,7 @@ const validationSchema = Yup.object().shape({
 export function RegisterScreenFormik() {
   console.log('🔧 RegisterScreenFormik component starting...');
   
-  const colorScheme = useColorScheme() || "light";
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const [menuVisible, setMenuVisible] = useState(false);
   const [guest1MenuVisible, setGuest1MenuVisible] = useState(false);

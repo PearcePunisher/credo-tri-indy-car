@@ -22,7 +22,7 @@ export const options = {
 };
 
 const AccountScreen = () => {
-  const colorScheme = useColorScheme() || "light";
+  const { colorScheme, toggleColorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const { authState, logout } = useAuth();
   const router = useRouter();
@@ -217,6 +217,26 @@ const AccountScreen = () => {
               VIP Experience
             </Text>
           </View>
+
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>
+              Theme:
+            </Text>
+            <TouchableOpacity
+              style={[styles.themeToggle, { backgroundColor: colors.tint }]}
+              onPress={toggleColorScheme}
+              activeOpacity={0.8}
+            >
+              <Ionicons 
+                name={colorScheme === 'light' ? 'sunny' : 'moon'} 
+                size={16} 
+                color="white" 
+              />
+              <Text style={styles.themeToggleText}>
+                {colorScheme === 'light' ? 'Light Mode' : 'Dark Mode'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* QR Code Actions */}
@@ -299,6 +319,19 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 14,
     fontWeight: "400",
+  },
+  themeToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    gap: 6,
+  },
+  themeToggleText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
   },
   logoutButton: {
     flexDirection: "row",

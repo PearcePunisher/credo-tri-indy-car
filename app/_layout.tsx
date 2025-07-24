@@ -67,7 +67,7 @@ function ErrorFallback({error, resetErrorBoundary}: {error: Error, resetErrorBou
 
 export default function RootLayout() {
   console.log('🚀 RootLayout starting...');
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   
   console.log('📝 Skipping font loading for crash testing...');
   // TEMPORARILY DISABLED FOR CRASH TESTING

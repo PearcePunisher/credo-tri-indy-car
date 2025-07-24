@@ -18,7 +18,7 @@ export const Button = ({
   outlined = false,
   disabled = false,
 }: ButtonProps) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   // Custom logic for background, text, and border based on color scheme and outlined

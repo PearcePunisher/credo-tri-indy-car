@@ -15,7 +15,7 @@ import BrandLogo from "@/components/BrandLogo";
 const CarScreen = () => {
   const [car, setCar] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme() || "light"; // Fallback to "light" if null/undefined
+  const { colorScheme } = useColorScheme();
   const bgColor = Colors[colorScheme].background;
   const textColor = Colors[colorScheme].text;
   const cardColor = colorScheme === "dark" ? "#1c1c1e" : "#f0f0f0"; // Or add to Colors if you want

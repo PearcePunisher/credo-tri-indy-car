@@ -13,7 +13,7 @@ const AuthNavigator: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const { authState, isLoading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   console.log('✅ AuthNavigator hooks initialized successfully');

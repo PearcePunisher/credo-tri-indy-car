@@ -29,7 +29,7 @@ export default function VIPTile({
   label,
   onPress,
 }: VIPTileProps) {
-  const colorScheme = useColorScheme() || "light";
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   const fillColor = iconColor || colors.text;

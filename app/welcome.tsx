@@ -24,7 +24,7 @@ export const options = {
 };
 
 const WelcomeScreen = () => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const { updateNotificationSubscription, authState, completeOnboarding } = useAuth();
   const router = useRouter();

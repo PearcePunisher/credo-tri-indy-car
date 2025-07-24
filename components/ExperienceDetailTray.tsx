@@ -35,7 +35,7 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   isNotificationEnabled = false,
   onToggleNotification,
 }) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const slideAnim = useState(new Animated.Value(TRAY_HEIGHT))[0];

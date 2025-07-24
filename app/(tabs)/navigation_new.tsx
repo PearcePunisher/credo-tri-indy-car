@@ -29,7 +29,7 @@ export default function VIPHomeScreen() {
   console.log('🏠 VIPHomeScreen component starting...');
   
   const router = useRouter();
-  const colorScheme = useColorScheme() || "light";
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const iconColor = colors.text;
 
@@ -79,7 +79,7 @@ export default function VIPHomeScreen() {
             <VIPTile icon="people" label="The Team" onPress={() => router.push("/team")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="car" label="The Car" onPress={() => router.push("/car")} />
+            <VIPTile icon="car" label="Notifications Test" onPress={() => router.push("/notifications-demo")} />
           </View>
           <View style={styles.tile}>
             <VIPTile icon="help" label="FAQ's" onPress={() => router.push("/faq")} />

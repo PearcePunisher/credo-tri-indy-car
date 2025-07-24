@@ -155,7 +155,7 @@ const convertRichTextToPlainText = (richText: FAQItem['Answer']): string => {
 };
 
 export default function FAQScreen() {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [faqData, setFaqData] = useState<FAQItem[]>([]);

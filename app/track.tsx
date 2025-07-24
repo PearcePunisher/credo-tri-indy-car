@@ -17,7 +17,7 @@ import { Colors } from '@/constants/Colors';
 const TrackDetailScreen = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   useEffect(() => {

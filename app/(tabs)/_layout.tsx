@@ -11,7 +11,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 
 export default function TabLayout() {
-    const colorScheme = useColorScheme() || 'light';
+    const { colorScheme } = useColorScheme();
     const colors = Colors[colorScheme];
 
   return (
@@ -51,7 +51,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="track"
         options={{
           title: "Track",
@@ -76,7 +76,7 @@ export default function TabLayout() {
             />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="account"
         options={{
@@ -92,6 +92,15 @@ export default function TabLayout() {
           title: "Menu",
           tabBarIcon: ({ color }) => (
             <Ionicons name="menu" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="camera"
+        options={{
+          title: "Camera",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="camera" size={28} color={color} />
           ),
         }}
       />

@@ -20,6 +20,8 @@ import { router } from "expo-router";
 console.log('✅ Expo router imported');
 import BrandLogo from "@/components/BrandLogo";
 console.log('✅ BrandLogo component imported');
+import EventLogo from "@/components/EventLogo";
+console.log('✅ EventLogo component imported');
 import CedoLogo from "@/components/CedoLogo";
 console.log('✅ CedoLogo component imported');
 // import { NotificationBell } from "@/components/NotificationBell"; // TEMPORARILY COMMENTED OUT
@@ -133,7 +135,7 @@ export default function HomeScreen() {
     event: Event;
   } | null>(null);
 
-  const colorScheme = useColorScheme() || "light";
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   useEffect(() => {
@@ -175,6 +177,10 @@ export default function HomeScreen() {
 
           <View style={styles.logoContainer}>
             <BrandLogo style={styles.brand} />
+          </View>
+
+          <View style={styles.logoContainer}>
+            <EventLogo style={styles.brand} />
           </View>
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -312,7 +318,7 @@ export default function HomeScreen() {
           <View style={styles.gridContainer}>
             <TouchableOpacity
               style={styles.gridItem}
-              onPress={() => router.push("/(tabs)/team")}>
+              onPress={() => router.push("/team")}>
               <Image
                 source={{
                   uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg",
@@ -419,14 +425,14 @@ export default function HomeScreen() {
               Invitation Only
             </Text>
           </View>
-
-          <TouchableOpacity
+          {/* Commenting out share feedback button */}
+          {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint }]}>
             <Text
               style={[styles.shareButtonText, { color: colors.textOnGreen }]}>
               Share Your Thoughts
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>
@@ -455,9 +461,8 @@ const styles = StyleSheet.create({
   },
   brand: {
     width: CARD_WIDTH,
-    minHeight: 120,
+    minHeight: 80,
     alignSelf: "center",
-    // marginBottom: 20,
     objectFit: "contain",
   },
   notificationBell: {

@@ -19,7 +19,7 @@ const AppStateManager: React.FC<AppStateManagerProps> = ({ children }) => {
   console.log('🎯 AppStateManager rendering...');
   
   const { authState, isLoading } = useAuth();
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
 

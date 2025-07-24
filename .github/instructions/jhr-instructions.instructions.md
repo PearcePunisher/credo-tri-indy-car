@@ -11,17 +11,17 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 - Reference all colors as `colors.primary`, `colors.background`, etc.
 - Do not hardcode hex codes, Tailwind `text-*` or `bg-*` color classes unless they are explicitly defined within `Colors`.
 - The correct pattern for color usage is:
-  - Call `const colorScheme = useColorScheme() || 'light';`
+  - Call `const { colorScheme } = useColorScheme();`
   - Get colors with `const colors = Colors[colorScheme];`
   - Use `colors` in your styles, e.g. `<Text style={{ color: colors.primary }} />`
 - If you need to use a color that is not present in `colors`, add it to the `Colors` object and update the hook accordingly.
-- **Use the `/app/(tabs)/track.tsx` page as the reference implementation for correct color and style usage.**  
+- **Use the `/app/track.tsx` page as the reference implementation for correct color and style usage.**  
   - Example:  
     ```tsx
     import { useColorScheme } from '@/hooks/useColorScheme';
     import { Colors } from '@/constants/Colors';
 
-    const colorScheme = useColorScheme() || 'light';
+    const { colorScheme } = useColorScheme();
     const colors = Colors[colorScheme];
     <Text style={{ color: colors.primary }} />
     <SafeAreaView style={{ backgroundColor: colors.background }} />
@@ -30,7 +30,7 @@ Coding standards, domain knowledge, and preferences that AI should follow.
 
 **Correct usage example:**
 ```tsx
-const colorScheme = useColorScheme() || 'light';
+const { colorScheme } = useColorScheme();
 const colors = Colors[colorScheme];
 <Text style={{ color: colors.primary }} />
 ```
@@ -47,7 +47,7 @@ const { colors } = useColorScheme();
 - Avoid writing per-page styles (e.g. CSS Modules or scoped styles inside a single page/component).
 - Prefer reusable utility classes (like Tailwind) or global styling conventions defined in the project.
 - If a component needs unique styles, abstract them into a shared component or styling file.
-- **Reference `/app/(tabs)/track.tsx` for best practices on combining StyleSheet and dynamic color usage.**
+- **Reference `/app/track.tsx` for best practices on combining StyleSheet and dynamic color usage.**
 
 ## Code Style
 

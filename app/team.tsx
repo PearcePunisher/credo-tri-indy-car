@@ -72,7 +72,7 @@ const TeamScreen = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [teamDetails, setTeamDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme() || "light";
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   useEffect(() => {

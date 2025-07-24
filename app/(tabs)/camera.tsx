@@ -13,7 +13,7 @@ export default function CameraScreen() {
   const [parsedData, setParsedData] = useState<any>(null);
   const isScanning = useRef(false); // prevent multiple triggers
   
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   // If permissions are loading

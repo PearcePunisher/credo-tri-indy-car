@@ -16,7 +16,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   size = 24, 
   style 
 }) => {
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const [unreadCount, setUnreadCount] = useState(0);
   const [showTray, setShowTray] = useState(false);

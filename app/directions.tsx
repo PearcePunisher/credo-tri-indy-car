@@ -14,7 +14,7 @@ import BrandLogo from '@/components/BrandLogo';
 const VenueDirectionsScreen = () => {
   const [content, setContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   useEffect(() => {

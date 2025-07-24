@@ -29,7 +29,7 @@ type AuthMode = 'register' | 'login' | 'guest';
 export const UserActivationFormik = () => {
   console.log('🔧 UserActivationFormik component starting for registration testing...');
   
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { createLocalAuthState, authState } = useAuth();

@@ -25,7 +25,7 @@ interface LoginFormValues {
 export const LoginForm: React.FC = () => {
   console.log('🔧 LoginForm component starting...');
   
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
   const { createLocalAuthState } = useAuth();

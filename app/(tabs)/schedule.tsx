@@ -31,7 +31,7 @@ const ScheduleScreen = () => {
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
   const [notificationStates, setNotificationStates] = useState<{ [key: number]: boolean }>({});
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
   const loadExperiences = useCallback(async (showLoading = true) => {

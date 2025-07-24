@@ -12,7 +12,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function VideoPlayerScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme() || 'light';
+  const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const { completeOnboarding } = useAuth();
   
