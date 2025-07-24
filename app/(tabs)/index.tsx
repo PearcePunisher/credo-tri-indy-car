@@ -22,7 +22,7 @@ import BrandLogo from "@/components/BrandLogo";
 console.log('✅ BrandLogo component imported');
 import CedoLogo from "@/components/CedoLogo";
 console.log('✅ CedoLogo component imported');
-// import { NotificationBell } from "@/components/NotificationBell";
+// import { NotificationBell } from "@/components/NotificationBell"; // TEMPORARILY COMMENTED OUT
 // import { TestNotificationButton } from "@/components/TestNotificationButton";
 import scheduleData from "@/race_data/scheduleData.json";
 console.log('✅ Schedule data imported');
@@ -169,7 +169,7 @@ export default function HomeScreen() {
                 color={colors.tint}
               />
             </TouchableOpacity>
-            {/* Temporarily disabled to prevent crashes */}
+
             {/* <NotificationBell size={24} /> */}
           </View>
 
@@ -427,9 +427,6 @@ export default function HomeScreen() {
               Share Your Thoughts
             </Text>
           </TouchableOpacity>
-
-          {/* Temporarily disabled to prevent crashes */}
-          {/* <TestNotificationButton /> */}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>

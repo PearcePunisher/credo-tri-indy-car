@@ -10,7 +10,7 @@ import {
   Platform,
   Linking,
 } from 'react-native';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications'; // TEMPORARILY COMMENTED OUT
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
@@ -40,6 +40,8 @@ const WelcomeScreen = () => {
   ];
 
   const handleSubscribe = async () => {
+    // TEMPORARILY COMMENTED OUT NOTIFICATION FUNCTIONALITY
+    /*
     try {
       const existing = await Notifications.getPermissionsAsync();
 
@@ -113,6 +115,19 @@ const WelcomeScreen = () => {
       console.error('Error handling notification subscription:', error);
       Alert.alert('Error', 'Failed to set up notifications. You can enable them later in settings.');
     }
+    */
+    
+    // Temporary fallback - skip notifications and continue
+    setSubscribed(true);
+    Alert.alert('Notifications Disabled', 'Notification functionality is temporarily disabled.', [
+      { 
+        text: 'Continue', 
+        onPress: async () => {
+          await completeOnboarding();
+          router.push('/(tabs)');
+        }
+      }
+    ]);
   };
 
   const handleSkipNotifications = () => {
