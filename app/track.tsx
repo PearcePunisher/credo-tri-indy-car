@@ -17,6 +17,7 @@ import { Colors } from '@/constants/Colors';
 const TrackDetailScreen = () => {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+    const [downloadables, setDownloadables] = useState<any>(null);
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
@@ -26,6 +27,9 @@ const TrackDetailScreen = () => {
         const res = await fetch('https://timely-actor-10dfb03957.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l?populate=*');
         const json = await res.json();
         setEvent(json.data);
+        const res2 = await fetch('https://timely-actor-10dfb03957.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l/?populate[event_downloadables][populate][event_downloadables_file]=true&populate[event_downloadables][populate][event_downloadables_cover_image]=true');
+        const cover_image_json = await res2.json();
+        setDownloadables(cover_image_json);
       } catch (e) {
         console.error('Failed to fetch event', e);
       } finally {
@@ -46,6 +50,9 @@ const TrackDetailScreen = () => {
   const callouts = event.event_detail_callout;
   const factFile = event.event_fact_file;
   const download = event.event_downloadables[0];
+  const donwloadable_img = downloadables.data.event_downloadables[0].event_downloadables_cover_image.formats?.medium?.url;
+  console.log(downloadables.data.event_downloadables[0].event_downloadables_cover_image.formats?.medium?.url);
+  //const download2 = downloables.event_downloadables[0].event_downloadable_file?.formats?.medium?.url;
   const imageUrl = event.event_images?.[0]?.formats?.medium?.url;
 
   return (
@@ -96,7 +103,7 @@ const TrackDetailScreen = () => {
         {/* Download Map CTA */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Image
-            source={{ uri: 'https://timely-actor-10dfb03957.media.strapiapp.com/Chat_GPT_Image_May_6_2025_04_23_58_PM_07886895f5.png' }}
+            source={{ uri: donwloadable_img }}
             style={styles.mapImage}
           />
           <Text style={[styles.downloadText, { color: colors.text }]}>
