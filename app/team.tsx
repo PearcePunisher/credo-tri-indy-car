@@ -103,10 +103,12 @@ const TeamScreen = () => {
         flex: 1,
         backgroundColor: colors.background,
       }}
+      edges={['left', 'right', 'bottom']}
     >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
         <Text
           style={[
@@ -248,7 +250,8 @@ const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8, // Reduced top padding
   },
   scrollContent: {
     paddingBottom: Platform.OS === 'ios' ? 36 : 16, // iOS needs more space for tab bar
