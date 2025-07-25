@@ -111,7 +111,7 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   };
 
   const getImageUrl = () => {
-    return experiencesService.getImageUrl();
+    return experiencesService.getImageUrl(experience);
   };
 
   if (!experience) {

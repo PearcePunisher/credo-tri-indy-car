@@ -56,6 +56,73 @@ type DriverRecord = {
   record_details: string;
 };
 
+type DriverCareerStats = {
+  id: number;
+  driver_career_stats_starts: number;
+  driver_career_stats_wins: number;
+  driver_career_stats_championships: number;
+  driver_career_stats_indy_500_wins: number;
+  driver_career_stats_poles: number;
+  driver_career_stats_top_5: number;
+  driver_career_stats_top_10: number;
+  driver_career_stats_laps_led: number;
+};
+
+type DriverCurrentSeasonStats = {
+  id: number;
+  driver_current_season_stats_starts: number;
+  driver_current_season_stats_wins: number;
+  driver_current_season_stats_poles: number;
+  driver_current_season_stats_top_5: number;
+  driver_current_season_stats_top_10: number;
+  driver_current_season_stats_laps_led: number;
+};
+
+type StaffImage = {
+  id: number;
+  documentId: string;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number;
+  height: number;
+  formats: any;
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl: string | null;
+  provider: string;
+  provider_metadata: any;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+};
+
+type StaffMember = {
+  id: number;
+  Staff_name: string;
+  Staff_Description: any[]; // Rich text array
+  Staff_Image: StaffImage;
+};
+
+type TeamDetails = {
+  id: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  team_id: string;
+  team_name: string;
+  team_descriptions: string;
+  team_website_link: string;
+  team_merch_link: string;
+  team_headquarters: string | null;
+  team_established_date: string | null;
+  staff_members_team: StaffMember[];
+};
+
 type Driver = {
   id: number;
   driver_fname: string;
@@ -66,11 +133,14 @@ type Driver = {
   driver_image?: Media;
   car?: Car;
   driver_record?: DriverRecord[];
+  driver_career_stats?: DriverCareerStats;
+  driver_current_season_stats?: DriverCurrentSeasonStats;
 };
 
 const TeamScreen = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [teamDetails, setTeamDetails] = useState<any>(null);
+  const [teamDetails, setTeamDetails] = useState<TeamDetails | null>(null);
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
@@ -84,10 +154,25 @@ const TeamScreen = () => {
       "https://timely-actor-10dfb03957.strapiapp.com/api/team-details?fields[0]=team_name&fields[1]=team_descriptions"
     ).then((res) => res.json());
 
-    Promise.all([fetchDrivers, fetchTeamDetails])
-      .then(([driversData, teamDetailsData]) => {
+    const fetchStaffDetails = fetch(
+      "https://timely-actor-10dfb03957.strapiapp.com/api/team-details?populate[staff_members_team][populate][Staff_Image]=true"
+    ).then((res) => res.json());
+
+    Promise.all([fetchDrivers, fetchTeamDetails, fetchStaffDetails])
+      .then(([driversData, teamDetailsData, staffDetailsData]) => {
         setDrivers(driversData.data);
-        setTeamDetails(teamDetailsData.data);
+        
+        // The team details API returns an array, so we take the first item
+        if (teamDetailsData.data && teamDetailsData.data.length > 0) {
+          setTeamDetails(teamDetailsData.data[0]);
+          setStaffMembers(teamDetailsData.data[0].staff_members_team || []);
+        }
+        
+        // Also get staff from the separate staff API if needed
+        if (staffDetailsData.data && staffDetailsData.data.length > 0) {
+          const additionalStaff = staffDetailsData.data[0].staff_members_team || [];
+          setStaffMembers(prev => [...prev, ...additionalStaff]);
+        }
       })
       .catch((err) => console.error("Failed to fetch data:", err))
       .finally(() => setLoading(false));
@@ -119,7 +204,7 @@ const TeamScreen = () => {
           The Team
         </Text>
 
-        {teamDetails?.length > 0 && (
+        {teamDetails && (
           <View
             style={[
               styles.teamDetails,
@@ -134,7 +219,7 @@ const TeamScreen = () => {
                 { color: colors.text },
               ]}
             >
-              {teamDetails[0].team_name}
+              {teamDetails.team_name}
             </Text>
             <Text
               style={[
@@ -142,10 +227,90 @@ const TeamScreen = () => {
                 { color: colors.secondaryText },
               ]}
             >
-              {teamDetails[0].team_descriptions}
+              {teamDetails.team_descriptions}
             </Text>
           </View>
         )}
+
+        {/* Staff Members Section */}
+        {staffMembers.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Leadership
+            </Text>
+            {staffMembers.map((staff: StaffMember) => {
+              const staffImageUrl = staff.Staff_Image?.url;
+              
+              // Helper function to extract subtitle (bold text from first paragraph)
+              const getStaffSubtitle = () => {
+                if (!staff.Staff_Description || staff.Staff_Description.length === 0) return '';
+                
+                const firstParagraph = staff.Staff_Description[0];
+                if (!firstParagraph?.children) return '';
+                
+                return firstParagraph.children
+                  .filter((child: any) => child.bold)
+                  .map((child: any) => child.text || '')
+                  .join('');
+              };
+              
+              // Helper function to extract description (excluding the subtitle)
+              const getStaffDescription = () => {
+                if (!staff.Staff_Description || staff.Staff_Description.length === 0) return '';
+                
+                return staff.Staff_Description
+                  .map((paragraph, index) => {
+                    if (!paragraph.children) return '';
+                    
+                    // For first paragraph, exclude bold text (subtitle)
+                    if (index === 0) {
+                      return paragraph.children
+                        .filter((child: any) => !child.bold)
+                        .map((child: any) => child.text || '')
+                        .join('');
+                    }
+                    
+                    // For other paragraphs, include all text
+                    return paragraph.children
+                      .map((child: any) => child.text || '')
+                      .join('');
+                  })
+                  .filter(text => text.trim() !== '')
+                  .join('\n\n');
+              };
+
+              const subtitle = getStaffSubtitle();
+              const description = getStaffDescription();
+
+              return (
+                <View key={staff.id} style={[styles.staffCard, { backgroundColor: colors.card }]}>
+                  {staffImageUrl && (
+                    <Image source={{ uri: staffImageUrl }} style={styles.staffImage} />
+                  )}
+                  
+                  <View style={styles.staffContent}>
+                    <Text style={[styles.staffName, { color: colors.text }]}>
+                      {staff.Staff_name}
+                    </Text>
+                    {subtitle && (
+                      <Text style={[styles.staffSubtitle, { color: colors.tint }]}>
+                        {subtitle}
+                      </Text>
+                    )}
+                    <Text style={[styles.staffDescription, { color: colors.secondaryText }]}>
+                      {description}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        )}
+
+        {/* Drivers Section */}
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          Drivers
+        </Text>
 
         {drivers.map((driver: Driver) => {
           const fullName = `${driver.driver_fname} ${driver.driver_lname}`;
@@ -230,12 +395,95 @@ const TeamScreen = () => {
                   resizeMode="contain"
                 />
 
-                <Text style={[styles.subHeader, { color: colors.text }]}>Achievements</Text>
-                {(driver.driver_record || []).map((record) => (
-                  <Text key={record.id} style={[styles.achievement, { color: colors.tint }]}>
-                    {record.record_details}
+                <Text style={[styles.subHeader, { color: colors.text }]}>Career Stats</Text>
+                {driver.driver_career_stats ? (
+                  <View style={styles.statsGrid}>
+                    <View style={styles.statItem}>
+                      <Text style={[styles.statNumber, { color: colors.tint }]}>
+                        {driver.driver_career_stats.driver_career_stats_starts}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Starts</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={[styles.statNumber, { color: colors.tint }]}>
+                        {driver.driver_career_stats.driver_career_stats_wins}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Wins</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={[styles.statNumber, { color: colors.tint }]}>
+                        {driver.driver_career_stats.driver_career_stats_poles}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Poles</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={[styles.statNumber, { color: colors.tint }]}>
+                        {driver.driver_career_stats.driver_career_stats_top_5}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Top 5</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={[styles.statNumber, { color: colors.tint }]}>
+                        {driver.driver_career_stats.driver_career_stats_top_10}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Top 10</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={[styles.statNumber, { color: colors.tint }]}>
+                        {driver.driver_career_stats.driver_career_stats_laps_led}
+                      </Text>
+                      <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Laps Led</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={[styles.noStats, { color: colors.secondaryText }]}>
+                    No career stats available
                   </Text>
-                ))}
+                )}
+
+                {driver.driver_current_season_stats && (
+                  <>
+                    <Text style={[styles.subHeader, { color: colors.text }]}>2025 Season Stats</Text>
+                    <View style={styles.statsGrid}>
+                      <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>
+                          {driver.driver_current_season_stats.driver_current_season_stats_starts}
+                        </Text>
+                        <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Starts</Text>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>
+                          {driver.driver_current_season_stats.driver_current_season_stats_wins}
+                        </Text>
+                        <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Wins</Text>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>
+                          {driver.driver_current_season_stats.driver_current_season_stats_poles}
+                        </Text>
+                        <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Poles</Text>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>
+                          {driver.driver_current_season_stats.driver_current_season_stats_top_5}
+                        </Text>
+                        <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Top 5</Text>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>
+                          {driver.driver_current_season_stats.driver_current_season_stats_top_10}
+                        </Text>
+                        <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Top 10</Text>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>
+                          {driver.driver_current_season_stats.driver_current_season_stats_laps_led}
+                        </Text>
+                        <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Laps Led</Text>
+                      </View>
+                    </View>
+                  </>
+                )}
               </View>
             </View>
           );
@@ -333,6 +581,66 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingVertical: 10,
     paddingHorizontal: 0,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  statItem: {
+    width: "33.33%",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  statLabel: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 2,
+  },
+  noStats: {
+    fontSize: 13,
+    fontStyle: "italic",
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  staffCard: {
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: "hidden",
+    width: "100%",
+  },
+  staffImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+  },
+  staffContent: {
+    padding: 16,
+  },
+  staffName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  staffSubtitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  staffDescription: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
 

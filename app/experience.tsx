@@ -49,7 +49,7 @@ const ExperienceScreen = () => {
     );
   }
 
-  const imageUrl = experience.experience_image?.formats?.medium?.url;
+  const imageUrl = experience.experience_image?.url;
   const bullets = experience.experience_description?.[0]?.children || [];
 
   return (

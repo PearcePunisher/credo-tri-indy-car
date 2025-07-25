@@ -54,12 +54,12 @@ export default function VIPHomeScreen() {
           <View style={styles.tile}>
             <VIPTile icon="qr-code" label="My ID" iconColor={iconColor} onPress={() => router.push("/userQR")} />
           </View>
-          <View style={styles.tile}>
+          {/* <View style={styles.tile}>
             <VIPTile icon="person-add" label="Register" onPress={() => {
               console.log('📝 User tapped Register button - navigating to userID for form testing');
               router.push("/userID");
             }} />
-          </View>
+          </View> */}
           <View style={styles.tile}>
             <VIPTile icon="home" label="Welcome" onPress={() => router.push("/welcome")} />
           </View>

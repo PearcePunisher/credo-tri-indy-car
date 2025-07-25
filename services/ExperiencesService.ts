@@ -3,13 +3,35 @@ import { ENV_CONFIG } from '@/constants/Environment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthService from './AuthService';
 
-export interface VenueLocation {
+interface VenueLocation {
   id: number;
   documentId: string;
   venue_location_name: string;
-  venue_location_description: any[]; // Rich text array
-  venue_location_address_link?: string;
-  venue_location_directions_to_find: any[]; // Rich text array
+  venue_location_description: any[];
+  venue_location_address_link: string | null;
+  venue_location_directions_to_find: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+interface ExperienceImage {
+  id: number;
+  documentId: string;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number;
+  height: number;
+  formats: any; // We won't use this
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string; // This is what we want to use
+  previewUrl: string | null;
+  provider: string;
+  provider_metadata: any;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
@@ -27,6 +49,7 @@ export interface Experience {
   experience_start_date_time: string;
   experience_end_date_time: string;
   experience_venue_location: VenueLocation;
+  experience_image?: ExperienceImage;
 }
 
 export interface ScheduleExperienceItem {
@@ -350,8 +373,13 @@ class ExperiencesService {
   }
 
   // Get the best image URL for display
-  getImageUrl(): string {
-    // Return placeholder image URL since new API doesn't have image field
+  getImageUrl(experience?: Experience): string {
+    // If experience has an image, use the direct URL
+    if (experience?.experience_image?.url) {
+      return experience.experience_image.url;
+    }
+    
+    // Return placeholder image URL as fallback
     return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=300&fit=crop';
   }
 
