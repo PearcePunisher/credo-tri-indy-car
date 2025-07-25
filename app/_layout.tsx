@@ -157,6 +157,30 @@ export default function RootLayout() {
                       gestureEnabled: false, // Prevent swipe back during onboarding
                     }}
                   />
+                  <Stack.Screen
+                    name="faq"
+                    options={{
+                      title: "FAQ",
+                      headerShown: true,
+                      headerBackTitle: "Back",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="team"
+                    options={{
+                      title: "Team",
+                      headerShown: true,
+                      headerBackTitle: "Back",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="track"
+                    options={{
+                      title: "Track",
+                      headerShown: true,
+                      headerBackTitle: "Back",
+                    }}
+                  />
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 <StatusBar style="auto" />
