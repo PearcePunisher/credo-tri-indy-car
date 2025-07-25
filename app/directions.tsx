@@ -6,7 +6,10 @@ import {
   ActivityIndicator,
   StyleSheet,
   SafeAreaView,
+  TouchableOpacity,
+  Linking,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import BrandLogo from '@/components/BrandLogo';
@@ -52,6 +55,54 @@ const VenueDirectionsScreen = () => {
     }
 
     if (type === 'paragraph') {
+      // Check if this paragraph contains links
+      const hasLinks = block.children.some((child: any) => child.type === 'link');
+      
+      if (hasLinks) {
+        return (
+          <View key={index} style={styles.linkContainer}>
+            {block.children.map((child: any, childIndex: number) => {
+              if (child.type === 'link' && child.url) {
+                const linkText = child.children[0]?.text || 'Open Map';
+                // Skip empty links
+                if (!linkText.trim() && !child.children[0]?.text) {
+                  return null;
+                }
+                return (
+                  <TouchableOpacity
+                    key={childIndex}
+                    style={[styles.mapButton, { backgroundColor: colors.tint }]}
+                    onPress={() => handleMapPress(child.url)}
+                  >
+                    <View style={styles.buttonContent}>
+                      <Ionicons 
+                        name="map" 
+                        size={20} 
+                        color={colors.textOnGreen} 
+                        style={styles.buttonIcon}
+                      />
+                      <Text style={[styles.mapButtonText, { color: colors.textOnGreen }]}>
+                        {linkText.trim() || 'Open Directions'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
+              // Render regular text if it's not empty
+              if (child.text && child.text.trim()) {
+                return (
+                  <Text key={childIndex} style={[styles.paragraph, { color: colors.text }]}>
+                    {child.text}
+                  </Text>
+                );
+              }
+              return null;
+            })}
+          </View>
+        );
+      }
+      
+      // Regular paragraph without links
       return (
         <Text key={index} style={[styles.paragraph, { color: colors.text }]}>
           {block.children[0].text}
@@ -72,6 +123,19 @@ const VenueDirectionsScreen = () => {
     }
 
     return null;
+  };
+
+  const handleMapPress = async (url: string) => {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        console.warn(`Cannot open URL: ${url}`);
+      }
+    } catch (error) {
+      console.error(`Error opening map URL: ${error}`);
+    }
   };
 
   if (loading) {
@@ -150,7 +214,36 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginBottom: 5,
     lineHeight: 24,
-    
+  },
+  linkContainer: {
+    marginBottom: 15,
+  },
+  mapButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  mapButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
   },
 });
 

@@ -191,7 +191,7 @@ Currently, a 6-hour offset correction is applied in the schedule display and not
 
 ```tsx
 // Temporarily subtract 6 hours to show correct local event time
-const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
 const timeString = format(correctedEventTime, 'h:mm a');
 ```
 

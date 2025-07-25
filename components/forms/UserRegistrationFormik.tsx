@@ -134,6 +134,15 @@ export function RegisterScreenFormik() {
   
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+  
+  // Debug logging for color scheme
+  console.log('🎨 Registration Form Color Debug:', {
+    colorScheme,
+    textColor: colors.text,
+    backgroundColor: colors.background,
+    isLight: colorScheme === 'light',
+    isDark: colorScheme === 'dark'
+  });
   const [menuVisible, setMenuVisible] = useState(false);
   const [guest1MenuVisible, setGuest1MenuVisible] = useState(false);
   const [guest2MenuVisible, setGuest2MenuVisible] = useState(false);
@@ -217,7 +226,27 @@ export function RegisterScreenFormik() {
   }
 
   return (
-    <PaperProvider>
+    <PaperProvider 
+      theme={{
+        colors: {
+          primary: colors.tint,
+          background: colors.background,
+          surface: colors.card,
+          text: colors.text,
+          placeholder: colors.secondaryText,
+          backdrop: colors.background,
+          onSurface: colors.text,
+          onBackground: colors.text,
+          disabled: colors.secondaryText,
+          error: colors.error,
+        },
+        fonts: {
+          regular: {
+            fontFamily: "Roobert",
+          },
+        },
+      }}
+    >
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView
           contentContainerStyle={[
@@ -543,6 +572,7 @@ export function RegisterScreenFormik() {
                         setDatePickerVisible(false);
                       }}
                       onCancel={() => setDatePickerVisible(false)}
+                      minimumDate={new Date(1900, 0, 1)} // Allow dates from 1900
                       maximumDate={new Date()}
                       date={parseStringToDate(values.dob) || new Date(2000, 0, 1)}
                       isDarkModeEnabled={colorScheme === "dark"}
@@ -981,6 +1011,7 @@ export function RegisterScreenFormik() {
                                   setGuest1DatePickerVisible(false);
                                 }}
                                 onCancel={() => setGuest1DatePickerVisible(false)}
+                                minimumDate={new Date(1900, 0, 1)} // Allow dates from 1900
                                 maximumDate={new Date()}
                                 date={parseStringToDate(values.guest1Dob) || new Date(2000, 0, 1)}
                                 isDarkModeEnabled={colorScheme === "dark"}
@@ -1208,6 +1239,7 @@ export function RegisterScreenFormik() {
                                   setGuest2DatePickerVisible(false);
                                 }}
                                 onCancel={() => setGuest2DatePickerVisible(false)}
+                                minimumDate={new Date(1900, 0, 1)} // Allow dates from 1900
                                 maximumDate={new Date()}
                                 date={parseStringToDate(values.guest2Dob) || new Date(2000, 0, 1)}
                                 isDarkModeEnabled={colorScheme === "dark"}

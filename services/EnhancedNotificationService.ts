@@ -221,7 +221,7 @@ class EnhancedNotificationService {
     
     // Use corrected event time with 6-hour offset for notification scheduling
     const eventTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
-    const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+    const correctedEventTime = new Date(eventTime.getTime() - (7 * 60 * 60 * 1000));
     const displayTime = correctedEventTime;
     const now = new Date();
 

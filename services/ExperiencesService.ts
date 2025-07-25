@@ -597,7 +597,7 @@ class ExperiencesService {
           const experience = item.schedule_experience;
           if (experience && experience.experience_start_date_time) {
             const eventTime = this.convertToEventLocalTime(experience.experience_start_date_time);
-            const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+            const correctedEventTime = new Date(eventTime.getTime() - (7 * 60 * 60 * 1000));
             
             if (correctedEventTime > now) {
               futureCount++;

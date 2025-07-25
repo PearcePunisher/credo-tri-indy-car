@@ -43,7 +43,7 @@ if (!hasBeenAutoSubscribed) {
 ```typescript
 // Use corrected event time for notification scheduling
 const eventTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
-const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+const correctedEventTime = new Date(eventTime.getTime() - (7 * 60 * 60 * 1000));
 
 // Schedule notifications relative to corrected time
 const oneHourBefore = new Date(correctedEventTime.getTime() - 60 * 60 * 1000);

@@ -123,8 +123,8 @@ const ScheduleScreen = () => {
         const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time);
         const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time);
         // Apply 7-hour correction for proper sorting
-        const correctedTimeA = new Date(timeA.getTime() - (6 * 60 * 60 * 1000));
-        const correctedTimeB = new Date(timeB.getTime() - (6 * 60 * 60 * 1000));
+        const correctedTimeA = new Date(timeA.getTime() - (7 * 60 * 60 * 1000));
+        const correctedTimeB = new Date(timeB.getTime() - (7 * 60 * 60 * 1000));
         return correctedTimeA.getTime() - correctedTimeB.getTime();
       });
   };
@@ -136,14 +136,14 @@ const ScheduleScreen = () => {
   const pastExperiences = experiences.filter(exp => {
     if (!exp || !exp.experience_start_date_time) return false;
     const eventDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
-    const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+    const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
     return isPast(correctedEventTime);
   });
   
   const futureExperiences = experiences.filter(exp => {
     if (!exp || !exp.experience_start_date_time) return false;
     const eventDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
-    const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+    const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
     return !isPast(correctedEventTime);
   });
 
@@ -186,7 +186,7 @@ const ScheduleScreen = () => {
     // Use timezone-corrected event time for consistent display
     const eventDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
     // Temporarily subtract 7 hours to show correct local event time
-    const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+    const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
     const timeString = format(correctedEventTime, 'h:mm a');
     const isToday = isSameDay(eventDate, now);
     const isPastEvent = isPast(correctedEventTime);

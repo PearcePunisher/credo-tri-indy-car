@@ -46,15 +46,12 @@ const WelcomeScreen = () => {
       if (existing.status === 'granted') {
         setSubscribed(true);
         await updateNotificationSubscription(true);
-        Alert.alert('Already Subscribed', 'You are already subscribed to notifications.', [
-          { 
-            text: 'Continue', 
-            onPress: async () => {
-              await completeOnboarding();
-              router.push('/(tabs)');
-            }
-          }
-        ]);
+        
+        // Auto-continue since they're already set up
+        setTimeout(async () => {
+          await completeOnboarding();
+          router.push('/(tabs)');
+        }, 1000); // Shorter delay since they're already subscribed
         return;
       }
 
@@ -81,15 +78,14 @@ const WelcomeScreen = () => {
           await updateNotificationSubscription(true);
         }
         
-        Alert.alert('Subscribed!', 'You will now receive updates about track experiences and events.', [
-          { 
-            text: 'Continue', 
-            onPress: async () => {
-              await completeOnboarding();
-              router.push('/(tabs)');
-            }
-          }
-        ]);
+        // Show success state and auto-continue
+        setSubscribed(true);
+        
+        // Brief success feedback, then continue
+        setTimeout(async () => {
+          await completeOnboarding();
+          router.push('/(tabs)');
+        }, 1500); // 1.5 second delay to show success state
       } else {
         Alert.alert(
           'Enable Notifications',

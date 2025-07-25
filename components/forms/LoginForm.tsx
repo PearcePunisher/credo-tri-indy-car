@@ -27,6 +27,15 @@ export const LoginForm: React.FC = () => {
   
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+  
+  // Debug logging for color scheme
+  console.log('🎨 Login Form Color Debug:', {
+    colorScheme,
+    textColor: colors.text,
+    backgroundColor: colors.background,
+    isLight: colorScheme === 'light',
+    isDark: colorScheme === 'dark'
+  });
   const router = useRouter();
   const { createLocalAuthState } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +77,27 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <PaperProvider>
+    <PaperProvider 
+      theme={{
+        colors: {
+          primary: colors.tint,
+          background: colors.background,
+          surface: colors.card,
+          text: colors.text,
+          placeholder: colors.secondaryText,
+          backdrop: colors.background,
+          onSurface: colors.text,
+          onBackground: colors.text,
+          disabled: colors.secondaryText,
+          error: colors.error,
+        },
+        fonts: {
+          regular: {
+            fontFamily: "Roobert",
+          },
+        },
+      }}
+    >
       <Formik
         initialValues={{
           email: '',

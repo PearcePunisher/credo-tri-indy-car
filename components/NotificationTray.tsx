@@ -97,7 +97,7 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
         id: '2',
         title: 'Garage Tour Reminder',
         body: 'Don\'t forget about your exclusive garage tour scheduled for tomorrow at 2:00 PM.',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+        timestamp: new Date(Date.now() - 7 * 60 * 60 * 1000), // 6 hours ago
         read: false,
         type: 'reminder',
       },
