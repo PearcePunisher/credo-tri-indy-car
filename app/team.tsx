@@ -21,7 +21,7 @@ import {
 type SocialMedia = {
   id: number;
   social_platform: string;
-  driver_social_length: string;
+  driver_social_link: string | null;
 };
 
 type ImageFormat = {
@@ -171,6 +171,9 @@ const TeamScreen = () => {
 
                 <View style={styles.socialRow}>
                   {socialLinks.map((s: SocialMedia, idx: number) => {
+                    // Skip if no link is provided or if it's just whitespace
+                    if (!s.driver_social_link || s.driver_social_link.trim() === '') return null;
+
                     const platform = s.social_platform.toLowerCase();
 
                     type FontAwesomeIconName =
@@ -186,17 +189,34 @@ const TeamScreen = () => {
                     else if (platform.includes("facebook")) iconName = "facebook";
                     else if (platform.includes("youtube")) iconName = "youtube-play";
 
+                    // Skip if we don't have a matching icon for this platform
+                    if (!iconName) return null;
+
+                    const handleSocialPress = async () => {
+                      try {
+                        const url = s.driver_social_link;
+                        if (url) {
+                          const canOpen = await Linking.canOpenURL(url);
+                          if (canOpen) {
+                            await Linking.openURL(url);
+                          } else {
+                            console.warn(`Cannot open URL: ${url}`);
+                          }
+                        }
+                      } catch (error) {
+                        console.error(`Error opening social media link: ${error}`);
+                      }
+                    };
+
                     return (
                       <TouchableOpacity
                         key={idx}
                         style={styles.socialIcon}
-                        onPress={() =>
-                          Linking.openURL(`https://${s.driver_social_length}`)
-                        }
+                        onPress={handleSocialPress}
+                        accessibilityLabel={`Open ${s.social_platform} profile`}
+                        accessibilityHint={`Opens ${s.social_platform} in your browser or app`}
                       >
-                        {iconName && (
-                          <FontAwesome name={iconName} size={24} color={colors.tint} />
-                        )}
+                        <FontAwesome name={iconName} size={24} color={colors.tint} />
                       </TouchableOpacity>
                     );
                   })}
@@ -291,6 +311,8 @@ const styles = StyleSheet.create({
   },
   socialIcon: {
     marginRight: 12,
+    padding: 4, // Add padding for better touch target
+    borderRadius: 4, // Add slight border radius for better visual feedback
   },
   carImage: {
     width: "100%",
