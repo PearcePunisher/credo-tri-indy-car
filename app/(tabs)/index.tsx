@@ -359,7 +359,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.gridItem}
-              onPress={() => router.push("/experience")}>
+              onPress={() => router.push("/faq")}>
               <Image
                 source={{
                   uri: "https://cdn-1.motorsport.com/images/amp/YMdy8432/s1200/callum-ilott-juncos-hollinger-.webp",
