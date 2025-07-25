@@ -8,12 +8,12 @@ const NotificationDebugger: React.FC = () => {
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
-  const handleClearAutoSubscription = async () => {
+  const handleClearNotificationPreferences = async () => {
     try {
-      await experiencesService.clearAutoSubscriptionStatus();
-      Alert.alert('Success', 'Auto-subscription status cleared');
+      await experiencesService.clearNotificationPreferences();
+      Alert.alert('Success', 'Notification preferences reset to opt-in defaults');
     } catch (error) {
-      Alert.alert('Error', 'Failed to clear auto-subscription status');
+      Alert.alert('Error', 'Failed to clear notification preferences');
     }
   };
 
@@ -35,12 +35,12 @@ const NotificationDebugger: React.FC = () => {
     }
   };
 
-  const handleManualAutoSubscribe = async () => {
+  const handleManualResetPreferences = async () => {
     try {
-      await experiencesService.manuallyTriggerAutoSubscription();
-      Alert.alert('Success', 'Manual auto-subscription triggered. Check console for details.');
+      await experiencesService.manuallyResetNotificationPreferences();
+      Alert.alert('Success', 'Notification preferences reset. Check console for details.');
     } catch (error) {
-      Alert.alert('Error', 'Failed to trigger auto-subscription');
+      Alert.alert('Error', 'Failed to reset notification preferences');
     }
   };
 
@@ -55,7 +55,7 @@ const NotificationDebugger: React.FC = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Notification Debugger</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Notification Debugger (Opt-In)</Text>
       
       <TouchableOpacity 
         style={[styles.button, { borderColor: colors.tint }]} 
@@ -66,9 +66,9 @@ const NotificationDebugger: React.FC = () => {
       
       <TouchableOpacity 
         style={[styles.button, { borderColor: colors.tint }]} 
-        onPress={handleClearAutoSubscription}
+        onPress={handleClearNotificationPreferences}
       >
-        <Text style={[styles.buttonText, { color: colors.tint }]}>Clear Auto-Subscription</Text>
+        <Text style={[styles.buttonText, { color: colors.tint }]}>Reset Notification Preferences</Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
@@ -78,11 +78,11 @@ const NotificationDebugger: React.FC = () => {
         <Text style={[styles.buttonText, { color: colors.tint }]}>Clear All Notifications</Text>
       </TouchableOpacity>
       
-            <TouchableOpacity 
+      <TouchableOpacity 
         style={[styles.button, { borderColor: colors.tint }]} 
-        onPress={handleManualAutoSubscribe}
+        onPress={handleManualResetPreferences}
       >
-        <Text style={[styles.buttonText, { color: colors.tint }]}>Manual Auto-Subscribe</Text>
+        <Text style={[styles.buttonText, { color: colors.tint }]}>Manual Reset Preferences</Text>
       </TouchableOpacity>
       
       <TouchableOpacity 

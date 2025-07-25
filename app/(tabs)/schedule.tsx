@@ -269,7 +269,7 @@ const ScheduleScreen = () => {
         <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
         
         {/* Temporary debugging component */}
-        <NotificationDebugger />
+        {/* <NotificationDebugger /> */}
 
         {experiences.length === 0 ? (
           <View style={styles.emptyState}>

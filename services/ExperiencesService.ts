@@ -176,8 +176,8 @@ class ExperiencesService {
     // Try to fetch fresh data
     const freshData = await this.fetchExperiences();
     if (freshData) {
-      // Auto-subscribe to all experience notifications for new users
-      await this.autoSubscribeToAllExperiences(freshData);
+      // Note: Using opt-in method instead of auto-subscription to prevent notification bombardment
+      // Users can manually enable notifications for experiences they're interested in
       return { data: freshData, isOffline: false };
     }
 
@@ -189,82 +189,12 @@ class ExperiencesService {
     };
   }
 
-  // Auto-subscribe users to all experience notifications by default
-  private async autoSubscribeToAllExperiences(scheduleData: ScheduleResponse): Promise<void> {
-    try {
-      const authService = AuthService.getInstance();
-      const currentUser = authService.getCurrentUser();
-      
-      console.log('🔔 Auto-subscription method called');
-      console.log('🔔 Current user:', currentUser ? `ID: ${currentUser.id}` : 'null');
-      console.log('🔔 Schedule experiences count:', scheduleData.data.schedule_experiences?.length || 0);
-      
-      if (!currentUser || !scheduleData.data.schedule_experiences) {
-        console.log('🔔 Auto-subscription skipped: No user or experiences');
-        return;
-      }
-
-      // Check if user has already been auto-subscribed or made choices
-      const userStatusKey = `notificationStatuses_${currentUser.id}`;
-      const autoSubscribeKey = `autoSubscribed_${currentUser.id}`;
-      const hasExistingStatuses = !!(globalThis as any)[userStatusKey];
-      const hasBeenAutoSubscribed = await AsyncStorage.getItem(autoSubscribeKey);
-      
-      console.log(`🔔 Auto-subscription check:`, {
-        hasExistingStatuses,
-        hasBeenAutoSubscribed,
-        userId: currentUser.id,
-        userStatusKey,
-        autoSubscribeKey
-      });
-      
-      // If user already has notification statuses or has been auto-subscribed, respect their choices
-      if (hasExistingStatuses || hasBeenAutoSubscribed) {
-        console.log('🔔 Auto-subscription skipped: User already has preferences');
-        return;
-      }
-
-      console.log('🔔 Starting auto-subscription for first-time user...');
-      
-      // Mark that we've auto-subscribed this user to prevent future auto-subscriptions
-      await AsyncStorage.setItem(autoSubscribeKey, 'true');
-      console.log('🔔 Marked user as auto-subscribed');
-      
-      // Schedule notifications for all experiences that haven't started yet
-      const now = new Date();
-      const experiences = scheduleData.data.schedule_experiences;
-      let subscriptionCount = 0;
-      
-      console.log(`🔔 Processing ${experiences.length} experiences for auto-subscription`);
-      
-      for (const item of experiences) {
-        const experience = item.schedule_experience;
-        if (!experience || !experience.experience_start_date_time) continue;
-        
-        // Use the corrected event time for comparison (with 6-hour offset)
-        const eventTime = this.convertToEventLocalTime(experience.experience_start_date_time);
-        const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
-        
-        // Only schedule for future experiences
-        if (correctedEventTime > now) {
-          try {
-            console.log(`🔔 Auto-subscribing to: ${experience.experience_title} (starts: ${correctedEventTime.toLocaleString()})`);
-            await this.scheduleExperienceNotifications(experience);
-            await this.setNotificationStatus(experience.id, true);
-            subscriptionCount++;
-            console.log(`✅ Auto-subscribed to notifications for: ${experience.experience_title}`);
-          } catch (error) {
-            console.error(`❌ Failed to auto-subscribe to ${experience.experience_title}:`, error);
-          }
-        } else {
-          console.log(`⏰ Skipping past event: ${experience.experience_title} (was: ${correctedEventTime.toLocaleString()})`);
-        }
-      }
-      
-      console.log(`🎉 Auto-subscription complete! Subscribed to ${subscriptionCount} future experiences.`);
-    } catch (error) {
-      console.error('Error during auto-subscription to experiences:', error);
-    }
+  // Opt-in method: Users manually enable notifications for experiences they want
+  // This replaces the auto-subscription approach to prevent notification bombardment
+  private async enableOptInNotifications(): Promise<void> {
+    console.log('� Notification system ready - users can opt-in to specific experience notifications');
+    // No automatic subscriptions - users must manually enable notifications
+    // This gives users full control over which experiences they want to be notified about
   }
 
   // Convert rich text array to plain text
@@ -528,13 +458,13 @@ class ExperiencesService {
       const userStatusKey = `notificationStatuses_${currentUser.id}`;
       const statuses = (globalThis as any)[userStatusKey] || {};
       
-      // Default to true (auto-subscribed) if no explicit status is set
-      // User must explicitly opt-out to disable notifications
-      return statuses[experienceId] !== false;
+      // Default to false (opt-in) - users must explicitly enable notifications
+      // This prevents notification bombardment by requiring conscious choice
+      return statuses[experienceId] === true;
     } catch (error) {
       console.error('Error getting notification status:', error);
-      // Default to enabled on error to ensure users don't miss notifications
-      return true;
+      // Default to disabled on error to prevent unwanted notifications
+      return false;
     }
   }
 
@@ -581,19 +511,24 @@ class ExperiencesService {
     }
   }
 
-  // Clear auto-subscription status to allow re-subscribing
-  async clearAutoSubscriptionStatus(): Promise<void> {
+  // Clear all notification preferences to reset to opt-in defaults
+  async clearNotificationPreferences(): Promise<void> {
     try {
       const authService = AuthService.getInstance();
       const currentUser = authService.getCurrentUser();
       
       if (currentUser) {
-        const autoSubscribeKey = `autoSubscribed_${currentUser.id}`;
-        await AsyncStorage.removeItem(autoSubscribeKey);
-        console.log('✅ Auto-subscription status cleared');
+        // Clear user-specific notification statuses
+        const userStatusKey = `notificationStatuses_${currentUser.id}`;
+        (globalThis as any)[userStatusKey] = {};
+        
+        // Cancel all scheduled notifications for this user
+        await this.clearAllNotifications();
+        
+        console.log('✅ Notification preferences cleared - reset to opt-in defaults');
       }
     } catch (error) {
-      console.error('Error clearing auto-subscription status:', error);
+      console.error('Error clearing notification preferences:', error);
     }
   }
 
@@ -682,10 +617,10 @@ class ExperiencesService {
     }
   }
 
-  // Manually trigger auto-subscription for testing
-  async manuallyTriggerAutoSubscription(): Promise<void> {
+  // Manually reset notification preferences for testing
+  async manuallyResetNotificationPreferences(): Promise<void> {
     try {
-      console.log('🔧 Manually triggering auto-subscription...');
+      console.log('🔧 Manually resetting notification preferences...');
       
       // First check current notification count
       const initialCount = await this.getScheduledNotificationCount();
@@ -693,24 +628,24 @@ class ExperiencesService {
       
       const response = await this.getExperiences();
       if (response.data) {
-        // Clear auto-subscription status first
-        await this.clearAutoSubscriptionStatus();
+        // Clear notification preferences (resets to opt-in defaults)
+        await this.clearNotificationPreferences();
         
-        // Check count after clearing auto-subscription status
+        // Check count after clearing preferences
         const afterClearCount = await this.getScheduledNotificationCount();
-        console.log(`📊 Count after clearing auto-subscription status: ${afterClearCount}`);
+        console.log(`📊 Count after clearing preferences: ${afterClearCount}`);
         
-        // Then trigger auto-subscription
-        await this.autoSubscribeToAllExperiences(response.data);
+        // Initialize opt-in notification system
+        await this.enableOptInNotifications();
         
-        // Check final count
+        // Check final count (should be 0 since opt-in defaults to no notifications)
         const finalCount = await this.getScheduledNotificationCount();
         console.log(`📊 Final notification count: ${finalCount}`);
         
-        console.log('✅ Manual auto-subscription complete');
+        console.log('✅ Manual notification preference reset complete - users can now opt-in');
       }
     } catch (error) {
-      console.error('❌ Manual auto-subscription failed:', error);
+      console.error('❌ Manual notification preference reset failed:', error);
     }
   }
 }

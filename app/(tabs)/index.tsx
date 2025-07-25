@@ -378,7 +378,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/directions")}>
               <Image
                 source={{
-                  uri: "https://images.unsplash.com/photo-1590005608858-67892d55ae86?q=80&w=1586&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/2_EA_190_2088053_79694176_2_62735d8d5b.jpg",
                 }}
                 style={styles.gridImage}
               />
