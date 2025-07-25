@@ -89,7 +89,9 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
     try {
       // Use timezone-corrected time for consistent display
       const eventTime = experiencesService.convertToEventLocalTime(dateString);
-      return format(eventTime, 'h:mm a');
+      // Temporarily subtract 6 hours to show correct local event time
+      const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+      return format(correctedEventTime, 'h:mm a');
     } catch (error) {
       return 'Invalid time';
     }

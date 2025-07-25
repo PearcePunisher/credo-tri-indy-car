@@ -19,6 +19,7 @@ import BrandLogo from '@/components/BrandLogo';
 import { experiencesService, type Experience } from '@/services/ExperiencesService';
 import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import { Ionicons } from '@expo/vector-icons';
+import NotificationDebugger from '@/components/NotificationDebugger';
 
 interface GroupedExperiences {
   [dateKey: string]: Experience[];
@@ -37,12 +38,22 @@ const ScheduleScreen = () => {
   const loadExperiences = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
+      console.log('📅 Loading experiences...');
+      
+      // Check notification count before loading
+      const notificationCountBefore = await experiencesService.getScheduledNotificationCount();
+      console.log(`📊 Notifications before loading: ${notificationCountBefore}`);
+      
       const response = await experiencesService.getExperiences();
       const scheduleData = response.data?.data;
       const experiencesData = scheduleData?.schedule_experiences
         ?.map(item => item.schedule_experience)
         .filter(exp => exp && exp.id && exp.experience_start_date_time) || [];
       setExperiences(experiencesData);
+      
+      // Check notification count after loading
+      const notificationCountAfter = await experiencesService.getScheduledNotificationCount();
+      console.log(`📊 Notifications after loading: ${notificationCountAfter}`);
       
       // Load notification states for all experiences
       const states: { [key: number]: boolean } = {};
@@ -109,9 +120,12 @@ const ScheduleScreen = () => {
     return experiences
       .filter(exp => exp && exp.experience_start_date_time)
       .sort((a, b) => {
-        const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time).getTime();
-        const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time).getTime();
-        return timeA - timeB;
+        const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time);
+        const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time);
+        // Apply 7-hour correction for proper sorting
+        const correctedTimeA = new Date(timeA.getTime() - (6 * 60 * 60 * 1000));
+        const correctedTimeB = new Date(timeB.getTime() - (6 * 60 * 60 * 1000));
+        return correctedTimeA.getTime() - correctedTimeB.getTime();
       });
   };
 
@@ -119,15 +133,19 @@ const ScheduleScreen = () => {
   const today = startOfDay(now);
 
   // Separate experiences into past and future using corrected timezone
-  const pastExperiences = experiences.filter(exp => 
-    exp && exp.experience_start_date_time && 
-    isPast(experiencesService.convertToEventLocalTime(exp.experience_start_date_time))
-  );
+  const pastExperiences = experiences.filter(exp => {
+    if (!exp || !exp.experience_start_date_time) return false;
+    const eventDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
+    const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+    return isPast(correctedEventTime);
+  });
   
-  const futureExperiences = experiences.filter(exp => 
-    exp && exp.experience_start_date_time && 
-    !isPast(experiencesService.convertToEventLocalTime(exp.experience_start_date_time))
-  );
+  const futureExperiences = experiences.filter(exp => {
+    if (!exp || !exp.experience_start_date_time) return false;
+    const eventDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
+    const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+    return !isPast(correctedEventTime);
+  });
 
   const groupedPastExperiences = groupExperiencesByDate(pastExperiences);
   const groupedFutureExperiences = groupExperiencesByDate(futureExperiences);
@@ -167,9 +185,11 @@ const ScheduleScreen = () => {
     
     // Use timezone-corrected event time for consistent display
     const eventDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
-    const timeString = format(eventDate, 'h:mm a');
+    // Temporarily subtract 7 hours to show correct local event time
+    const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+    const timeString = format(correctedEventTime, 'h:mm a');
     const isToday = isSameDay(eventDate, now);
-    const isPastEvent = isPast(eventDate);
+    const isPastEvent = isPast(correctedEventTime);
     const venueLocationName = experience.experience_venue_location?.venue_location_name || 'Location TBD';
     
     return (
@@ -247,6 +267,9 @@ const ScheduleScreen = () => {
       >
         <BrandLogo style={styles.logo} />
         <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
+        
+        {/* Temporary debugging component */}
+        <NotificationDebugger />
 
         {experiences.length === 0 ? (
           <View style={styles.emptyState}>

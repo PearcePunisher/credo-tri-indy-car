@@ -172,45 +172,73 @@ class ExperiencesService {
       const authService = AuthService.getInstance();
       const currentUser = authService.getCurrentUser();
       
-      if (!currentUser || !scheduleData.data.schedule_experiences) {
-        return;
-      }
-
-      // Check if this is the first time the user is getting their experiences
-      const userStatusKey = `notificationStatuses_${currentUser.id}`;
-      const hasExistingStatuses = !!(globalThis as any)[userStatusKey];
+      console.log('🔔 Auto-subscription method called');
+      console.log('🔔 Current user:', currentUser ? `ID: ${currentUser.id}` : 'null');
+      console.log('🔔 Schedule experiences count:', scheduleData.data.schedule_experiences?.length || 0);
       
-      // If user already has notification statuses, respect their choices
-      if (hasExistingStatuses) {
+      if (!currentUser || !scheduleData.data.schedule_experiences) {
+        console.log('🔔 Auto-subscription skipped: No user or experiences');
         return;
       }
 
-      console.log('🔔 Auto-subscribing user to all experience notifications...');
+      // Check if user has already been auto-subscribed or made choices
+      const userStatusKey = `notificationStatuses_${currentUser.id}`;
+      const autoSubscribeKey = `autoSubscribed_${currentUser.id}`;
+      const hasExistingStatuses = !!(globalThis as any)[userStatusKey];
+      const hasBeenAutoSubscribed = await AsyncStorage.getItem(autoSubscribeKey);
+      
+      console.log(`🔔 Auto-subscription check:`, {
+        hasExistingStatuses,
+        hasBeenAutoSubscribed,
+        userId: currentUser.id,
+        userStatusKey,
+        autoSubscribeKey
+      });
+      
+      // If user already has notification statuses or has been auto-subscribed, respect their choices
+      if (hasExistingStatuses || hasBeenAutoSubscribed) {
+        console.log('🔔 Auto-subscription skipped: User already has preferences');
+        return;
+      }
+
+      console.log('🔔 Starting auto-subscription for first-time user...');
+      
+      // Mark that we've auto-subscribed this user to prevent future auto-subscriptions
+      await AsyncStorage.setItem(autoSubscribeKey, 'true');
+      console.log('🔔 Marked user as auto-subscribed');
       
       // Schedule notifications for all experiences that haven't started yet
       const now = new Date();
       const experiences = scheduleData.data.schedule_experiences;
+      let subscriptionCount = 0;
+      
+      console.log(`🔔 Processing ${experiences.length} experiences for auto-subscription`);
       
       for (const item of experiences) {
         const experience = item.schedule_experience;
         if (!experience || !experience.experience_start_date_time) continue;
         
-        // Use the corrected event time for comparison
-        const eventStartTime = this.convertToEventLocalTime(experience.experience_start_date_time);
+        // Use the corrected event time for comparison (with 6-hour offset)
+        const eventTime = this.convertToEventLocalTime(experience.experience_start_date_time);
+        const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
         
         // Only schedule for future experiences
-        if (eventStartTime > now) {
+        if (correctedEventTime > now) {
           try {
+            console.log(`🔔 Auto-subscribing to: ${experience.experience_title} (starts: ${correctedEventTime.toLocaleString()})`);
             await this.scheduleExperienceNotifications(experience);
             await this.setNotificationStatus(experience.id, true);
+            subscriptionCount++;
             console.log(`✅ Auto-subscribed to notifications for: ${experience.experience_title}`);
           } catch (error) {
             console.error(`❌ Failed to auto-subscribe to ${experience.experience_title}:`, error);
           }
+        } else {
+          console.log(`⏰ Skipping past event: ${experience.experience_title} (was: ${correctedEventTime.toLocaleString()})`);
         }
       }
       
-      console.log('🎉 Auto-subscription complete! Users can opt-out individually if desired.');
+      console.log(`🎉 Auto-subscription complete! Subscribed to ${subscriptionCount} future experiences.`);
     } catch (error) {
       console.error('Error during auto-subscription to experiences:', error);
     }
@@ -332,6 +360,9 @@ class ExperiencesService {
     if (!experience.experience_start_date_time) return;
 
     try {
+      // First, cancel any existing notifications for this experience to prevent duplicates
+      await this.cancelExperienceNotifications(experience.id);
+      
       // First try backend integration if available
       const authService = AuthService.getInstance();
       const currentUser = authService.getCurrentUser();
@@ -519,6 +550,139 @@ class ExperiencesService {
       await this.fetchExperiences();
     } catch (error) {
       console.error('Error refreshing data:', error);
+    }
+  }
+
+  // Clear auto-subscription status to allow re-subscribing
+  async clearAutoSubscriptionStatus(): Promise<void> {
+    try {
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (currentUser) {
+        const autoSubscribeKey = `autoSubscribed_${currentUser.id}`;
+        await AsyncStorage.removeItem(autoSubscribeKey);
+        console.log('✅ Auto-subscription status cleared');
+      }
+    } catch (error) {
+      console.error('Error clearing auto-subscription status:', error);
+    }
+  }
+
+  // Clear all scheduled notifications (for debugging)
+  async clearAllNotifications(): Promise<void> {
+    try {
+      // Use Expo Notifications to cancel all scheduled notifications
+      const Notifications = await import('expo-notifications');
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      console.log('✅ All notifications cleared');
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+    }
+  }
+
+  // Get count of scheduled notifications (for debugging)
+  async getScheduledNotificationCount(): Promise<number> {
+    try {
+      const Notifications = await import('expo-notifications');
+      const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+      console.log(`📊 Currently have ${scheduled.length} scheduled notifications`);
+      
+      // Log details about each scheduled notification
+      if (scheduled.length > 0) {
+        console.log('📋 Scheduled notification details:');
+        scheduled.forEach((notification, index) => {
+          console.log(`  ${index + 1}. ID: ${notification.identifier}`);
+          console.log(`     Title: ${notification.content.title}`);
+          console.log(`     Trigger: ${JSON.stringify(notification.trigger)}`);
+        });
+      } else {
+        console.log('📋 No scheduled notifications found');
+      }
+      
+      return scheduled.length;
+    } catch (error) {
+      console.error('Error getting notification count:', error);
+      return 0;
+    }
+  }
+
+  // Debug method to check what's happening with notifications
+  async debugNotificationFlow(): Promise<void> {
+    try {
+      console.log('🔍 =============  NOTIFICATION DEBUG FLOW =============');
+      
+      // 1. Check permissions
+      const Notifications = await import('expo-notifications');
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log(`📋 Notification permission status: ${status}`);
+      
+      // 2. Check current scheduled notifications
+      const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+      console.log(`📊 Currently scheduled notifications: ${scheduled.length}`);
+      
+      // 3. Check experiences data
+      const response = await this.getExperiences();
+      if (response.data) {
+        const experiences = response.data.data.schedule_experiences;
+        const now = new Date();
+        
+        console.log(`📅 Total experiences: ${experiences.length}`);
+        
+        let futureCount = 0;
+        experiences.forEach(item => {
+          const experience = item.schedule_experience;
+          if (experience && experience.experience_start_date_time) {
+            const eventTime = this.convertToEventLocalTime(experience.experience_start_date_time);
+            const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+            
+            if (correctedEventTime > now) {
+              futureCount++;
+              console.log(`   ✓ Future: ${experience.experience_title} - ${correctedEventTime.toLocaleString()}`);
+            } else {
+              console.log(`   ✗ Past: ${experience.experience_title} - ${correctedEventTime.toLocaleString()}`);
+            }
+          }
+        });
+        
+        console.log(`📊 Future experiences count: ${futureCount}`);
+      }
+      
+      console.log('🔍 ================================================');
+    } catch (error) {
+      console.error('❌ Debug flow failed:', error);
+    }
+  }
+
+  // Manually trigger auto-subscription for testing
+  async manuallyTriggerAutoSubscription(): Promise<void> {
+    try {
+      console.log('🔧 Manually triggering auto-subscription...');
+      
+      // First check current notification count
+      const initialCount = await this.getScheduledNotificationCount();
+      console.log(`📊 Initial notification count: ${initialCount}`);
+      
+      const response = await this.getExperiences();
+      if (response.data) {
+        // Clear auto-subscription status first
+        await this.clearAutoSubscriptionStatus();
+        
+        // Check count after clearing auto-subscription status
+        const afterClearCount = await this.getScheduledNotificationCount();
+        console.log(`📊 Count after clearing auto-subscription status: ${afterClearCount}`);
+        
+        // Then trigger auto-subscription
+        await this.autoSubscribeToAllExperiences(response.data);
+        
+        // Check final count
+        const finalCount = await this.getScheduledNotificationCount();
+        console.log(`📊 Final notification count: ${finalCount}`);
+        
+        console.log('✅ Manual auto-subscription complete');
+      }
+    } catch (error) {
+      console.error('❌ Manual auto-subscription failed:', error);
     }
   }
 }

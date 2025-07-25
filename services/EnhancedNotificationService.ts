@@ -209,6 +209,8 @@ class EnhancedNotificationService {
   async scheduleExperienceNotifications(experience: Experience): Promise<ScheduledNotificationInfo[]> {
     const scheduledNotifications: ScheduledNotificationInfo[] = [];
     
+    console.log(`🔔 Scheduling notifications for: ${experience.experience_title}`);
+    
     if (!experience.experience_start_date_time) {
       console.warn('⚠️ Experience has no start time, cannot schedule notifications');
       return scheduledNotifications;
@@ -217,26 +219,43 @@ class EnhancedNotificationService {
     // Import the experiences service for timezone handling
     const { experiencesService } = await import('./ExperiencesService');
     
-    // Use proper UTC time for notification scheduling
-    const startTime = experiencesService.convertEventTimeToActualUTC(experience.experience_start_date_time);
-    const displayTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
+    // Use corrected event time with 6-hour offset for notification scheduling
+    const eventTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
+    const correctedEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+    const displayTime = correctedEventTime;
     const now = new Date();
 
+    console.log(`⏰ Event time calculations:`);
+    console.log(`   Original: ${experience.experience_start_date_time}`);
+    console.log(`   Event time: ${eventTime.toISOString()}`);
+    console.log(`   Corrected time: ${correctedEventTime.toISOString()}`);
+    console.log(`   Current time: ${now.toISOString()}`);
+
     // Don't schedule notifications for past events
-    if (startTime <= now) {
+    if (correctedEventTime <= now) {
       console.warn('⚠️ Experience is in the past, not scheduling notifications');
       return scheduledNotifications;
     }
 
     const hasPermission = await this.requestPermissions();
     if (!hasPermission) {
+      console.error('❌ Notification permissions not granted');
       throw new Error('Notification permissions not granted');
     }
+    
+    console.log('✅ Notification permissions granted, proceeding with scheduling...');
 
     try {
       // 1 hour before notification
-      const oneHourBefore = new Date(startTime.getTime() - 60 * 60 * 1000);
+      const oneHourBefore = new Date(correctedEventTime.getTime() - 60 * 60 * 1000);
+      console.log(`   1 hour before: ${oneHourBefore.toISOString()}`);
+      
       if (oneHourBefore > now) {
+        console.log('📱 Scheduling 1-hour notification...');
+        console.log(`   Trigger date: ${oneHourBefore.toISOString()}`);
+        console.log(`   Current time: ${now.toISOString()}`);
+        console.log(`   Time difference: ${Math.round((oneHourBefore.getTime() - now.getTime()) / 1000 / 60)} minutes from now`);
+        
         const oneHourNotificationId = await this.scheduleNotification({
           title: `${experience.experience_title} in 1 hour`,
           body: `Get ready! Your experience starts at ${displayTime.toLocaleTimeString()}.`,
@@ -253,6 +272,7 @@ class EnhancedNotificationService {
         } as Notifications.DateTriggerInput);
 
         if (oneHourNotificationId) {
+          console.log(`✅ 1-hour notification scheduled with ID: ${oneHourNotificationId}`);
           scheduledNotifications.push({
             id: oneHourNotificationId,
             experienceId: experience.id,
@@ -264,12 +284,22 @@ class EnhancedNotificationService {
               body: `Get ready! Your experience starts at ${displayTime.toLocaleTimeString()}.`,
             },
           });
+        } else {
+          console.warn('⚠️ Failed to schedule 1-hour notification (no ID returned)');
         }
+      } else {
+        console.log('⏰ Skipping 1-hour notification (time has passed)');
       }
 
       // 20 minutes before notification
-      const twentyMinutesBefore = new Date(startTime.getTime() - 20 * 60 * 1000);
+      const twentyMinutesBefore = new Date(correctedEventTime.getTime() - 20 * 60 * 1000);
+      console.log(`   20 minutes before: ${twentyMinutesBefore.toISOString()}`);
+      
       if (twentyMinutesBefore > now) {
+        console.log('📱 Scheduling 20-minute notification...');
+        console.log(`   Trigger date: ${twentyMinutesBefore.toISOString()}`);
+        console.log(`   Time difference: ${Math.round((twentyMinutesBefore.getTime() - now.getTime()) / 1000 / 60)} minutes from now`);
+        
         const twentyMinNotificationId = await this.scheduleNotification({
           title: `${experience.experience_title} starting soon`,
           body: `Your experience starts in 20 minutes at ${experience.experience_venue_location?.venue_location_name || 'the venue'}.`,
@@ -301,7 +331,7 @@ class EnhancedNotificationService {
       }
 
       // At event time notification
-      if (startTime > now) {
+      if (correctedEventTime > now) {
         const eventTimeNotificationId = await this.scheduleNotification({
           title: `${experience.experience_title} is starting now!`,
           body: `Your experience is beginning at ${experience.experience_venue_location?.venue_location_name || 'the venue'}. Enjoy!`,
@@ -314,7 +344,7 @@ class EnhancedNotificationService {
             startTime: experience.experience_start_date_time,
           },
         }, {
-          date: startTime,
+          date: correctedEventTime,
         } as Notifications.DateTriggerInput);
 
         if (eventTimeNotificationId) {
@@ -323,7 +353,7 @@ class EnhancedNotificationService {
             experienceId: experience.id,
             type: NotificationType.AT_EVENT_TIME,
             category: NotificationCategory.EXPERIENCE_REMINDER,
-            scheduledTime: startTime,
+            scheduledTime: correctedEventTime,
             content: {
               title: `${experience.experience_title} is starting now!`,
               body: `Your experience is beginning at ${experience.experience_venue_location?.venue_location_name || 'the venue'}. Enjoy!`,
@@ -377,6 +407,13 @@ class EnhancedNotificationService {
         content.badge = notification.badge;
       }
       
+      console.log(`📱 Attempting to schedule notification:`, {
+        title: content.title,
+        trigger: trigger,
+        channelId: content.channelId,
+        hasData: !!content.data
+      });
+      
       const id = await Notifications.scheduleNotificationAsync({
         content,
         trigger,
@@ -386,6 +423,8 @@ class EnhancedNotificationService {
       return id;
     } catch (error) {
       console.error('❌ Error scheduling notification:', error);
+      console.error('❌ Notification content:', notification);
+      console.error('❌ Trigger:', trigger);
       return null;
     }
   }

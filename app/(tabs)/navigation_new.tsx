@@ -63,9 +63,9 @@ export default function VIPHomeScreen() {
           <View style={styles.tile}>
             <VIPTile icon="home" label="Welcome" onPress={() => router.push("/welcome")} />
           </View>
-          <View style={styles.tile}>
+          {/* <View style={styles.tile}>
             <VIPTile icon="star" label="Experience" onPress={() => router.push("/experience")} />
-          </View>
+          </View> */}
           <View style={styles.tile}>
             <VIPTile icon="calendar" label="Weekend Schedule" onPress={() => router.push("/schedule")} />
           </View>
@@ -78,15 +78,15 @@ export default function VIPHomeScreen() {
           <View style={styles.tile}>
             <VIPTile icon="people" label="The Team" onPress={() => router.push("/team")} />
           </View>
-          <View style={styles.tile}>
+          {/* <View style={styles.tile}>
             <VIPTile icon="car" label="Notifications Test" onPress={() => router.push("/notifications-demo")} />
-          </View>
+          </View> */}
           <View style={styles.tile}>
             <VIPTile icon="help" label="FAQ's" onPress={() => router.push("/faq")} />
           </View>
-          <View style={styles.tile}>
+          {/* <View style={styles.tile}>
             <VIPTile icon="mail" label="Feedback" onPress={() => {}} />
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>

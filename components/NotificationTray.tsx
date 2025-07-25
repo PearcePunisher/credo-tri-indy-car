@@ -22,14 +22,13 @@ import { Colors } from '@/constants/Colors';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const TRAY_HEIGHT = SCREEN_HEIGHT * 0.8; // 80% of screen height for better positioning
 
-// Configure notification handler
+// Set notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
   }),
 });
 

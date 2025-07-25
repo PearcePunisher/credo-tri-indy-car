@@ -185,6 +185,41 @@ Experience display components should use the new formatting methods for consiste
 3. **Reliable Notifications**: Notifications fire at correct event-relative times
 4. **Travel-Friendly**: App works correctly when users travel to event location
 
+## Temporary Time Display Fix
+
+Currently, a 6-hour offset correction is applied in the schedule display and notification scheduling to show correct local event times:
+
+```tsx
+// Temporarily subtract 6 hours to show correct local event time
+const correctedEventTime = new Date(eventDate.getTime() - (6 * 60 * 60 * 1000));
+const timeString = format(correctedEventTime, 'h:mm a');
+```
+
+### Notification Scheduling with Corrected Times
+
+Notifications are scheduled using the corrected event times to ensure they trigger at the right moments:
+
+1. **1 hour before**: Notification fires 1 hour before the corrected event time
+2. **20 minutes before**: Notification fires 20 minutes before the corrected event time  
+3. **At event time**: Notification fires exactly when the corrected event time begins
+
+### Auto-Subscription Improvements
+
+- **One-time only**: Auto-subscription only happens once per user to prevent bombardment
+- **Persistent tracking**: Uses AsyncStorage to track if a user has been auto-subscribed
+- **Opt-out friendly**: Users can individually disable notifications for specific events
+- **Clear status method**: `clearAutoSubscriptionStatus()` allows resetting for testing
+
+This ensures that:
+- Event dates remain consistent (no timezone-based shifting)
+- Event times display at the correct local time for the event venue
+- Notifications fire at appropriate times relative to the actual event
+- Users aren't bombarded with notifications on every app load
+- Past/future filtering works correctly with the corrected times
+- Events are properly sorted chronologically within each day
+
+**Note**: This is a temporary solution. For production, consider implementing proper timezone handling using the event venue's timezone data.
+
 ## Technical Notes
 
 - All times are treated as event timezone (Pacific Time for these IndyCar events)

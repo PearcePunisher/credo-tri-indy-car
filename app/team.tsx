@@ -77,7 +77,7 @@ const TeamScreen = () => {
 
   useEffect(() => {
     const fetchDrivers = fetch(
-      "https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate[driver_image]=true&populate[driver_social_medias]=true&populate[driver_record]=true&populate[car][populate][car_images][populate]=car_image_side"
+      "https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate[driver_image]=true&populate[driver_social_medias]=true&populate[driver_record]=true&populate[car][populate][car_images][populate]=car_image_side&populate[driver_current_season_stats]=true&populate[driver_career_stats]=true"
     ).then((res) => res.json());
 
     const fetchTeamDetails = fetch(
