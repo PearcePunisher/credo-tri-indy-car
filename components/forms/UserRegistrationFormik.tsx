@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Platform, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, ScrollView, StyleSheet, Platform, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import {
   TextInput,
   Button,
@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useAuth } from "@/hooks/useAuth";
 import BrandLogo from "../BrandLogo";
+import { pushTokenService } from "@/services/PushTokenService";
 
 const countryCodes = [
   { label: "🇺🇸 +1", value: "+1", placeholder: "(555) 123-4567", maxLength: 14 },
@@ -123,6 +124,9 @@ const validationSchema = Yup.object().shape({
       .max(15, "Phone number too long"),
     otherwise: (schema) => schema.notRequired(),
   }),
+  notificationConsent: Yup.boolean()
+    .oneOf([true], "You must agree to receive notifications to register")
+    .required("Notification consent is required"),
 });
 
 export function RegisterScreenFormik() {
@@ -143,7 +147,7 @@ export function RegisterScreenFormik() {
 
   console.log('📅 RegisterScreenFormik date picker states initialized...');
   
-  const { createLocalAuthState } = useAuth();
+  const { createLocalAuthState, updateNotificationSubscription } = useAuth();
   
   console.log('✅ RegisterScreenFormik hooks initialized successfully');
 
@@ -257,6 +261,7 @@ export function RegisterScreenFormik() {
               guest2Dob: "",
               guest2Phone: "",
               guest2CountryCode: "+1",
+              notificationConsent: false,
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {
@@ -326,6 +331,48 @@ export function RegisterScreenFormik() {
                       // Store invitation code locally for future use
                       invitationCode: values.invitationCode,
                     });
+                    
+                    // Handle push token registration if user consented
+                    if (values.notificationConsent) {
+                      console.log('📱 User consented to notifications, registering push token...');
+                      try {
+                        const userId = serverUser?.user_id?.toString() || 'local_user';
+                        const tokenResult = await pushTokenService.registerPushToken(userId);
+                        
+                        if (tokenResult.success) {
+                          console.log('✅ Push token registered successfully');
+                          // Update user's notification subscription status
+                          await updateNotificationSubscription(true, tokenResult.token);
+                        } else if (tokenResult.requiresPermission) {
+                          // Show permission explanation to user
+                          Alert.alert(
+                            'Notification Permissions',
+                            'To receive race updates and experience reminders, please enable notifications in your device settings.',
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Enable Notifications', onPress: async () => {
+                                const retryResult = await pushTokenService.registerPushToken(userId);
+                                if (retryResult.success) {
+                                  await updateNotificationSubscription(true, retryResult.token);
+                                  Alert.alert('Success', 'Notifications enabled successfully!');
+                                }
+                              }}
+                            ]
+                          );
+                        } else {
+                          console.warn('⚠️ Push token registration failed:', tokenResult.error);
+                          // Still allow registration to proceed
+                          await updateNotificationSubscription(false);
+                        }
+                      } catch (pushTokenError) {
+                        console.error('❌ Error during push token registration:', pushTokenError);
+                        // Don't block registration if push token fails
+                        await updateNotificationSubscription(false);
+                      }
+                    } else {
+                      console.log('📵 User declined notifications');
+                      await updateNotificationSubscription(false);
+                    }
                     
                     console.log('✅ Registration successful! Local auth state created');
                     alert("Registration successful!");
@@ -1257,6 +1304,51 @@ export function RegisterScreenFormik() {
                   )}
                 </View>
 
+                {/* Notification Consent Section */}
+                <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                    📱 Notifications
+                  </Text>
+                  <View style={styles.switchContainer}>
+                    <View style={styles.switchContent}>
+                      <Text style={[styles.switchLabel, { color: colors.text }]}>
+                        Enable Notifications
+                      </Text>
+                      <Text style={[styles.switchDescription, { color: colors.secondaryText }]}>
+                        Receive race updates, experience reminders, and important announcements. You can change this anytime in settings.
+                      </Text>
+                    </View>
+                    <Switch
+                      value={values.notificationConsent}
+                      onValueChange={(value) => {
+                        setFieldValue('notificationConsent', value);
+                      }}
+                      color={colors.tint}
+                    />
+                  </View>
+                  {touched.notificationConsent && errors.notificationConsent && (
+                    <Text style={[styles.errorText, { color: colors.error || '#ff6b6b' }]}>
+                      {errors.notificationConsent}
+                    </Text>
+                  )}
+                  {values.notificationConsent && (
+                    <View style={[styles.notificationInfo, { backgroundColor: colors.background, borderColor: colors.tint }]}>
+                      <Text style={[styles.notificationInfoTitle, { color: colors.tint }]}>
+                        🔔 You'll receive:
+                      </Text>
+                      <Text style={[styles.notificationInfoText, { color: colors.text }]}>
+                        • Experience reminders (1 hour, 20 minutes, and at start time)
+                      </Text>
+                      <Text style={[styles.notificationInfoText, { color: colors.text }]}>
+                        • Race updates and live information
+                      </Text>
+                      <Text style={[styles.notificationInfoText, { color: colors.text }]}>
+                        • Important announcements and schedule changes
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
                 <Button
                   mode="contained"
                   onPress={() => handleSubmit()} // Fix: wrap in arrow function
@@ -1289,5 +1381,60 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
     borderRadius: 25,
+  },
+  section: {
+    marginVertical: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    fontFamily: "RoobertSemi",
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  switchContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+    fontFamily: "RoobertMedium",
+  },
+  switchDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "Roobert",
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 8,
+    fontFamily: "Roobert",
+  },
+  notificationInfo: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  notificationInfoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    fontFamily: "RoobertMedium",
+  },
+  notificationInfoText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 4,
+    fontFamily: "Roobert",
   },
 });

@@ -27,6 +27,8 @@ console.log('✅ CedoLogo component imported');
 // import { NotificationBell } from "@/components/NotificationBell"; // TEMPORARILY COMMENTED OUT
 // import { TestNotificationButton } from "@/components/TestNotificationButton";
 import EnhancedNotificationBell from "@/components/EnhancedNotificationBell";
+console.log('✅ EnhancedNotificationBell component imported');
+import { NotificationTray } from "@/components/NotificationTray";
 console.log('✅ Enhanced Notification Bell Imported')
 import scheduleData from "@/race_data/scheduleData.json";
 console.log('✅ Schedule data imported');
@@ -137,6 +139,8 @@ export default function HomeScreen() {
     event: Event;
   } | null>(null);
 
+  const [notificationTrayVisible, setNotificationTrayVisible] = useState(false);
+
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
@@ -174,7 +178,10 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
 
-            <EnhancedNotificationBell size={24} />
+            <EnhancedNotificationBell 
+              size={24} 
+              onPress={() => setNotificationTrayVisible(true)}
+            />
           </View>
 
           <View style={styles.logoContainer}>
@@ -384,7 +391,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {/* <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Upcoming Experiences
           </Text>
           <View style={styles.carouselContainer}>
@@ -412,9 +419,7 @@ export default function HomeScreen() {
                   </Text>
                 </View>
               </View>
-              {/* Add more event cards here */}
             </ScrollView>
-            {/* Add pagination dots here */}
           </View>
           <View style={styles.eventInfo}>
             <Text style={[styles.eventTitle, { color: colors.text }]}>
@@ -426,7 +431,7 @@ export default function HomeScreen() {
             <Text style={[styles.eventSubDetails, { color: colors.tint }]}>
               Invitation Only
             </Text>
-          </View>
+          </View> */}
           {/* Commenting out share feedback button */}
           {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint }]}>
@@ -442,6 +447,11 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      <NotificationTray 
+        visible={notificationTrayVisible}
+        onClose={() => setNotificationTrayVisible(false)}
+      />
     </>
   );
 }

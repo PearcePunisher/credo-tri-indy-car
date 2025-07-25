@@ -1,4 +1,6 @@
 import { enhancedNotificationService } from './EnhancedNotificationService';
+import { ENV_CONFIG } from '@/constants/Environment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthService from './AuthService';
 
 export interface VenueLocation {
@@ -151,6 +153,8 @@ class ExperiencesService {
     // Try to fetch fresh data
     const freshData = await this.fetchExperiences();
     if (freshData) {
+      // Auto-subscribe to all experience notifications for new users
+      await this.autoSubscribeToAllExperiences(freshData);
       return { data: freshData, isOffline: false };
     }
 
@@ -160,6 +164,56 @@ class ExperiencesService {
       data: cachedData, 
       isOffline: true 
     };
+  }
+
+  // Auto-subscribe users to all experience notifications by default
+  private async autoSubscribeToAllExperiences(scheduleData: ScheduleResponse): Promise<void> {
+    try {
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser || !scheduleData.data.schedule_experiences) {
+        return;
+      }
+
+      // Check if this is the first time the user is getting their experiences
+      const userStatusKey = `notificationStatuses_${currentUser.id}`;
+      const hasExistingStatuses = !!(globalThis as any)[userStatusKey];
+      
+      // If user already has notification statuses, respect their choices
+      if (hasExistingStatuses) {
+        return;
+      }
+
+      console.log('🔔 Auto-subscribing user to all experience notifications...');
+      
+      // Schedule notifications for all experiences that haven't started yet
+      const now = new Date();
+      const experiences = scheduleData.data.schedule_experiences;
+      
+      for (const item of experiences) {
+        const experience = item.schedule_experience;
+        if (!experience || !experience.experience_start_date_time) continue;
+        
+        // Use the corrected event time for comparison
+        const eventStartTime = this.convertToEventLocalTime(experience.experience_start_date_time);
+        
+        // Only schedule for future experiences
+        if (eventStartTime > now) {
+          try {
+            await this.scheduleExperienceNotifications(experience);
+            await this.setNotificationStatus(experience.id, true);
+            console.log(`✅ Auto-subscribed to notifications for: ${experience.experience_title}`);
+          } catch (error) {
+            console.error(`❌ Failed to auto-subscribe to ${experience.experience_title}:`, error);
+          }
+        }
+      }
+      
+      console.log('🎉 Auto-subscription complete! Users can opt-out individually if desired.');
+    } catch (error) {
+      console.error('Error during auto-subscription to experiences:', error);
+    }
   }
 
   // Convert rich text array to plain text
@@ -179,6 +233,94 @@ class ExperiencesService {
       .trim();
   }
 
+  // Convert UTC timestamp to event local time (treating UTC as event timezone)
+  // This prevents automatic timezone conversion by the user's device
+  convertToEventLocalTime(utcTimestamp: string): Date {
+    if (!utcTimestamp) return new Date();
+    
+    // Remove the 'Z' suffix and treat as local time
+    // This prevents JavaScript from doing automatic timezone conversion
+    const withoutZ = utcTimestamp.replace('Z', '');
+    
+    // Create a date object treating the time as local (event timezone)
+    // This way it displays the same time regardless of user's location
+    return new Date(withoutZ);
+  }
+
+  // Format time for display (without timezone indicator)
+  formatEventTime(utcTimestamp: string, options: {
+    includeDate?: boolean;
+    format12Hour?: boolean;
+  } = {}): string {
+    if (!utcTimestamp) return '';
+    
+    const { includeDate = false, format12Hour = true } = options;
+    const eventTime = this.convertToEventLocalTime(utcTimestamp);
+    
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: format12Hour,
+    };
+    
+    if (includeDate) {
+      timeOptions.month = 'short';
+      timeOptions.day = 'numeric';
+      timeOptions.weekday = 'short';
+    }
+    
+    return eventTime.toLocaleString('en-US', timeOptions);
+  }
+
+  // Get event date and time separately
+  getEventDateTime(utcTimestamp: string): {
+    date: string;
+    time: string;
+    dayOfWeek: string;
+  } {
+    if (!utcTimestamp) {
+      return { date: '', time: '', dayOfWeek: '' };
+    }
+    
+    const eventTime = this.convertToEventLocalTime(utcTimestamp);
+    
+    return {
+      date: eventTime.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      }),
+      time: eventTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      }),
+      dayOfWeek: eventTime.toLocaleDateString('en-US', { 
+        weekday: 'short' 
+      })
+    };
+  }
+
+  // Convert event time to proper UTC for notification scheduling
+  // This assumes the stored UTC time actually represents Pacific Time
+  convertEventTimeToActualUTC(utcTimestamp: string): Date {
+    if (!utcTimestamp) return new Date();
+    
+    // The times in Strapi are stored as UTC but actually represent Pacific Time
+    // Pacific Time is UTC-8 (or UTC-7 during DST)
+    // For notification scheduling, we need to convert back to actual UTC
+    
+    const eventLocalTime = this.convertToEventLocalTime(utcTimestamp);
+    
+    // Assume Pacific Time (UTC-8, or UTC-7 during DST)
+    // For simplicity, we'll use UTC-8 (this could be made more sophisticated)
+    const pacificOffsetMinutes = 8 * 60; // 8 hours behind UTC
+    
+    // Create a proper UTC time by adding the Pacific offset
+    const actualUTCTime = new Date(eventLocalTime.getTime() + (pacificOffsetMinutes * 60 * 1000));
+    
+    return actualUTCTime;
+  }
+
   // Get the best image URL for display
   getImageUrl(): string {
     // Return placeholder image URL since new API doesn't have image field
@@ -190,18 +332,98 @@ class ExperiencesService {
     if (!experience.experience_start_date_time) return;
 
     try {
+      // First try backend integration if available
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (currentUser && ENV_CONFIG.STRAPI_URL) {
+        // For now, we'll use local storage to simulate a JWT token
+        // In a real implementation, you'd get this from your auth system
+        const authToken = await AsyncStorage.getItem('authToken');
+        
+        if (authToken) {
+          const response = await fetch(
+            `${ENV_CONFIG.STRAPI_URL}/api/notifications/schedule-experience/${experience.id}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({ userId: currentUser.id }),
+            }
+          );
+
+          if (response.ok) {
+            console.log('✅ Experience notifications scheduled via backend');
+            return;
+          } else {
+            console.warn('⚠️ Backend scheduling failed, falling back to local notifications');
+          }
+        }
+      }
+
+      // Fallback to local notification service
       await enhancedNotificationService.scheduleExperienceNotifications(experience);
+      console.log('✅ Experience notifications scheduled locally');
     } catch (error) {
       console.error('Error scheduling experience notifications:', error);
+      // Try local fallback even if backend fails
+      try {
+        await enhancedNotificationService.scheduleExperienceNotifications(experience);
+        console.log('✅ Experience notifications scheduled locally as fallback');
+      } catch (fallbackError) {
+        console.error('❌ Local notification fallback also failed:', fallbackError);
+      }
     }
   }
 
   // Cancel all notifications for an experience
   async cancelExperienceNotifications(experienceId: number): Promise<void> {
     try {
+      // First try backend integration if available
+      const authService = AuthService.getInstance();
+      const currentUser = authService.getCurrentUser();
+      
+      if (currentUser && ENV_CONFIG.STRAPI_URL) {
+        // For now, we'll use local storage to simulate a JWT token
+        // In a real implementation, you'd get this from your auth system
+        const authToken = await AsyncStorage.getItem('authToken');
+        
+        if (authToken) {
+          const response = await fetch(
+            `${ENV_CONFIG.STRAPI_URL}/api/notifications/cancel-experience/${experienceId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({ userId: currentUser.id }),
+            }
+          );
+
+          if (response.ok) {
+            console.log('✅ Experience notifications cancelled via backend');
+            return;
+          } else {
+            console.warn('⚠️ Backend cancellation failed, falling back to local notifications');
+          }
+        }
+      }
+
+      // Fallback to local notification service
       await enhancedNotificationService.cancelExperienceNotifications(experienceId);
+      console.log('✅ Experience notifications cancelled locally');
     } catch (error) {
       console.error('Error canceling experience notifications:', error);
+      // Try local fallback even if backend fails
+      try {
+        await enhancedNotificationService.cancelExperienceNotifications(experienceId);
+        console.log('✅ Experience notifications cancelled locally as fallback');
+      } catch (fallbackError) {
+        console.error('❌ Local notification cancellation fallback also failed:', fallbackError);
+      }
     }
   }
 
@@ -217,9 +439,20 @@ class ExperiencesService {
     }
   }
 
-  async cancelNotifications(experienceId: number): Promise<void> {
+  // Opt-out method: Cancel notifications for a specific experience
+  async optOutOfNotifications(experienceId: number): Promise<void> {
     await this.cancelExperienceNotifications(experienceId);
     await this.setNotificationStatus(experienceId, false);
+  }
+
+  // Legacy method for backwards compatibility - now maps to opt-out
+  async cancelNotifications(experienceId: number): Promise<void> {
+    await this.optOutOfNotifications(experienceId);
+  }
+
+  // Opt back in: Re-enable notifications for a specific experience
+  async optBackInToNotifications(experienceId: number): Promise<void> {
+    await this.scheduleNotifications(experienceId);
   }
 
   async getNotificationStatus(experienceId: number): Promise<boolean> {
@@ -235,10 +468,14 @@ class ExperiencesService {
       // User-specific notification statuses
       const userStatusKey = `notificationStatuses_${currentUser.id}`;
       const statuses = (globalThis as any)[userStatusKey] || {};
-      return statuses[experienceId] || false;
+      
+      // Default to true (auto-subscribed) if no explicit status is set
+      // User must explicitly opt-out to disable notifications
+      return statuses[experienceId] !== false;
     } catch (error) {
       console.error('Error getting notification status:', error);
-      return false;
+      // Default to enabled on error to ensure users don't miss notifications
+      return true;
     }
   }
 

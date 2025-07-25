@@ -26,6 +26,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { TeamThemeProvider } from "@/theme/TeamThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import AppStateManager from "../components/AppStateManager";
+import { PushTokenInitializer } from "../components/PushTokenInitializer";
 
 // Add native crash logging and environment validation
 console.log('📱 App starting - Native level');
@@ -109,6 +110,7 @@ export default function RootLayout() {
         }}
       >
         <AuthProvider>
+          <PushTokenInitializer />
           <TeamThemeProvider>
             <SafeAreaProvider>
               <ThemeProvider

@@ -101,9 +101,10 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
   const formatExperienceTime = (): string => {
     if (!experience.experience_start_date_time) return 'Time TBD';
     
-    const startTime = new Date(experience.experience_start_date_time);
+    // Use timezone-corrected dates for consistent display
+    const startTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
     const endTime = experience.experience_end_date_time 
-      ? new Date(experience.experience_end_date_time)
+      ? experiencesService.convertToEventLocalTime(experience.experience_end_date_time)
       : null;
     
     const timeOptions: Intl.DateTimeFormatOptions = {
@@ -127,7 +128,8 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
 
   const isExperienceInPast = (): boolean => {
     if (!experience.experience_start_date_time) return false;
-    return new Date(experience.experience_start_date_time) <= new Date();
+    // Use timezone-corrected date for consistent comparison
+    return experiencesService.convertToEventLocalTime(experience.experience_start_date_time) <= new Date();
   };
 
   return (

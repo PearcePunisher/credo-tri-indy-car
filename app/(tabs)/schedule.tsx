@@ -89,11 +89,13 @@ const ScheduleScreen = () => {
     }
   };
 
-  // Group experiences by date
+  // Group experiences by date using corrected timezone
   const groupExperiencesByDate = (experiences: Experience[]): GroupedExperiences => {
     return experiences.reduce((acc, experience) => {
       if (!experience || !experience.experience_start_date_time) return acc;
-      const dateKey = format(new Date(experience.experience_start_date_time), 'yyyy-MM-dd');
+      // Use the timezone-corrected date for consistent grouping
+      const eventDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
+      const dateKey = format(eventDate, 'yyyy-MM-dd');
       if (!acc[dateKey]) {
         acc[dateKey] = [];
       }
@@ -102,13 +104,13 @@ const ScheduleScreen = () => {
     }, {} as GroupedExperiences);
   };
 
-  // Sort experiences within each day by time
+  // Sort experiences within each day by time using corrected timezone
   const sortExperiencesByTime = (experiences: Experience[]): Experience[] => {
     return experiences
       .filter(exp => exp && exp.experience_start_date_time)
       .sort((a, b) => {
-        const timeA = new Date(a.experience_start_date_time).getTime();
-        const timeB = new Date(b.experience_start_date_time).getTime();
+        const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time).getTime();
+        const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time).getTime();
         return timeA - timeB;
       });
   };
@@ -116,13 +118,15 @@ const ScheduleScreen = () => {
   const now = new Date();
   const today = startOfDay(now);
 
-  // Separate experiences into past and future
+  // Separate experiences into past and future using corrected timezone
   const pastExperiences = experiences.filter(exp => 
-    exp && exp.experience_start_date_time && isPast(new Date(exp.experience_start_date_time))
+    exp && exp.experience_start_date_time && 
+    isPast(experiencesService.convertToEventLocalTime(exp.experience_start_date_time))
   );
   
   const futureExperiences = experiences.filter(exp => 
-    exp && exp.experience_start_date_time && !isPast(new Date(exp.experience_start_date_time))
+    exp && exp.experience_start_date_time && 
+    !isPast(experiencesService.convertToEventLocalTime(exp.experience_start_date_time))
   );
 
   const groupedPastExperiences = groupExperiencesByDate(pastExperiences);
@@ -161,7 +165,8 @@ const ScheduleScreen = () => {
   const renderExperienceItem = (experience: Experience, key: string) => {
     if (!experience || !experience.experience_start_date_time) return null;
     
-    const eventDate = new Date(experience.experience_start_date_time);
+    // Use timezone-corrected event time for consistent display
+    const eventDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
     const timeString = format(eventDate, 'h:mm a');
     const isToday = isSameDay(eventDate, now);
     const isPastEvent = isPast(eventDate);
@@ -199,7 +204,8 @@ const ScheduleScreen = () => {
   };
 
   const renderDateSection = (dateKey: string, experiences: Experience[], isPast = false) => {
-    const date = new Date(dateKey);
+    // Use timezone-corrected date for consistent display
+    const date = experiencesService.convertToEventLocalTime(dateKey + 'T00:00:00');
     const isToday = isSameDay(date, now);
     const displayDate = isToday ? 'Today' : format(date, 'EEEE, MMMM d');
     const sortedExperiences = sortExperiencesByTime(experiences);

@@ -76,7 +76,9 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Time TBD';
     try {
-      return format(new Date(dateString), 'EEEE, MMMM d, yyyy');
+      // Use timezone-corrected date for consistent display
+      const eventDate = experiencesService.convertToEventLocalTime(dateString);
+      return format(eventDate, 'EEEE, MMMM d, yyyy');
     } catch (error) {
       return 'Invalid date';
     }
@@ -85,7 +87,9 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   const formatTime = (dateString?: string) => {
     if (!dateString) return 'Time TBD';
     try {
-      return format(new Date(dateString), 'h:mm a');
+      // Use timezone-corrected time for consistent display
+      const eventTime = experiencesService.convertToEventLocalTime(dateString);
+      return format(eventTime, 'h:mm a');
     } catch (error) {
       return 'Invalid time';
     }

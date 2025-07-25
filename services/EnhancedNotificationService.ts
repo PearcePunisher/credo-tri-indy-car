@@ -214,7 +214,12 @@ class EnhancedNotificationService {
       return scheduledNotifications;
     }
 
-    const startTime = new Date(experience.experience_start_date_time);
+    // Import the experiences service for timezone handling
+    const { experiencesService } = await import('./ExperiencesService');
+    
+    // Use proper UTC time for notification scheduling
+    const startTime = experiencesService.convertEventTimeToActualUTC(experience.experience_start_date_time);
+    const displayTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
     const now = new Date();
 
     // Don't schedule notifications for past events
@@ -234,7 +239,7 @@ class EnhancedNotificationService {
       if (oneHourBefore > now) {
         const oneHourNotificationId = await this.scheduleNotification({
           title: `${experience.experience_title} in 1 hour`,
-          body: `Get ready! Your experience starts at ${startTime.toLocaleTimeString()}.`,
+          body: `Get ready! Your experience starts at ${displayTime.toLocaleTimeString()}.`,
           data: {
             category: NotificationCategory.EXPERIENCE_REMINDER,
             type: NotificationType.ONE_HOUR_BEFORE,
@@ -256,7 +261,7 @@ class EnhancedNotificationService {
             scheduledTime: oneHourBefore,
             content: {
               title: `${experience.experience_title} in 1 hour`,
-              body: `Get ready! Your experience starts at ${startTime.toLocaleTimeString()}.`,
+              body: `Get ready! Your experience starts at ${displayTime.toLocaleTimeString()}.`,
             },
           });
         }
