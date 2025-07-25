@@ -9,10 +9,38 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Platform,
+  Alert
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import * as FileSystem from 'expo-file-system';
+
+
+
+const fileUrl = "https://timely-actor-10dfb03957.media.strapiapp.com/Facility_Map_4_8_25_V2_ed8b563de1.jpg";
+
+// Optional: Generate a local filename
+const fileName = fileUrl.split('/').pop();
+
+// Function to handle the download
+const handleDownload = async () => {
+  try {
+    const end_name = FileSystem.documentDirectory + fileName;
+    const downloadResumable = FileSystem.createDownloadResumable(
+      fileUrl,  end_name
+    );
+
+    const { uri } = await downloadResumable.downloadAsync();
+    Alert.alert('Download Complete', `Saved to:\n${uri}`);
+    console.log('Finished downloading to:', uri);
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Download Failed', 'An error occurred while downloading the file.');
+  }
+};
+
+
 
 const TrackDetailScreen = () => {
   const [event, setEvent] = useState<any>(null);
@@ -109,7 +137,8 @@ const TrackDetailScreen = () => {
           <Text style={[styles.downloadText, { color: colors.text }]}>
             {download.event_downloadables_description}
           </Text>
-          <TouchableOpacity style={[styles.downloadBtn, { backgroundColor: colors.tint }]}>
+          <TouchableOpacity style={[styles.downloadBtn, { backgroundColor: colors.tint }]}   onPress={handleDownload}
+>
             <Text style={[styles.downloadBtnText, { color: colors.textOnGreen }]}>Download Map</Text>
           </TouchableOpacity>
         </View>
