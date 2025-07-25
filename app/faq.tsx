@@ -14,6 +14,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import BrandLogo from '@/components/BrandLogo';
+import * as FileSystem from 'expo-file-system';
+
 
 interface RichTextChild {
   text?: string;
@@ -166,7 +168,8 @@ export default function FAQScreen() {
     fetchFAQs();
   }, []);
 
-  const fetchFAQs = async () => {
+    const getFAQsFile = async () => {
+  //const fetchFAQs = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -192,6 +195,40 @@ export default function FAQScreen() {
       setLoading(false);
     }
   };
+
+const fetchFAQs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('https://strapi.wickedthink.com/api/faqs?populate=*');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const FAQS_FILE = FileSystem.documentDirectory + "faq_resp.json";
+      const data: FAQResponse = await response.json();
+      
+      // Extract FAQs from the response
+      if (data.data && data.data.length > 0 && data.data[0].FAQs) {
+        //setFaqData(data.data[0].FAQs);//this is our data. 
+       if( await FileSystem.writeAsStringAsync(FAQS_FILE, JSON.stringify(data.data[0].FAQs))){
+        console.log("Success!");
+       }
+
+       setFaqData(JSON.parse(await FileSystem.readAsStringAsync(FAQS_FILE)));
+
+      } else {
+        setError('No FAQ data found');
+      }
+    } catch (err) {
+      console.error('Error fetching FAQs:', err);
+      setError('Failed to load FAQs. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const toggleExpanded = (id: number) => {
     const newExpanded = new Set(expandedItems);
