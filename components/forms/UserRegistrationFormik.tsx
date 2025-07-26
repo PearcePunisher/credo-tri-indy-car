@@ -384,6 +384,8 @@ export function RegisterScreenFormik() {
                       eventScheduleDocumentId: serverUser?.event_schedule_document_id,
                       // Store invitation code locally for future use
                       invitationCode: values.invitationCode,
+                      //store the staff toggle. 
+                      userIsStaff: serverUser?.user_is_staff,
                     });
                     
                     // Handle push token registration if user consented

@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-
+import { useAuth } from "@/hooks/useAuth";
 // Importing icons - TEMPORARILY COMMENTED FOR CRASH TESTING
 // import TrackIcon from "@/assets/icons/trackIcon.svg";
 // import DoorIcon from "@/assets/icons/doorIcon.svg";
@@ -26,6 +26,7 @@ export const options = {
 };
 
 export default function VIPHomeScreen() {
+  const { authState, logout } = useAuth();
   console.log('🏠 VIPHomeScreen component starting...');
   
   const router = useRouter();
@@ -87,6 +88,10 @@ export default function VIPHomeScreen() {
           {/* <View style={styles.tile}>
             <VIPTile icon="mail" label="Feedback" onPress={() => {}} />
           </View> */}
+          {authState.user?.userIsStaff &&(
+          <View style={styles.tile}>
+            <VIPTile icon="camera" label="Camera" onPress={() => router.push("/camera")} />
+          </View>)}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -20,6 +20,7 @@ export interface User {
   eventScheduleDocumentId?: string;
   // Store invitation code locally for future API calls
   invitationCode?: string;
+  userIsStaff: boolean;
 }
 
 export interface AuthState {
@@ -135,6 +136,7 @@ class AuthService {
         notificationSubscribed: false,
         createdAt: result.user.createdAt,
         updatedAt: result.user.updatedAt,
+        userIsStaff: result.user.userIsStaff,
       };
 
       // Store user data locally
@@ -177,6 +179,7 @@ class AuthService {
         eventCodeDocumentId: userData.eventCodeDocumentId,
         eventScheduleDocumentId: userData.eventScheduleDocumentId,
         invitationCode: userData.invitationCode,
+        userIsStaff: userData.userIsStaff,
       };
 
       // Store user data locally
@@ -298,6 +301,7 @@ class AuthService {
         notificationSubscribed: userData.notificationSubscribed || false,
         createdAt: userData.createdAt,
         updatedAt: userData.updatedAt,
+        userIsStaff: userData.userIsStaff,
       };
 
       await this.storeUserData(user);
