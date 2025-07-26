@@ -89,7 +89,7 @@ const ScheduleScreen = () => {
 
   const handleNotificationToggle = async (experienceId: number, enabled: boolean) => {
     try {
-      console.log("IN HERE " + experienceId);
+      console.warn("IN HERE " + experienceId);
       if (enabled) {
         await experiencesService.scheduleNotifications(experienceId);
       } else {
@@ -97,9 +97,9 @@ const ScheduleScreen = () => {
       }
       setNotificationStates(prev => ({ ...prev, [experienceId]: enabled }));
     } catch (error) {
-    //  console.log("ERROR IN experience probabl");
-     // console.error('Error toggling notifications:', error);
-     // Alert.alert('Error', 'Failed to update notification settings');
+      console.error("ERROR IN experience probabl");
+      console.error('Error toggling notifications:', error);
+      Alert.alert('Error', 'Failed to update notification settings');
     }
   };
 

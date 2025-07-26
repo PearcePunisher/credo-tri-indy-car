@@ -319,6 +319,7 @@ class ExperiencesService {
 
     try {
       // First, cancel any existing notifications for this experience to prevent duplicates
+     //console.log("HENLO");
       await this.cancelExperienceNotifications(experience.id);
       
       // First try backend integration if available
@@ -416,22 +417,38 @@ class ExperiencesService {
     }
   }
 
+
+  //simple filter to ensure that the whole thign doesn't crash with the experiences. 
+
   // Convenience methods for the UI
   async scheduleNotifications(experienceId: number): Promise<void> {
+   /// console.log('DESPO 1');
     const response = await this.getExperiences();
   //  console.log("FIXING ERRORS THIS RESPO: "+JSON.stringify(response));
    // console.log(response);
-  //  console.log("IDK MAYBE");
+ //   console.log("IDK MAYBE");
   //  console.log(response.data);
     if (response.data) {
-      const experience = response.data.data.schedule_experiences.find(item => item.schedule_experience.id === experienceId)?.schedule_experience;
-      console.log("HOWDY!");
-      console.log(experience);
+  //    console.log("Test 1");
+    //  console.log(response.data.data.schedule_experiences);
+      const experience = response.data.data.schedule_experiences.filter(item => 
+     item.schedule_experience && item.schedule_experience.id
+  ).find(item => item.schedule_experience.id !=null && item.schedule_experience.id === experienceId)?.schedule_experience;
+     // console.log("experience1 is done");
+    //        console.log("HOWDY!");
+    //  console.log(experience);
+     //       console.log("HOWDY2!");
+     // console.log(experienceId);
       if (experience) {
         await this.scheduleExperienceNotifications(experience);
         await this.setNotificationStatus(experienceId, true);
+      }else{
+        console.error("WE HIT A NON EXPERIENC#!!!");
       }
+    }else{
+      console.warn("Yeah guess it didn't work");
     }
+
   }
 
   // Opt-out method: Cancel notifications for a specific experience
