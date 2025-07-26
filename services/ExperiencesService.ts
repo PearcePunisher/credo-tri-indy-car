@@ -419,8 +419,14 @@ class ExperiencesService {
   // Convenience methods for the UI
   async scheduleNotifications(experienceId: number): Promise<void> {
     const response = await this.getExperiences();
+  //  console.log("FIXING ERRORS THIS RESPO: "+JSON.stringify(response));
+   // console.log(response);
+  //  console.log("IDK MAYBE");
+  //  console.log(response.data);
     if (response.data) {
       const experience = response.data.data.schedule_experiences.find(item => item.schedule_experience.id === experienceId)?.schedule_experience;
+      console.log("HOWDY!");
+      console.log(experience);
       if (experience) {
         await this.scheduleExperienceNotifications(experience);
         await this.setNotificationStatus(experienceId, true);

@@ -267,9 +267,7 @@ class EnhancedNotificationService {
             location: experience.experience_venue_location?.venue_location_name,
             startTime: experience.experience_start_date_time,
           },
-        }, {
-          date: oneHourBefore,
-        } as Notifications.DateTriggerInput);
+        }, oneHourBefore);
 
         if (oneHourNotificationId) {
           console.log(`✅ 1-hour notification scheduled with ID: ${oneHourNotificationId}`);
@@ -311,9 +309,7 @@ class EnhancedNotificationService {
             location: experience.experience_venue_location?.venue_location_name,
             startTime: experience.experience_start_date_time,
           },
-        }, {
-          date: twentyMinutesBefore,
-        } as Notifications.DateTriggerInput);
+        }, twentyMinutesBefore);
 
         if (twentyMinNotificationId) {
           scheduledNotifications.push({
@@ -343,9 +339,7 @@ class EnhancedNotificationService {
             location: experience.experience_venue_location?.venue_location_name,
             startTime: experience.experience_start_date_time,
           },
-        }, {
-          date: correctedEventTime,
-        } as Notifications.DateTriggerInput);
+        }, correctedEventTime);
 
         if (eventTimeNotificationId) {
           scheduledNotifications.push({

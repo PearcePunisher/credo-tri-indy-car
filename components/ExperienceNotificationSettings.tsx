@@ -87,7 +87,9 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
       
       setNotificationsEnabled(enabled);
     } catch (error) {
+      //here is where it gets thrown.
       console.error('Error toggling notifications:', error);
+      console.error("Dumping Experience", experience);
       Alert.alert(
         'Error',
         'Failed to update notification settings. Please try again.',
