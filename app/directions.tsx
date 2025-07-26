@@ -68,6 +68,7 @@ const VenueDirectionsScreen = () => {
                 if (!linkText.trim() && !child.children[0]?.text) {
                   return null;
                 }
+                // Render map button for links - Need to fix link text to include WHERE the map is directing.
                 return (
                   <TouchableOpacity
                     key={childIndex}
