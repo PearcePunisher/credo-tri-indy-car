@@ -135,27 +135,53 @@ const ScheduleScreen = () => {
   const now = new Date();
   const today = startOfDay(now);
 
-  // Separate experiences into past and future using corrected timezone
+  // Separate experiences into past, current (happening now), and future using corrected timezone
   const pastExperiences = experiences.filter(exp => {
-    if (!exp || !exp.experience_start_date_time) return false;
-    const eventDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
-    const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
-    return isPast(correctedEventTime);
+    if (!exp || !exp.experience_start_date_time || !exp.experience_end_date_time) return false;
+    const eventEndDate = experiencesService.convertToEventLocalTime(exp.experience_end_date_time);
+    const correctedEventEndTime = new Date(eventEndDate.getTime() - (7 * 60 * 60 * 1000));
+    return isPast(correctedEventEndTime);
+  });
+
+  const currentExperiences = experiences.filter(exp => {
+    if (!exp || !exp.experience_start_date_time || !exp.experience_end_date_time) return false;
+    const eventStartDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
+    const eventEndDate = experiencesService.convertToEventLocalTime(exp.experience_end_date_time);
+    const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
+    const correctedEventEndTime = new Date(eventEndDate.getTime() - (7 * 60 * 60 * 1000));
+    // Event is current if: start time has passed AND end time has not passed
+    return now >= correctedEventStartTime && now <= correctedEventEndTime;
   });
   
   const futureExperiences = experiences.filter(exp => {
     if (!exp || !exp.experience_start_date_time) return false;
-    const eventDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
-    const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
-    return !isPast(correctedEventTime);
+    const eventStartDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
+    const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
+    // Event is future if start time has not passed yet
+    return now < correctedEventStartTime;
   });
 
   const groupedPastExperiences = groupExperiencesByDate(pastExperiences);
+  const groupedCurrentExperiences = groupExperiencesByDate(currentExperiences);
   const groupedFutureExperiences = groupExperiencesByDate(futureExperiences);
+
+  // Debug logging to verify categorization
+  console.log(`📊 Event categorization:
+    - Past: ${pastExperiences.length} events
+    - Current: ${currentExperiences.length} events  
+    - Future: ${futureExperiences.length} events`);
+  
+  if (currentExperiences.length > 0) {
+    console.log('🔴 Current events:', currentExperiences.map(e => e.experience_title));
+  }
 
   // Sort date keys chronologically
   const sortedPastDates = Object.keys(groupedPastExperiences).sort((a, b) => 
     new Date(b).getTime() - new Date(a).getTime() // Most recent first for past events
+  );
+
+  const sortedCurrentDates = Object.keys(groupedCurrentExperiences).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime() // Earliest first for current events
   );
   
   const sortedFutureDates = Object.keys(groupedFutureExperiences).sort((a, b) => 
@@ -187,12 +213,23 @@ const ScheduleScreen = () => {
     if (!experience || !experience.experience_start_date_time) return null;
     
     // Use timezone-corrected event time for consistent display
-    const eventDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
+    const eventStartDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
+    const eventEndDate = experience.experience_end_date_time ? experiencesService.convertToEventLocalTime(experience.experience_end_date_time) : null;
+    
     // Temporarily subtract 7 hours to show correct local event time
-    const correctedEventTime = new Date(eventDate.getTime() - (7 * 60 * 60 * 1000));
-    const timeString = format(correctedEventTime, 'h:mm a');
-    const isToday = isSameDay(eventDate, now);
-    const isPastEvent = isPast(correctedEventTime);
+    const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
+    const correctedEventEndTime = eventEndDate ? new Date(eventEndDate.getTime() - (7 * 60 * 60 * 1000)) : null;
+    
+    const startTimeString = format(correctedEventStartTime, 'h:mm a');
+    const endTimeString = correctedEventEndTime ? format(correctedEventEndTime, 'h:mm a') : '';
+    const timeString = endTimeString ? `${startTimeString} - ${endTimeString}` : startTimeString;
+    
+    const isToday = isSameDay(eventStartDate, now);
+    const isPastEvent = correctedEventEndTime ? isPast(correctedEventEndTime) : isPast(correctedEventStartTime);
+    const isCurrentEvent = correctedEventEndTime ? 
+      (now >= correctedEventStartTime && now <= correctedEventEndTime) : 
+      false;
+    
     const venueLocationName = experience.experience_venue_location?.venue_location_name || 'Location TBD';
     
     return (
@@ -203,6 +240,7 @@ const ScheduleScreen = () => {
           { backgroundColor: colors.card },
           isToday && styles.todayCard,
           isPastEvent && styles.pastCard,
+          isCurrentEvent && [styles.currentCard, { borderLeftColor: colors.tint }],
         ]}
         onPress={() => setSelectedExperience(experience)}
         accessibilityLabel={`${experience.experience_title} at ${timeString}`}
@@ -212,6 +250,7 @@ const ScheduleScreen = () => {
           <View style={styles.experienceInfo}>
             <Text style={[styles.experienceTitle, { color: colors.text }]} numberOfLines={2}>
               {experience.experience_title || 'Untitled Experience'}
+              {isCurrentEvent}
             </Text>
             <Text style={[styles.experienceTime, { color: colors.text }]}>
               {timeString}
@@ -219,6 +258,11 @@ const ScheduleScreen = () => {
             <Text style={[styles.experienceLocation, { color: colors.text }]} numberOfLines={1}>
               📍 {venueLocationName}
             </Text>
+            {isCurrentEvent && (
+              <Text style={[styles.happeningNowLabel, { color: colors.tint }]}>
+                Happening Now
+              </Text>
+            )}
           </View>
           {renderNotificationIcon(experience.id)}
         </View>
@@ -285,6 +329,18 @@ const ScheduleScreen = () => {
           </View>
         ) : (
           <>
+            {/* Happening Now Events */}
+            {sortedCurrentDates.length > 0 && (
+              <View style={styles.happeningNowSection}>
+                <Text style={[styles.happeningNowTitle, { color: colors.tint }]}>
+                  🏁 Happening Now
+                </Text>
+                {sortedCurrentDates.map(dateKey => 
+                  renderDateSection(dateKey, groupedCurrentExperiences[dateKey], false)
+                )}
+              </View>
+            )}
+
             {/* Future Events */}
             {sortedFutureDates.map(dateKey => 
               renderDateSection(dateKey, groupedFutureExperiences[dateKey], false)
@@ -415,6 +471,10 @@ const styles = StyleSheet.create({
   pastCard: {
     opacity: 0.7,
   },
+  currentCard: {
+    borderLeftWidth: 4,
+    // borderLeftColor will be set dynamically
+  },
   experienceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -437,6 +497,11 @@ const styles = StyleSheet.create({
   experienceLocation: { 
     fontSize: 12,
   },
+  happeningNowLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
   notificationIcon: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -446,6 +511,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -2,
     right: -2,
+  },
+  happeningNowSection: {
+    marginBottom: 24,
+  },
+  happeningNowTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
   pastEventsSection: {
     marginTop: 24,
