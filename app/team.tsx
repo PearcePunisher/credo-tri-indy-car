@@ -361,17 +361,59 @@ const TeamScreen = () => {
 
                     const handleSocialPress = async () => {
                       try {
-                        const url = s.driver_social_link;
-                        if (url) {
-                          const canOpen = await Linking.canOpenURL(url);
-                          if (canOpen) {
-                            await Linking.openURL(url);
+                        let url = s.driver_social_link;
+                        if (!url) return;
+
+                        // Clean up the URL - ensure it has proper protocol
+                        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                          url = 'https://' + url;
+                        }
+
+                        console.log(`Attempting to open: ${url} for platform: ${platform}`);
+                        
+                        // Try to open the URL directly first
+                        const canOpen = await Linking.canOpenURL(url);
+                        console.log(`Can open ${url}: ${canOpen}`);
+                        
+                        if (canOpen) {
+                          await Linking.openURL(url);
+                        } else {
+                          // If the main URL fails, try app-specific schemes for mobile apps
+                          let fallbackUrl = null;
+                          
+                          if (platform.includes("instagram")) {
+                            // Extract username from Instagram URL
+                            const match = url.match(/instagram\.com\/([^/?]+)/);
+                            if (match) {
+                              fallbackUrl = `instagram://user?username=${match[1]}`;
+                            }
+                          } else if (platform.includes("facebook")) {
+                            // Extract page name from Facebook URL
+                            const match = url.match(/facebook\.com\/([^/?]+)/);
+                            if (match) {
+                              fallbackUrl = `fb://page/${match[1]}`;
+                            }
+                          }
+                          
+                          if (fallbackUrl) {
+                            console.log(`Trying fallback URL: ${fallbackUrl}`);
+                            const canOpenFallback = await Linking.canOpenURL(fallbackUrl);
+                            if (canOpenFallback) {
+                              await Linking.openURL(fallbackUrl);
+                            } else {
+                              console.warn(`Cannot open URL or fallback: ${url}, ${fallbackUrl}`);
+                              // As a last resort, try opening in browser
+                              await Linking.openURL(url);
+                            }
                           } else {
                             console.warn(`Cannot open URL: ${url}`);
+                            // Try to open anyway - sometimes canOpenURL is overly restrictive
+                            await Linking.openURL(url);
                           }
                         }
                       } catch (error) {
                         console.error(`Error opening social media link: ${error}`);
+                        console.error(`Platform: ${platform}, URL: ${s.driver_social_link}`);
                       }
                     };
 
