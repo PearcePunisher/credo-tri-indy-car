@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Platform, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, ScrollView, StyleSheet, Platform, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView } from "react-native";
 import {
   TextInput,
   Button,
@@ -273,11 +273,18 @@ export function RegisterScreenFormik() {
       }}
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.container,
-            { backgroundColor: colors.background },
-          ]}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={[
+              styles.container,
+              { backgroundColor: colors.background },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
             <BrandLogo />
           <Text
             style={{
@@ -1423,7 +1430,8 @@ export function RegisterScreenFormik() {
               </>
             )}
           </Formik>
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </PaperProvider>
   );
@@ -1432,6 +1440,8 @@ export function RegisterScreenFormik() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 100, // Extra padding for keyboard
+    flexGrow: 1,
   },
   input: {
     marginBottom: 12,

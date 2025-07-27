@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -6,16 +6,12 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Platform,
-  Linking,
 } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/hooks/useAuth';
-import ENV_CONFIG from '@/constants/Environment';
 import { useRouter } from 'expo-router';
 
 export const options = {
@@ -26,10 +22,8 @@ export const options = {
 const WelcomeScreen = () => {
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
-  const { updateNotificationSubscription, authState, completeOnboarding } = useAuth();
+  const { completeOnboarding } = useAuth();
   const router = useRouter();
-
-  const [subscribed, setSubscribed] = useState(false);
 
   const bulletItems = [
     'Event Schedule',
@@ -39,94 +33,9 @@ const WelcomeScreen = () => {
     'Bag Policy',
   ];
 
-  const handleSubscribe = async () => {
-    try {
-      const existing = await Notifications.getPermissionsAsync();
-
-      if (existing.status === 'granted') {
-        setSubscribed(true);
-        await updateNotificationSubscription(true);
-        
-        // Auto-continue since they're already set up
-        setTimeout(async () => {
-          await completeOnboarding();
-          router.push('/(tabs)');
-        }, 1000); // Shorter delay since they're already subscribed
-        return;
-      }
-
-      const { status } = await Notifications.requestPermissionsAsync();
-
-      if (status === 'granted') {
-        setSubscribed(true);
-        
-        try {
-          // Get push token with fallback for missing project ID
-          const projectId = ENV_CONFIG.PROJECT_ID;
-          if (!projectId) {
-            console.warn('⚠️ PROJECT_ID not found, skipping push token registration');
-            await updateNotificationSubscription(true);
-          } else {
-            const pushToken = await Notifications.getExpoPushTokenAsync({
-              projectId: projectId,
-            });
-            await updateNotificationSubscription(true, pushToken.data);
-          }
-        } catch (tokenError) {
-          console.error('❌ Error getting push token:', tokenError);
-          // Still update subscription without token
-          await updateNotificationSubscription(true);
-        }
-        
-        // Show success state and auto-continue
-        setSubscribed(true);
-        
-        // Brief success feedback, then continue
-        setTimeout(async () => {
-          await completeOnboarding();
-          router.push('/(tabs)');
-        }, 1500); // 1.5 second delay to show success state
-      } else {
-        Alert.alert(
-          'Enable Notifications',
-          'Notifications are currently disabled. To enable them, go to your system settings.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Open Settings',
-              onPress: () => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('app-settings:');
-                } else {
-                  Linking.openSettings();
-                }
-              },
-            },
-          ]
-        );
-      }
-    } catch (error) {
-      console.error('Error handling notification subscription:', error);
-      Alert.alert('Error', 'Failed to set up notifications. You can enable them later in settings.');
-    }
-  };
-
-  const handleSkipNotifications = () => {
-    Alert.alert(
-      'Skip Notifications?',
-      'You may miss out on important track experiences, exclusive content, and event updates. Are you sure you want to skip?',
-      [
-        { 
-          text: 'Yes, Skip', 
-          onPress: async () => {
-            await completeOnboarding();
-            router.push('/(tabs)');
-          }, 
-          style: 'destructive' 
-        },
-        { text: 'Enable Notifications', onPress: handleSubscribe }
-      ]
-    );
+  const handleContinue = async () => {
+    await completeOnboarding();
+    router.push('/(tabs)');
   };
 
   return (
@@ -158,40 +67,20 @@ const WelcomeScreen = () => {
           ))}
         </View>
 
-        {/* Notification Box */}
+        {/* Continue Card */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <BrandLogo style={styles.cardLogo} />
           <Text style={[styles.cardText, { color: colors.text }]}>
-            We would like to send you notifications for your personal schedule and other relevant updates. Please subscribe below, you can unsubscribe at any time.
+            Ready to explore your race weekend experience? You can customize notification preferences later in your account settings.
           </Text>
           <TouchableOpacity
-            style={[
-              styles.subscribeBtn,
-              { backgroundColor: subscribed ? colors.secondaryText : colors.tint },
-            ]}
-            onPress={handleSubscribe}
-            disabled={subscribed}
+            style={[styles.continueBtn, { backgroundColor: colors.tint }]}
+            onPress={handleContinue}
           >
-            <Text
-              style={[
-                styles.subscribeBtnText,
-                { color: subscribed ? 'white' : 'black' },
-              ]}
-            >
-              {subscribed ? '✅ Subscribed' : 'Subscribe to Notifications'}
+            <Text style={[styles.continueBtnText, { color: 'white' }]}>
+              Continue to App
             </Text>
           </TouchableOpacity>
-          
-          {!subscribed && (
-            <TouchableOpacity
-              style={[styles.skipBtn, { borderColor: colors.border }]}
-              onPress={handleSkipNotifications}
-            >
-              <Text style={[styles.skipBtnText, { color: colors.secondaryText }]}>
-                Skip for now
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -214,27 +103,16 @@ const styles = StyleSheet.create({
   },
   cardLogo: { width: 250, height: 120, marginBottom: 12, objectFit: 'contain' },
   cardText: { fontSize: 14, textAlign: 'center', marginBottom: 12 },
-  subscribeBtn: {
+  continueBtn: {
     backgroundColor: '#FF3B30', // fallback, will be overridden by inline style
     paddingHorizontal: 24,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 24,
   },
-  subscribeBtnText: {
+  continueBtnText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
-  },
-  skipBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginTop: 12,
-  },
-  skipBtnText: {
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 
