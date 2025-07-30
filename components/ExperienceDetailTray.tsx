@@ -209,7 +209,7 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
                   </Text>
                 </View>
               )}
-              
+              {/* Experience Venue Location */}
               {experience.experience_venue_location?.venue_location_name && (
                 <View style={styles.timeItem}>
                   <Ionicons name="location" size={20} color={colors.tint} />

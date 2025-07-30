@@ -212,9 +212,8 @@ const fetchFAQs = async () => {
       // Extract FAQs from the response
       if (data.data && data.data.length > 0 && data.data[0].FAQs) {
         //setFaqData(data.data[0].FAQs);//this is our data. 
-       if( await FileSystem.writeAsStringAsync(FAQS_FILE, JSON.stringify(data.data[0].FAQs))){
-        console.log("Success!");
-       }
+       await FileSystem.writeAsStringAsync(FAQS_FILE, JSON.stringify(data.data[0].FAQs));
+       console.log("Success!");
 
        setFaqData(JSON.parse(await FileSystem.readAsStringAsync(FAQS_FILE)));
 

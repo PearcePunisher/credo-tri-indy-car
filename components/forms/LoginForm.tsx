@@ -59,6 +59,7 @@ export const LoginForm: React.FC = () => {
         lastName: "User",
         dateOfBirth: "1990-01-01",
         phoneNumber: "",
+        userIsStaff: false, // Default to false for login users
       });
 
       Alert.alert("Login Successful", "Welcome back!", [

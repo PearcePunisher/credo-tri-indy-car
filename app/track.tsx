@@ -26,14 +26,22 @@ const fileName = fileUrl.split('/').pop();
 // Function to handle the download
 const handleDownload = async () => {
   try {
+    if (!FileSystem.documentDirectory || !fileName) {
+      Alert.alert('Download Failed', 'Cannot determine download location or file name.');
+      return;
+    }
     const end_name = FileSystem.documentDirectory + fileName;
     const downloadResumable = FileSystem.createDownloadResumable(
       fileUrl,  end_name
     );
 
-    const { uri } = await downloadResumable.downloadAsync();
-    Alert.alert('Download Complete', `Saved to:\n${uri}`);
-    console.log('Finished downloading to:', uri);
+    const result = await downloadResumable.downloadAsync();
+    if (result && result.uri) {
+      Alert.alert('Download Complete', `Saved to:\n${result.uri}`);
+      console.log('Finished downloading to:', result.uri);
+    } else {
+      Alert.alert('Download Failed', 'Could not download the file.');
+    }
   } catch (error) {
     console.error(error);
     Alert.alert('Download Failed', 'An error occurred while downloading the file.');
