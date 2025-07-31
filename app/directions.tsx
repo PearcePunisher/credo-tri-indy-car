@@ -79,10 +79,10 @@ const VenueDirectionsScreen = () => {
                       <Ionicons 
                         name="map" 
                         size={20} 
-                        color={colors.textOnGreen} 
+                        color={colors.textOnOrange} 
                         style={styles.buttonIcon}
                       />
-                      <Text style={[styles.mapButtonText, { color: colors.textOnGreen }]}>
+                      <Text style={[styles.mapButtonText, { color: colors.textOnOrange }]}>
                         {linkText.trim() || 'Open Directions'}
                       </Text>
                     </View>

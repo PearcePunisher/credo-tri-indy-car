@@ -147,7 +147,7 @@ const TrackDetailScreen = () => {
           </Text>
           <TouchableOpacity style={[styles.downloadBtn, { backgroundColor: colors.tint }]}   onPress={handleDownload}
 >
-            <Text style={[styles.downloadBtnText, { color: colors.textOnGreen }]}>Download Map</Text>
+            <Text style={[styles.downloadBtnText, { color: colors.textOnOrange }]}>Download Map</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

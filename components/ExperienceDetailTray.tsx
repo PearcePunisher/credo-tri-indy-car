@@ -243,11 +243,11 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
                 <Ionicons 
                   name={isNotificationEnabled ? "notifications" : "notifications-off"} 
                   size={20} 
-                  color={isNotificationEnabled ? colors.textOnGreen : colors.tint} 
+                  color={isNotificationEnabled ? colors.textOnOrange : colors.tint} 
                 />
                 <Text style={[
                   styles.notificationButtonText,
-                  { color: isNotificationEnabled ? colors.textOnGreen : colors.tint }
+                  { color: isNotificationEnabled ? colors.textOnOrange : colors.tint }
                 ]}>
                   {isNotificationEnabled ? 'Notifications Enabled' : 'Enable Notifications'}
                 </Text>

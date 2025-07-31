@@ -252,7 +252,7 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
               </Text>
               {unreadCount > 0 && (
                 <View style={[styles.badge, { backgroundColor: colors.tint }]}>
-                  <Text style={[styles.badgeText, { color: colors.textOnGreen }]}>
+                  <Text style={[styles.badgeText, { color: colors.textOnOrange }]}>
                     {unreadCount}
                   </Text>
                 </View>

@@ -10,9 +10,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Dark_Logo_f3a9db6483.png";
+  "https://harmonious-wealth-6294946a0c.media.strapiapp.com/denver_broncos_logo_transparent_d12ff67de8.png";
 const LOGO_LIGHT =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Light_Logo_640461bc89.png";
+  "https://harmonious-wealth-6294946a0c.media.strapiapp.com/denver_broncos_logo_transparent_d12ff67de8.png";
 
 export default function BrandLogo({
   width = 250,

@@ -141,8 +141,43 @@ export default function HomeScreen() {
 
   const [notificationTrayVisible, setNotificationTrayVisible] = useState(false);
 
-  const { colorScheme } = useColorScheme();
+  const { colorScheme, systemColorScheme, isLoaded, hasStoredPreference, clearColorSchemePreference } = useColorScheme();
   const colors = Colors[colorScheme];
+
+  // Debug color scheme on index page
+  console.log('🏠 Index page color scheme debug:', {
+    currentScheme: colorScheme,
+    systemScheme: systemColorScheme,
+    isLoaded,
+    hasStoredPreference,
+    primaryColor: colors.primary,
+    backgroundColor: colors.background,
+    timestamp: new Date().toISOString()
+  });
+
+  // Temporary debug function
+  const debugColorScheme = async () => {
+    console.log('🔍 Debug button pressed - clearing stored preference to test system following');
+    console.log('🔍 Current system color scheme:', systemColorScheme);
+    console.log('🔍 Current app color scheme:', colorScheme);
+    console.log('🔍 Has stored preference:', hasStoredPreference);
+    
+    try {
+      // Clear the specific key
+      await clearColorSchemePreference();
+      
+      // Also manually check what's in AsyncStorage
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const allKeys = await AsyncStorage.getAllKeys();
+      console.log('🔍 All AsyncStorage keys:', allKeys);
+      
+      const colorSchemeValue = await AsyncStorage.getItem('user-color-scheme');
+      console.log('🔍 Color scheme value in storage:', colorSchemeValue);
+      
+    } catch (error) {
+      console.error('🔍 Debug error:', error);
+    }
+  };
 
   useEffect(() => {
     const found = getNextRace((scheduleData as ScheduleData).stages);
@@ -191,12 +226,12 @@ export default function HomeScreen() {
             <BrandLogo style={styles.brand} />
           </View>
 
-          <View style={styles.logoContainer}>
+          {/* <View style={styles.logoContainer}>
             <EventLogo style={styles.brand} />
-          </View>
+          </View> */}
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Upcoming Races
+            Upcoming Events
           </Text>
           <View style={styles.carouselContainer}>
             <ScrollView
@@ -207,7 +242,7 @@ export default function HomeScreen() {
               <View style={styles.card}>
                 <Image
                   source={{
-                    uri: "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Laguna_98de1e39c8.png",
+                    uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/mkskjonrsq0nosi2zmzp_1f7c56ae88.webp",
                   }}
                   style={styles.cardImage}
                 />
@@ -218,7 +253,7 @@ export default function HomeScreen() {
                     { backgroundColor: colors.tint },
                   ]}>
                   <Text
-                    style={[styles.upNextText, { color: colors.textOnGreen }]}>
+                    style={[styles.upNextText, { color: colors.textOnOrange }]}>
                     Up Next
                   </Text>
                 </View>
@@ -231,7 +266,7 @@ export default function HomeScreen() {
             <Text style={[styles.raceTitle, { color: colors.text }]}>
               {nextRace
                 ? (nextRace.event.description || "Next Race").toUpperCase()
-                : "No Upcoming Race"}
+                : "Back to School with the Broncos"}
             </Text>
             <Text style={[styles.raceDate, { color: colors.tint }]}>
               {nextRace
@@ -417,7 +452,7 @@ export default function HomeScreen() {
                     { backgroundColor: colors.tint },
                   ]}>
                   <Text
-                    style={[styles.upNextText, { color: colors.textOnGreen }]}>
+                    style={[styles.upNextText, { color: colors.textOnOrange }]}>
                     Sponsored Event
                   </Text>
                 </View>
@@ -439,10 +474,19 @@ export default function HomeScreen() {
           {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint }]}>
             <Text
-              style={[styles.shareButtonText, { color: colors.textOnGreen }]}>
+              style={[styles.shareButtonText, { color: colors.textOnOrange }]}>
               Share Your Thoughts
             </Text>
           </TouchableOpacity> */}
+
+          {/* Temporary debug button - remove after testing */}
+          <TouchableOpacity
+            style={[styles.shareButton, { backgroundColor: colors.tint, marginVertical: 10 }]}
+            onPress={debugColorScheme}>
+            <Text style={[styles.shareButtonText, { color: colors.textOnOrange }]}>
+              🔍 Debug: Clear Theme Preference
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>

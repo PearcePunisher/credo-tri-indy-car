@@ -327,7 +327,10 @@ export function RegisterScreenFormik() {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
               try {
-                // Build guest data based on user input
+                // TESTING MODE: Skip Railway registration and proceed directly to local auth
+                console.log('🧪 TESTING MODE: Skipping Railway registration, creating local auth state only');
+                
+                // Build guest data based on user input (for future use)
                 const userGuests = [];
 
                 if (values.bringingGuests && values.numberOfGuests >= 1) {
@@ -348,6 +351,88 @@ export function RegisterScreenFormik() {
                   });
                 }
 
+                // TODO: REMOVE THIS WHEN READY TO RE-ENABLE RAILWAY
+                // Skip Railway call for testing - create local auth state directly
+                try {
+                  // Create mock server user data for testing
+                  const mockServerUser = {
+                    email: values.email,
+                    fname: values.firstName,
+                    lname: values.lastName,
+                    user_id: Math.floor(Math.random() * 10000), // Generate random test ID
+                    event_code_document_id: 'test_event_doc_id',
+                    event_schedule_document_id: 'test_schedule_doc_id',
+                    user_is_staff: false,
+                  };
+
+                  await createLocalAuthState({
+                    email: mockServerUser.email,
+                    firstName: mockServerUser.fname,
+                    lastName: mockServerUser.lname,
+                    dateOfBirth: values.dob || "1920-05-05",
+                    phoneNumber: `${values.countryCode}${values.phone.replace(/\D/g, '')}`,
+                    // Store mock server data
+                    serverId: mockServerUser.user_id.toString(),
+                    eventCodeDocumentId: mockServerUser.event_code_document_id,
+                    eventScheduleDocumentId: mockServerUser.event_schedule_document_id,
+                    // Store invitation code locally for future use
+                    invitationCode: values.invitationCode,
+                    //store the staff toggle. 
+                    userIsStaff: mockServerUser.user_is_staff,
+                  });
+                  
+                  // Handle push token registration if user consented
+                  if (values.notificationConsent) {
+                    console.log('📱 User consented to notifications, registering push token...');
+                    try {
+                      const userId = mockServerUser.user_id.toString();
+                      const tokenResult = await pushTokenService.registerPushToken(userId);
+                      
+                      if (tokenResult.success) {
+                        console.log('✅ Push token registered successfully');
+                        // Update user's notification subscription status
+                        await updateNotificationSubscription(true, tokenResult.token);
+                      } else if (tokenResult.requiresPermission) {
+                        // Show permission explanation to user
+                        Alert.alert(
+                          'Notification Permissions',
+                          'To receive race updates and experience reminders, please enable notifications in your device settings.',
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Enable Notifications', onPress: async () => {
+                              const retryResult = await pushTokenService.registerPushToken(userId);
+                              if (retryResult.success) {
+                                await updateNotificationSubscription(true, retryResult.token);
+                                Alert.alert('Success', 'Notifications enabled successfully!');
+                              }
+                            }}
+                          ]
+                        );
+                      } else {
+                        console.warn('⚠️ Push token registration failed:', tokenResult.error);
+                        // Still allow registration to proceed
+                        await updateNotificationSubscription(false);
+                      }
+                    } catch (pushTokenError) {
+                      console.error('❌ Error during push token registration:', pushTokenError);
+                      // Don't block registration if push token fails
+                      await updateNotificationSubscription(false);
+                    }
+                  } else {
+                    console.log('📵 User declined notifications');
+                    await updateNotificationSubscription(false);
+                  }
+                  
+                  console.log('✅ TESTING MODE: Local auth state created successfully');
+                  alert("Registration successful! (Testing mode - no Railway call made)");
+                  // Navigate to welcome page for onboarding
+                  // Note: The app will automatically route to welcome since user is authenticated but hasn't completed onboarding
+                } catch (authError) {
+                  console.error('Error setting up local auth state in testing mode:', authError);
+                  alert("Registration failed during local auth setup. Please try again.");
+                }
+
+                /* TODO: UNCOMMENT THIS BLOCK TO RE-ENABLE RAILWAY REGISTRATION
                 const payload = {
                   email: values.email,
                   password: values.password,
@@ -452,6 +537,7 @@ export function RegisterScreenFormik() {
                   console.error('Registration failed:', response.status, errorText);
                   alert(`Registration failed. Error code: ${response.status}`);
                 }
+                */
               } catch (error) {
                 console.error('Registration error:', error);
                 alert("An unexpected error occurred.");
@@ -881,7 +967,7 @@ export function RegisterScreenFormik() {
                             labelStyle={{
                               color:
                                 values.numberOfGuests === 1
-                                  ? colors.textOnGreen
+                                  ? colors.textOnOrange
                                   : colors.text,
                             }}>
                             1 Guest
@@ -903,7 +989,7 @@ export function RegisterScreenFormik() {
                             labelStyle={{
                               color:
                                 values.numberOfGuests === 2
-                                  ? colors.textOnGreen
+                                  ? colors.textOnOrange
                                   : colors.text,
                             }}>
                             2 Guests
@@ -1420,7 +1506,7 @@ export function RegisterScreenFormik() {
                   onPress={() => handleSubmit()} // Fix: wrap in arrow function
                   style={styles.button}
                   contentStyle={{ backgroundColor: colors.tint }}
-                  labelStyle={{ color: colors.textOnGreen }} // Use a valid color from your Colors object
+                  labelStyle={{ color: colors.textOnOrange }} // Use a valid color from your Colors object
                   disabled={isSubmitting}
                   loading={isSubmitting}
                 >

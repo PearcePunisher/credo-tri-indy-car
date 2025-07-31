@@ -100,7 +100,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         />
         {unreadCount > 0 && (
           <View style={[styles.badge, { backgroundColor: colors.tint }]}>
-            <Text style={[styles.badgeText, { color: colors.textOnGreen }]}>
+            <Text style={[styles.badgeText, { color: colors.textOnOrange }]}>
               {unreadCount > 99 ? '99+' : unreadCount.toString()}
             </Text>
           </View>

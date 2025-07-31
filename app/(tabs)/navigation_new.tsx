@@ -34,6 +34,14 @@ export default function VIPHomeScreen() {
   const colors = Colors[colorScheme];
   const iconColor = colors.text;
 
+  // Debug color scheme state
+  console.log('🎨 Navigation color scheme debug:', {
+    currentScheme: colorScheme,
+    primaryColor: colors.primary,
+    backgroundColor: colors.background,
+    textColor: colors.text
+  });
+
   console.log('✅ VIPHomeScreen hooks initialized successfully');
 
   return (
@@ -45,7 +53,7 @@ export default function VIPHomeScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <BrandLogo style={styles.brand} />
         <Text style={[styles.header, { color: colors.text }]}>
-          PIT LANE CLUB
+          END ZONE EXPERIENCE
         </Text>
         <Text style={[styles.sub, { color: colors.secondaryText || colors.text }]}>
           The ultimate individual VIP Hospitality experience
