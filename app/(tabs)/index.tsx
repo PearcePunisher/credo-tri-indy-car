@@ -368,7 +368,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/team")}>
               <Image
                 source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Broncos_Team_c6cfef79e6.webp",
                 }}
                 style={styles.gridImage}
               />
@@ -384,7 +384,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/(tabs)/schedule")}>
               <Image
                 source={{
-                  uri: "https://images.unsplash.com/photo-1667921686462-da83bb890fed?q=80&w=4031&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Weekend_Schedule_989e980cb8.webp",
                 }}
                 style={styles.gridImage}
               />
@@ -400,7 +400,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/faq")}>
               <Image
                 source={{
-                  uri: "https://cdn-1.motorsport.com/images/amp/YMdy8432/s1200/callum-ilott-juncos-hollinger-.webp",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/What_to_Expect_8b5574e78d.webp",
                 }}
                 style={styles.gridImage}
               />
@@ -416,12 +416,12 @@ export default function HomeScreen() {
               onPress={() => router.push("/directions")}>
               <Image
                 source={{
-                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/2_EA_190_2088053_79694176_2_62735d8d5b.jpg",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Empower_Field_Large_d8b3ec00e6.webp",
                 }}
                 style={styles.gridImage}
               />
               <Text style={[styles.gridTitle, { color: colors.text }]}>
-                Getting to the Circuit
+                Getting Here
               </Text>
               <Text style={[styles.gridSubtitle, { color: colors.tint }]}>
                 Travel info
@@ -480,13 +480,13 @@ export default function HomeScreen() {
           </TouchableOpacity> */}
 
           {/* Temporary debug button - remove after testing */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint, marginVertical: 10 }]}
             onPress={debugColorScheme}>
             <Text style={[styles.shareButtonText, { color: colors.textOnOrange }]}>
               🔍 Debug: Clear Theme Preference
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>

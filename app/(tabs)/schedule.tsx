@@ -313,14 +313,14 @@ const ScheduleScreen = () => {
         }
       >
         <BrandLogo style={styles.logo} />
-        <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
+        <Text style={[styles.header, { color: colors.text }]}>Weekend Experiences</Text>
         
         {/* Temporary debugging component */}
         {/* <NotificationDebugger /> */}
 
         {experiences.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyStateText, { color: colors.tabIconDefault }]}>
+            <Text style={[styles.emptyStateText, { color: colors.secondaryText }]}>
               No experiences available at this time.
             </Text>
             <TouchableOpacity style={[styles.refreshButton, { borderColor: colors.tint }]} onPress={onRefresh}>
@@ -408,7 +408,8 @@ const styles = StyleSheet.create({
   header: { 
     fontSize: 28, 
     fontWeight: 'bold', 
-    marginBottom: 24 
+    marginBottom: 24,
+    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
