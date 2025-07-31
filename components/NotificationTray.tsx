@@ -15,9 +15,11 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
-import { notificationService } from '@/services/NotificationService';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import useEnhancedNotifications from '@/hooks/useEnhancedNotifications';
+import { NotificationHistory } from '@/services/EnhancedNotificationService';
+import { useAuth } from '@/hooks/useAuth';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const TRAY_HEIGHT = SCREEN_HEIGHT * 0.8; // 80% of screen height for better positioning
@@ -32,15 +34,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  body: string;
-  timestamp: Date;
-  read: boolean;
-  type?: 'info' | 'update' | 'reminder' | 'urgent';
-}
-
 interface NotificationTrayProps {
   visible: boolean;
   onClose: () => void;
@@ -50,8 +43,21 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { authState } = useAuth();
+  
+  // Use the enhanced notifications hook
+  const {
+    notificationHistory,
+    unreadCount,
+    markAsRead,
+    clearHistory,
+    loadNotificationHistory,
+  } = useEnhancedNotifications({
+    userId: authState.user?.id,
+    jwtToken: authState.user?.serverId,
+    isVIP: authState.user?.userIsStaff,
+  });
+  
   const slideAnim = useState(new Animated.Value(-TRAY_HEIGHT))[0];
 
   useEffect(() => {
@@ -73,94 +79,32 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
   }, [visible]);
 
   useEffect(() => {
-    loadNotifications();
-    
-    // Listen for new notifications
-    const subscription = Notifications.addNotificationReceivedListener(handleNewNotification);
-    
-    return () => subscription.remove();
-  }, []);
-
-  const loadNotifications = async () => {
-    // Load stored notifications or fetch from API
-    // For now, using sample data
-    const sampleNotifications: NotificationItem[] = [
-      {
-        id: '1',
-        title: 'Race Weekend Update',
-        body: 'Weather conditions look perfect for this weekend\'s race. Expected sunny skies with temperatures around 75°F.',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        read: false,
-        type: 'update',
-      },
-      {
-        id: '2',
-        title: 'Garage Tour Reminder',
-        body: 'Don\'t forget about your exclusive garage tour scheduled for tomorrow at 2:00 PM.',
-        timestamp: new Date(Date.now() - 7 * 60 * 60 * 1000), // 6 hours ago
-        read: false,
-        type: 'reminder',
-      },
-      {
-        id: '3',
-        title: 'Team Update',
-        body: 'Our driver finished P3 in practice! Great preparation for qualifying.',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        read: true,
-        type: 'info',
-      },
-      {
-        id: '4',
-        title: 'Parking Information',
-        body: 'New parking instructions have been added to your venue directions.',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        read: true,
-        type: 'info',
-      },
-    ];
-    
-    setNotifications(sampleNotifications);
-    const unread = sampleNotifications.filter(n => !n.read).length;
-    setUnreadCount(unread);
-  };
-
-  const handleNewNotification = (notification: Notifications.Notification) => {
-    const newNotification: NotificationItem = {
-      id: Date.now().toString(),
-      title: notification.request.content.title || 'Notification',
-      body: notification.request.content.body || '',
-      timestamp: new Date(),
-      read: false,
-      type: 'info',
-    };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-    setUnreadCount(prev => prev + 1);
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
-    setUnreadCount(0);
-  };
-
-  const clearNotification = (id: string) => {
-    const notification = notifications.find(n => n.id === id);
-    if (notification && !notification.read) {
-      setUnreadCount(prev => Math.max(0, prev - 1));
+    // Refresh notification history when tray becomes visible
+    if (visible) {
+      loadNotificationHistory();
     }
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  }, [visible]);
+
+  const handleMarkAsRead = async (id: string) => {
+    await markAsRead(id);
   };
 
-  const clearAllNotifications = () => {
+  const handleMarkAllAsRead = async () => {
+    // Mark all notifications as read
+    const promises = notificationHistory
+      .filter(notification => !notification.isRead)
+      .map(notification => markAsRead(notification.id));
+    
+    await Promise.all(promises);
+  };
+
+  const handleClearNotification = async (id: string) => {
+    // For individual notification removal, we could extend the service
+    // For now, just mark as read
+    await markAsRead(id);
+  };
+
+  const handleClearAllNotifications = () => {
     Alert.alert(
       'Clear All Notifications',
       'Are you sure you want to clear all notifications?',
@@ -169,41 +113,42 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
         { 
           text: 'Clear All', 
           style: 'destructive',
-          onPress: () => {
-            setNotifications([]);
-            setUnreadCount(0);
-          }
+          onPress: clearHistory
         },
       ]
     );
   };
-
-  const getNotificationIcon = (type?: string) => {
-    switch (type) {
-      case 'urgent':
-        return 'warning';
-      case 'reminder':
+  const getNotificationIcon = (category?: string) => {
+    switch (category) {
+      case 'experience_reminder':
         return 'time';
-      case 'update':
+      case 'experience_update':
         return 'refresh';
-      default:
+      case 'experience_cancellation':
+        return 'warning';
+      case 'race_update':
+        return 'flag';
+      case 'general_announcement':
         return 'information-circle';
+      default:
+        return 'notifications';
     }
   };
 
-  const getNotificationColor = (type?: string) => {
-    switch (type) {
-      case 'urgent':
+  const getNotificationColor = (category?: string) => {
+    switch (category) {
+      case 'experience_cancellation':
         return colors.error || '#FF6B6B';
-      case 'reminder':
+      case 'experience_reminder':
         return colors.tint;
-      case 'update':
+      case 'experience_update':
+        return colors.tint;
+      case 'race_update':
         return colors.tint;
       default:
         return colors.secondaryText;
     }
   };
-
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date();
     const diff = now.getTime() - timestamp.getTime();
@@ -218,23 +163,23 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
     return timestamp.toLocaleDateString();
   };
 
-  const renderNotificationItem = ({ item }: { item: NotificationItem }) => (
+  const renderNotificationItem = ({ item }: { item: NotificationHistory }) => (
     <TouchableOpacity
       style={[
         styles.notificationItem,
         { 
-          backgroundColor: item.read ? colors.background : colors.card,
-          borderLeftColor: getNotificationColor(item.type),
+          backgroundColor: item.isRead ? colors.background : colors.card,
+          borderLeftColor: getNotificationColor(item.category),
         }
       ]}
-      onPress={() => markAsRead(item.id)}
+      onPress={() => handleMarkAsRead(item.id)}
     >
       <View style={styles.notificationHeader}>
         <View style={styles.notificationIconContainer}>
           <Ionicons
-            name={getNotificationIcon(item.type)}
+            name={getNotificationIcon(item.category)}
             size={20}
-            color={getNotificationColor(item.type)}
+            color={getNotificationColor(item.category)}
           />
         </View>
         <View style={styles.notificationContent}>
@@ -242,7 +187,7 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
             styles.notificationTitle,
             { 
               color: colors.text,
-              fontWeight: item.read ? 'normal' : 'bold',
+              fontWeight: item.isRead ? 'normal' : 'bold',
             }
           ]}>
             {item.title}
@@ -251,17 +196,17 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
             {item.body}
           </Text>
           <Text style={[styles.notificationTime, { color: colors.secondaryText }]}>
-            {formatTimestamp(item.timestamp)}
+            {formatTimestamp(item.receivedAt)}
           </Text>
         </View>
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => clearNotification(item.id)}
+          onPress={() => handleClearNotification(item.id)}
         >
           <Ionicons name="close" size={18} color={colors.secondaryText} />
         </TouchableOpacity>
       </View>
-      {!item.read && <View style={[styles.unreadDot, { backgroundColor: colors.tint }]} />}
+      {!item.isRead && <View style={[styles.unreadDot, { backgroundColor: colors.tint }]} />}
     </TouchableOpacity>
   );
 
@@ -317,7 +262,7 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
               {unreadCount > 0 && (
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={markAllAsRead}
+                  onPress={handleMarkAllAsRead}
                 >
                   <Text style={[styles.actionButtonText, { color: colors.tint }]}>
                     Mark all read
@@ -335,7 +280,7 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
 
           {/* Notifications List */}
           <FlatList
-            data={notifications}
+            data={notificationHistory}
             renderItem={renderNotificationItem}
             keyExtractor={(item) => item.id}
             style={styles.notificationsList}
@@ -352,10 +297,10 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
               </View>
             }
             ListFooterComponent={
-              notifications.length > 0 ? (
+              notificationHistory.length > 0 ? (
                 <TouchableOpacity
                   style={styles.clearAllButton}
-                  onPress={clearAllNotifications}
+                  onPress={handleClearAllNotifications}
                 >
                   <Text style={[styles.clearAllButtonText, { color: colors.error || colors.secondaryText }]}>
                     Clear All Notifications

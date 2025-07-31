@@ -125,7 +125,7 @@ function getCountdownParts(targetDate: string): {
 
 export default function HomeScreen() {
   
-  const { debugUserData } = useAuth();
+  const { debugUserData, authState } = useAuth();
   
   const [countdown, setCountdown] = useState({
     days: 0,
@@ -180,6 +180,9 @@ export default function HomeScreen() {
 
             <EnhancedNotificationBell 
               size={24} 
+              userId={authState.user?.id}
+              jwtToken={authState.user?.serverId}
+              isVIP={authState.user?.userIsStaff}
               onPress={() => setNotificationTrayVisible(true)}
             />
           </View>
