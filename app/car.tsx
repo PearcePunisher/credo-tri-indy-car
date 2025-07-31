@@ -24,7 +24,7 @@ const CarScreen = () => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://timely-actor-10dfb03957.strapiapp.com/api/cars/k26n28fx8yqwxwgrwqv77c3l?populate=*"
+          "https://harmonious-wealth-6294946a0c.strapiapp.com/api/cars/k26n28fx8yqwxwgrwqv77c3l?populate=*"
         );
         const json = await res.json();
         setCar(json.data);

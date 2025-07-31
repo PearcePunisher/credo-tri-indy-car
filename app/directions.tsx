@@ -23,7 +23,7 @@ const VenueDirectionsScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('https://timely-actor-10dfb03957.strapiapp.com/api/venue-directions');
+        const res = await fetch('https://harmonious-wealth-6294946a0c.strapiapp.com/api/venue-directions');
         const json = await res.json();
         const blocks = json.data[0].venue_direction_description;
         setContent(blocks);

@@ -27,7 +27,7 @@ const ExperienceScreen = () => {
     const fetchExperience = async () => {
       try {
         const res = await fetch(
-          'https://timely-actor-10dfb03957.strapiapp.com/api/experiences/w8ulpgi0pvn8p46heb7hv9my?populate=*'
+          'https://harmonious-wealth-6294946a0c.strapiapp.com/api/experiences/w8ulpgi0pvn8p46heb7hv9my?populate=*'
         );
         const json = await res.json();
         setExperience(json.data);

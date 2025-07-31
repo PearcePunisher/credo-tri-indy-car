@@ -68,7 +68,7 @@ When users skip notifications:
 ## Backend Integration
 
 ### Strapi Configuration
-- **Base URL**: `https://timely-actor-10dfb03957.strapiapp.com`
+- **Base URL**: `https://harmonious-wealth-6294946a0c.strapiapp.com`
 - **User Registration**: Creates user account with temporary password
 - **Data Sync**: Pulls user data from Strapi and stores locally
 - **Push Tokens**: Registers device tokens for notifications
@@ -132,7 +132,7 @@ When users skip notifications:
 
 ### Required Environment Variables
 ```
-EXPO_PUBLIC_STRAPI_URL=https://timely-actor-10dfb03957.strapiapp.com
+EXPO_PUBLIC_STRAPI_URL=https://harmonious-wealth-6294946a0c.strapiapp.com
 EXPO_PUBLIC_PROJECT_ID=db70e71b-2bb8-4da5-9442-a8f0ce48fd2f
 ```
 

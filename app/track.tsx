@@ -60,10 +60,10 @@ const TrackDetailScreen = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await fetch('https://timely-actor-10dfb03957.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l?populate=*');
+        const res = await fetch('https://harmonious-wealth-6294946a0c.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l?populate=*');
         const json = await res.json();
         setEvent(json.data);
-        const res2 = await fetch('https://timely-actor-10dfb03957.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l/?populate[event_downloadables][populate][event_downloadables_file]=true&populate[event_downloadables][populate][event_downloadables_cover_image]=true');
+        const res2 = await fetch('https://harmonious-wealth-6294946a0c.strapiapp.com/api/events/vu1onbgx4osmfr94vstx9i1l/?populate[event_downloadables][populate][event_downloadables_file]=true&populate[event_downloadables][populate][event_downloadables_cover_image]=true');
         const cover_image_json = await res2.json();
         setDownloadables(cover_image_json);
       } catch (e) {

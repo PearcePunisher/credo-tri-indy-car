@@ -2,7 +2,7 @@
 export const ENV_CONFIG = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   DEV_MODE: process.env.EXPO_PUBLIC_DEV_MODE === 'true',
-  STRAPI_URL: process.env.EXPO_PUBLIC_STRAPI_URL || 'https://timely-actor-10dfb03957.strapiapp.com',
+  STRAPI_URL: process.env.EXPO_PUBLIC_STRAPI_URL || 'https://harmonious-wealth-6294946a0c.strapiapp.com',
   PROJECT_ID: process.env.EXPO_PUBLIC_PROJECT_ID || 'db70e71b-2bb8-4da5-9442-a8f0ce48fd2f',
   IS_PRODUCTION: process.env.NODE_ENV === 'production',
   IS_DEVELOPMENT: process.env.NODE_ENV === 'development',

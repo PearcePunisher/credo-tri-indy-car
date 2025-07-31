@@ -32,7 +32,7 @@ export const TeamThemeProvider = ({ children }: { children: React.ReactNode }) =
     const fetchTheme = async () => {
       try {
         // Fetch team details, including team colors, from the API.
-        const res = await fetch("https://timely-actor-10dfb03957.strapiapp.com/api/team-details?populate=team_colors&fields[0]=team_name");
+        const res = await fetch("https://harmonious-wealth-6294946a0c.strapiapp.com/api/team-details?populate=team_colors&fields[0]=team_name");
         const json = await res.json();
 
         // Get the first team item from the response.

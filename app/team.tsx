@@ -147,15 +147,15 @@ const TeamScreen = () => {
 
   useEffect(() => {
     const fetchDrivers = fetch(
-      "https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate[driver_image]=true&populate[driver_social_medias]=true&populate[driver_record]=true&populate[car][populate][car_images][populate]=car_image_side&populate[driver_current_season_stats]=true&populate[driver_career_stats]=true"
+      "https://harmonious-wealth-6294946a0c.strapiapp.com/api/drivers?populate[driver_image]=true&populate[driver_social_medias]=true&populate[driver_record]=true&populate[car][populate][car_images][populate]=car_image_side&populate[driver_current_season_stats]=true&populate[driver_career_stats]=true"
     ).then((res) => res.json());
 
     const fetchTeamDetails = fetch(
-      "https://timely-actor-10dfb03957.strapiapp.com/api/team-details?fields[0]=team_name&fields[1]=team_descriptions"
+      "https://harmonious-wealth-6294946a0c.strapiapp.com/api/team-details?fields[0]=team_name&fields[1]=team_descriptions"
     ).then((res) => res.json());
 
     const fetchStaffDetails = fetch(
-      "https://timely-actor-10dfb03957.strapiapp.com/api/team-details?populate[staff_members_team][populate][Staff_Image]=true"
+      "https://harmonious-wealth-6294946a0c.strapiapp.com/api/team-details?populate[staff_members_team][populate][Staff_Image]=true"
     ).then((res) => res.json());
 
     Promise.all([fetchDrivers, fetchTeamDetails, fetchStaffDetails])
