@@ -321,7 +321,7 @@ export default function HomeScreen() {
           </View>
 
           <Text style={[styles.countdownTitle, { color: colors.text }]}>
-            COUNTDOWN TO RACE DAY:
+            EVENT STARTS IN:
           </Text>
           <View
             style={[
