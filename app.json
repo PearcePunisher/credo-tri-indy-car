@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "credo-tri-indy-car",
-    "slug": "credo-tri-indy-car",
+    "slug": "broncos-hospitality",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -64,7 +64,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "db70e71b-2bb8-4da5-9442-a8f0ce48fd2f"
+        "projectId": "f66b5090-2c62-4495-9cc8-7f2d01aa554a"
       }
     },
     "owner": "wicked-think"
