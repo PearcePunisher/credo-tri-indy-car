@@ -21,6 +21,41 @@ import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import { Ionicons } from '@expo/vector-icons';
 import NotificationDebugger from '@/components/NotificationDebugger';
 
+// Import types for dummy data creation
+interface VenueLocation {
+  id: number;
+  documentId: string;
+  venue_location_name: string;
+  venue_location_description: any[];
+  venue_location_address_link: string | null;
+  venue_location_directions_to_find: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
+interface ExperienceImage {
+  id: number;
+  documentId: string;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number;
+  height: number;
+  formats: any;
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl: string | null;
+  provider: string;
+  provider_metadata: any;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
 interface GroupedExperiences {
   [dateKey: string]: Experience[];
 }
@@ -34,6 +69,168 @@ const ScheduleScreen = () => {
   const [notificationStates, setNotificationStates] = useState<{ [key: number]: boolean }>({});
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+
+  // Generate dummy experiences for testing when server data is not available
+  const getDummyExperiences = (): Experience[] => {
+    const now = new Date();
+    const today = new Date(now);
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfter = new Date(now);
+    dayAfter.setDate(dayAfter.getDate() + 2);
+
+    const createDummyVenueLocation = (name: string): VenueLocation => ({
+      id: Math.floor(Math.random() * 1000),
+      documentId: `dummy-venue-${Math.floor(Math.random() * 1000)}`,
+      venue_location_name: name,
+      venue_location_description: [],
+      venue_location_address_link: null,
+      venue_location_directions_to_find: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+    });
+
+    const createDummyImage = (url: string): ExperienceImage => ({
+      id: Math.floor(Math.random() * 1000),
+      documentId: `dummy-image-${Math.floor(Math.random() * 1000)}`,
+      name: "placeholder-image",
+      alternativeText: "Experience placeholder image",
+      caption: null,
+      width: 800,
+      height: 600,
+      formats: {},
+      hash: "dummy_hash",
+      ext: ".jpg",
+      mime: "image/jpeg",
+      size: 100000,
+      url,
+      previewUrl: null,
+      provider: "cloudinary",
+      provider_metadata: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+    });
+
+    return [
+      {
+        id: 9001,
+        documentId: "dummy-exp-9001",
+        experience_id: "garage-tour-001",
+        experience_title: "VIP Garage Tour",
+        experience_description: [
+          {
+            type: "paragraph",
+            children: [{ type: "text", text: "Get an exclusive behind-the-scenes look at the Broncos garage facilities and meet the crew." }]
+          }
+        ],
+        experience_start_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 10, 0).toISOString(),
+        experience_end_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 11, 30).toISOString(),
+        experience_venue_location: createDummyVenueLocation("Team Garage - Pit Lane"),
+        experience_image: createDummyImage("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      },
+      {
+        id: 9002,
+        documentId: "dummy-exp-9002",
+        experience_id: "meet-greet-001",
+        experience_title: "Meet & Greet with The Broncos",
+        experience_description: [
+          {
+            type: "paragraph",
+            children: [{ type: "text", text: "Meet the Broncos, get autographs, and take photos with the team." }]
+          }
+        ],
+        experience_start_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14, 0).toISOString(),
+        experience_end_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 15, 0).toISOString(),
+        experience_venue_location: createDummyVenueLocation("VIP Hospitality Suite"),
+        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      },
+      {
+        id: 9003,
+        documentId: "dummy-exp-9003",
+        experience_id: "pre-race-briefing-001",
+        experience_title: "Pre-Game Briefing",
+        experience_description: [
+          {
+            type: "paragraph",
+            children: [{ type: "text", text: "Join the team for an exclusive pre-game strategy briefing and Q&A session." }]
+          }
+        ],
+        experience_start_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 9, 0).toISOString(),
+        experience_end_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 10, 0).toISOString(),
+        experience_venue_location: createDummyVenueLocation("Team Meeting Room"),
+        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      },
+      {
+        id: 9004,
+        documentId: "dummy-exp-9004",
+        experience_id: "victory-lane-001",
+        experience_title: "Touchdown Experience",
+        experience_description: [
+          {
+            type: "paragraph",
+            children: [{ type: "text", text: "Get together with the team and celebrate our win!" }]
+          }
+        ],
+        experience_start_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 17, 30).toISOString(),
+        experience_end_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 18, 30).toISOString(),
+        experience_venue_location: createDummyVenueLocation("Victory Lane"),
+        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      },
+      {
+        id: 9005,
+        documentId: "dummy-exp-9005",
+        experience_id: "team-dinner-001",
+        experience_title: "Exclusive Team Dinner",
+        experience_description: [
+          {
+            type: "paragraph",
+            children: [{ type: "text", text: "Join the team for a private dinner and networking session with fellow VIP guests." }]
+          }
+        ],
+        experience_start_date_time: new Date(dayAfter.getFullYear(), dayAfter.getMonth(), dayAfter.getDate(), 19, 0).toISOString(),
+        experience_end_date_time: new Date(dayAfter.getFullYear(), dayAfter.getMonth(), dayAfter.getDate(), 21, 0).toISOString(),
+        experience_venue_location: createDummyVenueLocation("VIP Dining Suite"),
+        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      },
+      // Add a past experience for testing
+      {
+        id: 9006,
+        documentId: "dummy-exp-9006",
+        experience_id: "autograph-session-001",
+        experience_title: "Team Autograph Session",
+        experience_description: [
+          {
+            type: "paragraph",
+            children: [{ type: "text", text: "Previous autograph session with the team (completed)." }]
+          }
+        ],
+        experience_start_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 16, 0).toISOString(),
+        experience_end_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 17, 0).toISOString(),
+        experience_venue_location: createDummyVenueLocation("Fan Zone"),
+        experience_image: createDummyImage("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      }
+    ];
+  };
 
   const loadExperiences = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -49,7 +246,15 @@ const ScheduleScreen = () => {
       const experiencesData = scheduleData?.schedule_experiences
         ?.map(item => item.schedule_experience)
         .filter(exp => exp && exp.id && exp.experience_start_date_time) || [];
-      setExperiences(experiencesData);
+      
+      // If no real experiences are loaded, show dummy data for testing
+      if (experiencesData.length === 0) {
+        console.log('📅 No real experiences found, loading dummy data for testing...');
+        setExperiences(getDummyExperiences());
+      } else {
+        console.log('📅 Real experiences loaded, using server data');
+        setExperiences(experiencesData);
+      }
       
       // Check notification count after loading
       const notificationCountAfter = await experiencesService.getScheduledNotificationCount();
@@ -57,7 +262,8 @@ const ScheduleScreen = () => {
       
       // Load notification states for all experiences
       const states: { [key: number]: boolean } = {};
-      for (const exp of experiencesData) {
+      const currentExperiences = experiencesData.length > 0 ? experiencesData : getDummyExperiences();
+      for (const exp of currentExperiences) {
         if (exp && exp.id) {
           states[exp.id] = await experiencesService.getNotificationStatus(exp.id);
         }
@@ -65,10 +271,12 @@ const ScheduleScreen = () => {
       setNotificationStates(states);
     } catch (error) {
       console.error('Error loading experiences:', error);
-      console.log("Gorlak the destroyer");
+      console.log('📅 Error loading from server, showing dummy data for testing...');
+      // Show dummy data when server is not available
+      setExperiences(getDummyExperiences());
       Alert.alert(
         'Connection Error',
-        'Unable to load experiences. Showing cached data if available.',
+        'Unable to load experiences from server. Showing demo experiences.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -329,11 +537,20 @@ const ScheduleScreen = () => {
           </View>
         ) : (
           <>
+            {/* Show demo banner if using dummy data */}
+            {experiences[0]?.id >= 9000 && (
+              <View style={[styles.demoBanner, { backgroundColor: colors.tint + '20', borderColor: colors.tint }]}>
+                <Text style={[styles.demoBannerText, { color: colors.tint }]}>
+                  📋 Demo Mode: Showing sample experiences while server is being configured
+                </Text>
+              </View>
+            )}
+
             {/* Happening Now Events */}
             {sortedCurrentDates.length > 0 && (
               <View style={styles.happeningNowSection}>
                 <Text style={[styles.happeningNowTitle, { color: colors.tint }]}>
-                  🏁 Happening Now
+                  🏈 Happening Now
                 </Text>
                 {sortedCurrentDates.map(dateKey => 
                   renderDateSection(dateKey, groupedCurrentExperiences[dateKey], false)
@@ -537,6 +754,18 @@ const styles = StyleSheet.create({
   },
   pastEventsContent: {
     paddingTop: 8,
+  },
+  demoBanner: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  demoBannerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 

@@ -144,16 +144,9 @@ export default function HomeScreen() {
   const { colorScheme, systemColorScheme, isLoaded, hasStoredPreference, clearColorSchemePreference } = useColorScheme();
   const colors = Colors[colorScheme];
 
-  // Debug color scheme on index page
-  console.log('🏠 Index page color scheme debug:', {
-    currentScheme: colorScheme,
-    systemScheme: systemColorScheme,
-    isLoaded,
-    hasStoredPreference,
-    primaryColor: colors.primary,
-    backgroundColor: colors.background,
-    timestamp: new Date().toISOString()
-  });
+  // Removed excessive debug logging that was firing on every render
+  // You can temporarily uncomment this line if you need to debug color scheme issues:
+  // console.log('🏠 Index page color scheme debug:', { currentScheme: colorScheme, systemScheme: systemColorScheme, isLoaded, hasStoredPreference });
 
   // Temporary debug function
   const debugColorScheme = async () => {

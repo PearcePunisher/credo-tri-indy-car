@@ -34,14 +34,7 @@ export default function VIPHomeScreen() {
   const colors = Colors[colorScheme];
   const iconColor = colors.text;
 
-  // Debug color scheme state
-  console.log('🎨 Navigation color scheme debug:', {
-    currentScheme: colorScheme,
-    primaryColor: colors.primary,
-    backgroundColor: colors.background,
-    textColor: colors.text
-  });
-
+  // Removed excessive debug logging
   console.log('✅ VIPHomeScreen hooks initialized successfully');
 
   return (
@@ -79,10 +72,10 @@ export default function VIPHomeScreen() {
             <VIPTile icon="calendar" label="Weekend Schedule" onPress={() => router.push("/schedule")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="location" label="Venue Directions" onPress={() => router.push("/directions")} />
+            <VIPTile icon="location" label="Stadium Directions" onPress={() => router.push("/directions")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="map" label="Track Info" onPress={() => router.push("/track")} />
+            <VIPTile icon="map" label="Stadium Info" onPress={() => router.push("/track")} />
           </View>
           <View style={styles.tile}>
             <VIPTile icon="people" label="The Team" onPress={() => router.push("/team")} />

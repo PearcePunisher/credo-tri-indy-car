@@ -6,7 +6,7 @@ const COLOR_SCHEME_KEY = 'user-color-scheme';
 
 export function useColorScheme() {
   const systemColorScheme = useRNColorScheme();
-  console.log('🎨 Hook called - systemColorScheme from RN:', systemColorScheme);
+  // Removed excessive logging that was firing on every render
   
   const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light'); 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -18,14 +18,7 @@ export function useColorScheme() {
 
   // Separate effect to handle system color scheme changes
   useEffect(() => {
-    console.log('🎨 System color scheme effect triggered:', { 
-      systemColorScheme, 
-      isLoaded, 
-      hasStoredPreference,
-      currentColorScheme: colorScheme 
-    });
-    
-    // If system color scheme becomes available and we don't have a stored preference
+    // Removed excessive logging - only log when actually updating
     if (systemColorScheme && isLoaded && hasStoredPreference === false) {
       console.log('🌟 System preference available, updating from', colorScheme, 'to', systemColorScheme);
       setColorScheme(systemColorScheme);

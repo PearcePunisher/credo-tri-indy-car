@@ -10,7 +10,7 @@ export const Colors = {
   light: {
     text: "#002244",              // Broncos Navy for primary text
     textOnOrange: "#ffffff",      // White for primary text on orange background
-    background: "#fff",           // White background
+    background: "#eeeeee",        // Light grey background
     tint: "#FB4F14",              // Broncos Orange for accents (buttons, links)
     icon: "#002244",              // Broncos Navy for icons
     tabIconDefault: "#666666",    // Grey for inactive tab icons
@@ -23,11 +23,11 @@ export const Colors = {
     secondary: "#002244",         // Broncos Navy secondary
   },
   dark: {
-    text: "#fff",                 // White for primary text
+    text: "#fff",                   // White for primary text
     textOnOrange: "#002244",      // Broncos Navy for primary text on orange background
     background: "#002244",        // Broncos Navy background
     tint: "#FB4F14",              // Broncos Orange for accents
-    icon: "#fff",                 // White for icons
+    icon: "#fff",                   // White for icons
     tabIconDefault: "#666666",    // Grey for inactive tab icons
     tabIconSelected: "#FB4F14",   // Broncos Orange for active tab icons
     secondaryText: "#cccccc",     // Light grey for secondary text
