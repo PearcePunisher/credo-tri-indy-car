@@ -184,7 +184,7 @@ const NotificationHistoryComponent: React.FC<NotificationHistoryComponentProps> 
         style={[styles.testButton, { backgroundColor: colors.tint }]}
         onPress={sendTestNotification}
       >
-        <Text style={[styles.testButtonText, { color: colors.textOnOrange }]}>
+        <Text style={[styles.testButtonText, { color: colors.textOnRed }]}>
           Send Test Notification
         </Text>
       </TouchableOpacity>
@@ -201,7 +201,7 @@ const NotificationHistoryComponent: React.FC<NotificationHistoryComponentProps> 
           </Text>
           {unreadCount > 0 && (
             <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
-              <Text style={[styles.unreadCount, { color: colors.textOnOrange }]}>
+              <Text style={[styles.unreadCount, { color: colors.textOnRed }]}>
                 {unreadCount}
               </Text>
             </View>

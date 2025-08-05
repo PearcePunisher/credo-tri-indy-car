@@ -181,6 +181,14 @@ export default function RootLayout() {
                       headerBackTitle: "Back",
                     }}
                   />
+                  <Stack.Screen
+                    name="userQR"
+                    options={{
+                      title: "My QR Code",
+                      headerShown: true,
+                      headerBackTitle: "Back",
+                    }}
+                  />
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 <StatusBar style="auto" />

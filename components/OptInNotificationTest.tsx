@@ -104,7 +104,7 @@ const OptInNotificationTest: React.FC = () => {
         style={[styles.button, { backgroundColor: colors.tint }]} 
         onPress={testOptInBehavior}
       >
-        <Text style={[styles.buttonText, { color: colors.textOnOrange }]}>
+        <Text style={[styles.buttonText, { color: colors.textOnRed }]}>
           Test Opt-In Default Behavior
         </Text>
       </TouchableOpacity>
@@ -113,7 +113,7 @@ const OptInNotificationTest: React.FC = () => {
         style={[styles.button, { backgroundColor: colors.tint }]} 
         onPress={simulateUserOptIn}
       >
-        <Text style={[styles.buttonText, { color: colors.textOnOrange }]}>
+        <Text style={[styles.buttonText, { color: colors.textOnRed }]}>
           Simulate User Opt-In
         </Text>
       </TouchableOpacity>

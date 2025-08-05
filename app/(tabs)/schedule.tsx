@@ -137,17 +137,17 @@ const ScheduleScreen = () => {
         id: 9002,
         documentId: "dummy-exp-9002",
         experience_id: "meet-greet-001",
-        experience_title: "Meet & Greet with The Broncos",
+        experience_title: "Meet & Greet with the team",
         experience_description: [
           {
             type: "paragraph",
-            children: [{ type: "text", text: "Meet the Broncos, get autographs, and take photos with the team." }]
+            children: [{ type: "text", text: "Meet the team, get autographs, and take photos with the team." }]
           }
         ],
         experience_start_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14, 0).toISOString(),
         experience_end_date_time: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 15, 0).toISOString(),
         experience_venue_location: createDummyVenueLocation("VIP Hospitality Suite"),
-        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        experience_image: createDummyImage("https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_3_Large_76370703d1.jpeg"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),
@@ -156,17 +156,17 @@ const ScheduleScreen = () => {
         id: 9003,
         documentId: "dummy-exp-9003",
         experience_id: "pre-race-briefing-001",
-        experience_title: "Pre-Game Briefing",
+        experience_title: "Pre-Race Briefing",
         experience_description: [
           {
             type: "paragraph",
-            children: [{ type: "text", text: "Join the team for an exclusive pre-game strategy briefing and Q&A session." }]
+            children: [{ type: "text", text: "Join the team for an exclusive pre-race strategy briefing and Q&A session." }]
           }
         ],
         experience_start_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 9, 0).toISOString(),
         experience_end_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 10, 0).toISOString(),
         experience_venue_location: createDummyVenueLocation("Team Meeting Room"),
-        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        experience_image: createDummyImage("https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_3_Large_76370703d1.jpeg"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),
@@ -175,7 +175,7 @@ const ScheduleScreen = () => {
         id: 9004,
         documentId: "dummy-exp-9004",
         experience_id: "victory-lane-001",
-        experience_title: "Touchdown Experience",
+        experience_title: "Finish Line Experience",
         experience_description: [
           {
             type: "paragraph",
@@ -185,7 +185,7 @@ const ScheduleScreen = () => {
         experience_start_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 17, 30).toISOString(),
         experience_end_date_time: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 18, 30).toISOString(),
         experience_venue_location: createDummyVenueLocation("Victory Lane"),
-        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        experience_image: createDummyImage("https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_3_Large_76370703d1.jpeg"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),
@@ -204,7 +204,7 @@ const ScheduleScreen = () => {
         experience_start_date_time: new Date(dayAfter.getFullYear(), dayAfter.getMonth(), dayAfter.getDate(), 19, 0).toISOString(),
         experience_end_date_time: new Date(dayAfter.getFullYear(), dayAfter.getMonth(), dayAfter.getDate(), 21, 0).toISOString(),
         experience_venue_location: createDummyVenueLocation("VIP Dining Suite"),
-        experience_image: createDummyImage("https://www.empowerfieldatmilehigh.com/assets/img/22-14158GC-1-c01fa17cf2.JPG"),
+        experience_image: createDummyImage("https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_3_Large_76370703d1.jpeg"),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),

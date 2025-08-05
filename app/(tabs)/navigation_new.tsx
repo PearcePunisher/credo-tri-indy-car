@@ -72,10 +72,10 @@ export default function VIPHomeScreen() {
             <VIPTile icon="calendar" label="Weekend Schedule" onPress={() => router.push("/schedule")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="location" label="Stadium Directions" onPress={() => router.push("/directions")} />
+            <VIPTile icon="location" label="Track Directions" onPress={() => router.push("/directions")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="map" label="Stadium Info" onPress={() => router.push("/track")} />
+            <VIPTile icon="map" label="Track Info" onPress={() => router.push("/track")} />
           </View>
           <View style={styles.tile}>
             <VIPTile icon="people" label="The Team" onPress={() => router.push("/team")} />

@@ -4,7 +4,7 @@
   "stages": [
     {
       "id": "sr:stage:1215503",
-      "description": "Back to School with the Broncos",
+      "description": "Meet with the Drivers",
       "scheduled": "2025-07-25T00:00:00+00:00",
       "scheduled_end": "2025-07-27T21:30:00+00:00",
       "type": "event",
@@ -12,7 +12,7 @@
       "venue": {
         "id": "sr:venue:1055",
         "name": "WeatherTech Raceway Laguna Seca",
-        "city": "Parker, CO",
+        "city": "Monterey, CA",
         "country": "USA",
         "coordinates": "36.584003,-121.752473",
         "country_code": "USA",

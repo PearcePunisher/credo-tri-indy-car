@@ -235,7 +235,7 @@ export default function HomeScreen() {
               <View style={styles.card}>
                 <Image
                   source={{
-                    uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/mkskjonrsq0nosi2zmzp_1f7c56ae88.webp",
+                    uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_3_Large_76370703d1.jpeg",
                   }}
                   style={styles.cardImage}
                 />
@@ -246,7 +246,7 @@ export default function HomeScreen() {
                     { backgroundColor: colors.tint },
                   ]}>
                   <Text
-                    style={[styles.upNextText, { color: colors.textOnOrange }]}>
+                    style={[styles.upNextText, { color: colors.textOnRed }]}>
                     Up Next
                   </Text>
                 </View>
@@ -361,7 +361,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/team")}>
               <Image
                 source={{
-                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Broncos_Team_c6cfef79e6.webp",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_3_Large_76370703d1.jpeg",
                 }}
                 style={styles.gridImage}
               />
@@ -377,7 +377,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/(tabs)/schedule")}>
               <Image
                 source={{
-                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Weekend_Schedule_989e980cb8.webp",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_racing_grand_prix_st_pete_1170_Large_687ecfdc35.jpeg",
                 }}
                 style={styles.gridImage}
               />
@@ -393,7 +393,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/faq")}>
               <Image
                 source={{
-                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/What_to_Expect_8b5574e78d.webp",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_grand_prix_of_st_pete_2_Large_38beae35ac.jpeg",
                 }}
                 style={styles.gridImage}
               />
@@ -409,7 +409,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/directions")}>
               <Image
                 source={{
-                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Empower_Field_Large_d8b3ec00e6.webp",
+                  uri: "https://harmonious-wealth-6294946a0c.media.strapiapp.com/firestone_125th_anniversary_d8f0c8e14b.jpg",
                 }}
                 style={styles.gridImage}
               />
@@ -445,7 +445,7 @@ export default function HomeScreen() {
                     { backgroundColor: colors.tint },
                   ]}>
                   <Text
-                    style={[styles.upNextText, { color: colors.textOnOrange }]}>
+                    style={[styles.upNextText, { color: colors.textOnRed }]}>
                     Sponsored Event
                   </Text>
                 </View>
@@ -467,7 +467,7 @@ export default function HomeScreen() {
           {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint }]}>
             <Text
-              style={[styles.shareButtonText, { color: colors.textOnOrange }]}>
+              style={[styles.shareButtonText, { color: colors.textOnRed }]}>
               Share Your Thoughts
             </Text>
           </TouchableOpacity> */}
@@ -476,7 +476,7 @@ export default function HomeScreen() {
           {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint, marginVertical: 10 }]}
             onPress={debugColorScheme}>
-            <Text style={[styles.shareButtonText, { color: colors.textOnOrange }]}>
+            <Text style={[styles.shareButtonText, { color: colors.textOnRed }]}>
               🔍 Debug: Clear Theme Preference
             </Text>
           </TouchableOpacity> */}

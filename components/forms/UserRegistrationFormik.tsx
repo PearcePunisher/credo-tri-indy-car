@@ -967,7 +967,7 @@ export function RegisterScreenFormik() {
                             labelStyle={{
                               color:
                                 values.numberOfGuests === 1
-                                  ? colors.textOnOrange
+                                  ? colors.textOnRed
                                   : colors.text,
                             }}>
                             1 Guest
@@ -989,7 +989,7 @@ export function RegisterScreenFormik() {
                             labelStyle={{
                               color:
                                 values.numberOfGuests === 2
-                                  ? colors.textOnOrange
+                                  ? colors.textOnRed
                                   : colors.text,
                             }}>
                             2 Guests
@@ -1506,7 +1506,7 @@ export function RegisterScreenFormik() {
                   onPress={() => handleSubmit()} // Fix: wrap in arrow function
                   style={styles.button}
                   contentStyle={{ backgroundColor: colors.tint }}
-                  labelStyle={{ color: colors.textOnOrange }} // Use a valid color from your Colors object
+                  labelStyle={{ color: colors.textOnRed }} // Use a valid color from your Colors object
                   disabled={isSubmitting}
                   loading={isSubmitting}
                 >

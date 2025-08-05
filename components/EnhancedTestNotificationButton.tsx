@@ -41,7 +41,7 @@ export const EnhancedTestNotificationButton: React.FC = () => {
       onPress={handleSendTest}
       activeOpacity={0.8}
     >
-      <Text style={[styles.buttonText, { color: colors.textOnOrange }]}>
+      <Text style={[styles.buttonText, { color: colors.textOnRed }]}>
         Send Test Notification
       </Text>
     </TouchableOpacity>

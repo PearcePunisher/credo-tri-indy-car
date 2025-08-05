@@ -10,9 +10,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://harmonious-wealth-6294946a0c.media.strapiapp.com/denver_broncos_logo_transparent_d12ff67de8.png";
+  "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Firestone_svg_19dcf67944.png";
 const LOGO_LIGHT =
-  "https://harmonious-wealth-6294946a0c.media.strapiapp.com/denver_broncos_logo_transparent_d12ff67de8.png";
+  "https://harmonious-wealth-6294946a0c.media.strapiapp.com/Firestone_svg_19dcf67944.png";
 
 export default function BrandLogo({
   width = 250,
