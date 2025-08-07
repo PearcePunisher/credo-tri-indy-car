@@ -15,8 +15,8 @@ const LOGO_LIGHT =
   "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Light_Logo_640461bc89.png";
 
 export default function BrandLogo({
-  width = 250,
-  height = 120,
+  width = 504,
+  height = 80,
   style,
 }: BrandLogoProps) {
   

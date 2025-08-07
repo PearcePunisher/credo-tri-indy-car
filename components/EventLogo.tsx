@@ -15,8 +15,8 @@ const LOGO_LIGHT =
   "https://timely-actor-10dfb03957.media.strapiapp.com/image_2_aeedf0958f.png";
 
 export default function BrandLogo({
-  width = 250,
-  height = 120,
+  width = 180,
+  height = 180,
   style,
 }: BrandLogoProps) {
   
@@ -42,5 +42,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     alignSelf: "center",
+    aspectRatio: 2,
   },
 });

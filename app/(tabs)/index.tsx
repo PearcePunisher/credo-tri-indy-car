@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   brand: {
     width: CARD_WIDTH,
-    minHeight: 80,
+    minHeight: 40,
     alignSelf: "center",
     objectFit: "contain",
   },
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 5,
     backgroundColor: "transparent",
   },
   sectionTitle: {
