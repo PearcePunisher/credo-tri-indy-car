@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
-import { VideoPlayer } from '@/components/VideoPlayer';
+import { VideoPlayer, VideoPlayerRef } from '@/components/VideoPlayer';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +25,7 @@ const WelcomeScreen = () => {
   const colors = Colors[colorScheme];
   const { completeOnboarding } = useAuth();
   const router = useRouter();
+  const videoRef = useRef<VideoPlayerRef>(null);
 
   const bulletItems = [
     'Event Schedule',
@@ -35,6 +36,11 @@ const WelcomeScreen = () => {
   ];
 
   const handleContinue = async () => {
+    // Stop the video before navigating
+    if (videoRef.current) {
+      videoRef.current.stop();
+    }
+    
     await completeOnboarding();
     router.push('/(tabs)');
   };
@@ -50,6 +56,7 @@ const WelcomeScreen = () => {
 
         {/* Welcome Video */}
         <VideoPlayer 
+          ref={videoRef}
           videoUri="https://timely-actor-10dfb03957.media.strapiapp.com/videoplayback_d9388e2096.mp4"
           aspectRatio={9/16}
           autoPlay={true}

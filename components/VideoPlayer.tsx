@@ -1,7 +1,7 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { StyleSheet, View, Dimensions, Platform, TouchableOpacity, Text } from 'react-native';
 import { useEvent } from 'expo';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 
@@ -16,7 +16,13 @@ interface VideoPlayerProps {
   showPlayButton?: boolean; // Show play/pause overlay button
 }
 
-export function VideoPlayer({ 
+export interface VideoPlayerRef {
+  play: () => void;
+  pause: () => void;
+  stop: () => void;
+}
+
+export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(({ 
   videoUri, 
   aspectRatio = 16/9, 
   autoPlay = true, 
@@ -25,7 +31,7 @@ export function VideoPlayer({
   fullWidth = false, // Changed default to false to respect parent margins
   showPlayButton = true, // Show play/pause overlay by default
   style
-}: VideoPlayerProps) {
+}, ref) => {
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const [showControls, setShowControls] = useState(true);
@@ -85,6 +91,17 @@ export function VideoPlayer({
     togglePlayPause();
   };
 
+  // Expose player controls via ref
+  useImperativeHandle(ref, () => ({
+    play: () => player.play(),
+    pause: () => player.pause(),
+    stop: () => {
+      player.pause();
+      // Optionally seek to beginning
+      // player.currentTime = 0;
+    }
+  }), [player]);
+
   return (
     <View style={[styles.container, style]}>
       <TouchableOpacity 
@@ -113,7 +130,7 @@ export function VideoPlayer({
       </TouchableOpacity>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

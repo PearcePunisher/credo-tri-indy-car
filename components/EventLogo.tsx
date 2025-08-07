@@ -10,9 +10,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/Java_House_G_Pof_Monterey_3_55e11e91a5.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/image_2_aeedf0958f.png";
 const LOGO_LIGHT =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/Java_House_G_Pof_Monterey_3_55e11e91a5.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/image_2_aeedf0958f.png";
 
 export default function BrandLogo({
   width = 250,

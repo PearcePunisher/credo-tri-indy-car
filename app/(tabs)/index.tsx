@@ -30,7 +30,7 @@ import EnhancedNotificationBell from "@/components/EnhancedNotificationBell";
 console.log('✅ EnhancedNotificationBell component imported');
 import { NotificationTray } from "@/components/NotificationTray";
 console.log('✅ Enhanced Notification Bell Imported')
-import scheduleData from "@/race_data/scheduleData.json";
+import scheduleDataFull from "@/race_data/scheduleData_FULL.json";
 console.log('✅ Schedule data imported');
 import { Colors } from "@/constants/Colors";
 console.log('✅ Colors constants imported');
@@ -110,6 +110,30 @@ function getNextRace(events: Event[]): { race: Stage; event: Event } | null {
   return next;
 }
 
+// --- Get upcoming races helper ---
+function getUpcomingRaces(events: Event[], count: number = 3): { race: Stage; event: Event }[] {
+  const now = new Date();
+  const upcomingRaces: { race: Stage; event: Event; raceDate: Date }[] = [];
+  
+  for (const event of events) {
+    if (!event.stages) continue;
+    for (const stage of event.stages) {
+      if (stage.type === "race" && stage.scheduled) {
+        const raceDate = new Date(stage.scheduled);
+        if (raceDate.getTime() > now.getTime()) {
+          upcomingRaces.push({ race: stage, event, raceDate });
+        }
+      }
+    }
+  }
+  
+  // Sort by race date and take the requested count
+  return upcomingRaces
+    .sort((a, b) => a.raceDate.getTime() - b.raceDate.getTime())
+    .slice(0, count)
+    .map(({ race, event }) => ({ race, event }));
+}
+
 // --- Countdown calculation helper ---
 function getCountdownParts(targetDate: string): {
   days: number;
@@ -141,6 +165,11 @@ export default function HomeScreen() {
     race: Stage;
     event: Event;
   } | null>(null);
+
+  const [upcomingRaces, setUpcomingRaces] = useState<{
+    race: Stage;
+    event: Event;
+  }[]>([]);
 
   const [notificationTrayVisible, setNotificationTrayVisible] = useState(false);
   const [upcomingExperiences, setUpcomingExperiences] = useState<Experience[]>([]);
@@ -195,8 +224,13 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    const found = getNextRace((scheduleData as ScheduleData).stages);
+    const found = getNextRace((scheduleDataFull as ScheduleData).stages);
     setNextRace(found);
+    
+    // Get upcoming races for the slider
+    const upcoming = getUpcomingRaces((scheduleDataFull as ScheduleData).stages, 3);
+    setUpcomingRaces(upcoming);
+    
     if (found) {
       setCountdown(getCountdownParts(found.race.scheduled));
       const interval = setInterval(() => {
@@ -255,92 +289,113 @@ export default function HomeScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Upcoming Races
           </Text>
-          <View style={styles.carouselContainer}>
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              style={styles.carousel}>
-              <View style={styles.card}>
-                <Image
-                  source={{
-                    uri: "https://timely-actor-10dfb03957.media.strapiapp.com/JHR_Laguna_98de1e39c8.png",
-                  }}
-                  style={styles.cardImage}
-                />
-                <View
-                  style={[
-                    styles.upNextBadge,
-                    styles.sponsoredBadge,
-                    { backgroundColor: colors.tint },
-                  ]}>
-                  <Text
-                    style={[styles.upNextText, { color: colors.textOnGreen }]}>
-                    Up Next
-                  </Text>
+          <ScrollView
+            horizontal
+            pagingEnabled={false}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={CARD_WIDTH + 20}
+            snapToAlignment="start"
+            contentContainerStyle={styles.experiencesScrollContainer}
+            style={styles.experiencesScroll}>
+            {upcomingRaces.map((raceData, index) => {
+              const { race, event } = raceData;
+              
+              // Get race track images - placeholders for now
+              let raceImageUri = "";
+              if (event.description?.includes("Portland")) {
+                // Portland International Raceway placeholder
+                raceImageUri = "https://timely-actor-10dfb03957.media.strapiapp.com/3_A3_340_2088053_929996971_2_ae6493b85c.jpg";
+              } else if (event.description?.includes("Milwaukee")) {
+                // Milwaukee Mile placeholder
+                raceImageUri = "https://timely-actor-10dfb03957.media.strapiapp.com/Milwaukee_638652660e.jpg";
+              } else if (event.description?.includes("Nashville")) {
+                // Nashville Superspeedway placeholder
+                raceImageUri = "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville_8f3860df9d.jpg";
+              } else {
+                // Default race track placeholder
+                raceImageUri = "https://timely-actor-10dfb03957.media.strapiapp.com/245_1_E_2088053_534197834_2_12dee71b8c.jpg";
+              }
+              
+              // Format race date
+              const start = new Date(race.scheduled);
+              const end = race.scheduled_end ? new Date(race.scheduled_end) : null;
+              const options: Intl.DateTimeFormatOptions = {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              };
+              const startStr = start.toLocaleDateString(undefined, options);
+              const endStr = end ? end.toLocaleDateString(undefined, options) : "";
+              
+              // Format location
+              const cityRaw = event.venue?.city;
+              const countryCode = event.venue?.country_code;
+              let city = cityRaw || "";
+              let state = "";
+              let country = event.venue?.country;
+
+              if (countryCode === "USA" && cityRaw?.includes(", ")) {
+                const parts = cityRaw.split(", ");
+                if (parts.length === 2) {
+                  city = parts[0];
+                  state = parts[1];
+                  country = "USA";
+                }
+              }
+
+              let location = city;
+              if (state) location += `, ${state}`;
+              if (countryCode === "USA") {
+                location += `, USA`;
+              } else if (country) {
+                location += `, ${country}`;
+              }
+
+              const dateRange = `${startStr}${endStr && startStr !== endStr ? " - " + endStr : ""}`;
+              
+              return (
+                <View key={`race-${index}-${race.id}`} style={styles.experienceCard}>
+                  <View style={styles.carouselContainer}>
+                    <View style={styles.experienceCardImage}>
+                      <Image
+                        source={{ uri: raceImageUri }}
+                        style={styles.cardImage}
+                        defaultSource={{ uri: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=300&fit=crop' }}
+                      />
+                      {/* Up Next badge for first race */}
+                      {index === 0 && (
+                        <View
+                          style={[
+                            styles.upNextBadge,
+                            styles.sponsoredBadge,
+                            { backgroundColor: colors.tint },
+                          ]}>
+                          <Text
+                            style={[styles.upNextText, { color: colors.textOnGreen }]}>
+                            Up Next
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Race info */}
+                  <View style={styles.eventInfo}>
+                    <Text style={[styles.eventTitle, { color: colors.text }]}>
+                      {event.description}
+                    </Text>
+                    <Text style={[styles.eventDetails, { color: colors.tint }]}>
+                      {dateRange} • {location}
+                    </Text>
+                    <Text style={[styles.eventSubDetails, { color: colors.tint }]}>
+                      {event.venue?.name}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              {/* Add more race cards here */}
-            </ScrollView>
-            {/* Add pagination dots here */}
-          </View>
-          <View style={styles.raceInfo}>
-            <Text style={[styles.raceTitle, { color: colors.text }]}>
-              {nextRace
-                ? (nextRace.event.description || "Next Race").toUpperCase()
-                : "No Upcoming Race"}
-            </Text>
-            <Text style={[styles.raceDate, { color: colors.tint }]}>
-              {nextRace
-                ? (() => {
-                    const start = new Date(nextRace.race.scheduled);
-                    const end = nextRace.race.scheduled_end
-                      ? new Date(nextRace.race.scheduled_end)
-                      : null;
-                    const options: Intl.DateTimeFormatOptions = {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    };
-                    const startStr = start.toLocaleDateString(
-                      undefined,
-                      options
-                    );
-                    const endStr = end
-                      ? end.toLocaleDateString(undefined, options)
-                      : "";
-                    const cityRaw = nextRace.event.venue?.city;
-                    const countryCode = nextRace.event.venue?.country_code;
-                    let city = cityRaw || "";
-                    let state = "";
-                    let country = nextRace.event.venue?.country;
-
-                    // If USA, try to extract state from city (e.g., "Lexington, OH")
-                    if (countryCode === "USA" && cityRaw?.includes(", ")) {
-                      const parts = cityRaw.split(", ");
-                      if (parts.length === 2) {
-                        city = parts[0];
-                        state = parts[1];
-                        country = "USA";
-                      }
-                    }
-
-                    // Compose location string
-                    let location = city;
-                    if (state) location += `, ${state}`;
-                    if (countryCode === "USA") {
-                      location += `, USA`;
-                    } else if (country) {
-                      location += `, ${country}`;
-                    }
-
-                    return `${startStr}${
-                      endStr && startStr !== endStr ? " - " + endStr : ""
-                    } • ${location}`;
-                  })()
-                : ""}
-            </Text>
-          </View>
+              );
+            })}
+          </ScrollView>
 
           <Text style={[styles.countdownTitle, { color: colors.text }]}>
             COUNTDOWN TO RACE DAY:
@@ -438,7 +493,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/directions")}>
               <Image
                 source={{
-                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/2_EA_190_2088053_79694176_2_62735d8d5b.jpg",
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/D250712_IIS_17293_CJM_b9ea3036fd.jpg",
                 }}
                 style={styles.gridImage}
               />
@@ -522,8 +577,8 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Temporary test notification button */}
-          <EnhancedTestNotificationButton />
+          {/* Temporary test notification button - HIDDEN FOR NOW */}
+          {/* <EnhancedTestNotificationButton /> */}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>

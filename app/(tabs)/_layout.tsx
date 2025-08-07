@@ -53,32 +53,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="track"
-        options={{
-          title: "Track",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("@/assets/icons/trackIcon.png")}
-              style={{ width: 28, height: 28, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="team"
-        options={{
-          title: "Team",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("@/assets/icons/groupIcon.png")}
-              style={{ width: 28, height: 28, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      /> */}
       <Tabs.Screen
         name="account"
         options={{
