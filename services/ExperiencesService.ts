@@ -214,29 +214,25 @@ class ExperiencesService {
       .trim();
   }
 
-  // Convert UTC timestamp to event local time (treating UTC as event timezone)
-  // This prevents automatic timezone conversion by the user's device
-  convertToEventLocalTime(utcTimestamp: string): Date {
-    if (!utcTimestamp) return new Date();
+  // Convert timestamp to Date object without timezone conversion
+  // The API returns timestamps without timezone indicators, so we treat them as-is
+  convertToEventLocalTime(timestamp: string): Date {
+    if (!timestamp) return new Date();
     
-    // Remove the 'Z' suffix and treat as local time
-    // This prevents JavaScript from doing automatic timezone conversion
-    const withoutZ = utcTimestamp.replace('Z', '');
-    
-    // Create a date object treating the time as local (event timezone)
-    // This way it displays the same time regardless of user's location
-    return new Date(withoutZ);
+    // Create a date object directly from the timestamp
+    // No timezone conversion needed as the API provides local event time
+    return new Date(timestamp);
   }
 
-  // Format time for display (without timezone indicator)
-  formatEventTime(utcTimestamp: string, options: {
+  // Format time for display (without timezone correction)
+  formatEventTime(timestamp: string, options: {
     includeDate?: boolean;
     format12Hour?: boolean;
   } = {}): string {
-    if (!utcTimestamp) return '';
+    if (!timestamp) return '';
     
     const { includeDate = false, format12Hour = true } = options;
-    const eventTime = this.convertToEventLocalTime(utcTimestamp);
+    const eventTime = this.convertToEventLocalTime(timestamp);
     
     const timeOptions: Intl.DateTimeFormatOptions = {
       hour: 'numeric',
@@ -254,16 +250,16 @@ class ExperiencesService {
   }
 
   // Get event date and time separately
-  getEventDateTime(utcTimestamp: string): {
+  getEventDateTime(timestamp: string): {
     date: string;
     time: string;
     dayOfWeek: string;
   } {
-    if (!utcTimestamp) {
+    if (!timestamp) {
       return { date: '', time: '', dayOfWeek: '' };
     }
     
-    const eventTime = this.convertToEventLocalTime(utcTimestamp);
+    const eventTime = this.convertToEventLocalTime(timestamp);
     
     return {
       date: eventTime.toLocaleDateString('en-US', { 

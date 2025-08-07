@@ -199,8 +199,7 @@ export default function HomeScreen() {
       const futureExperiences = uniqueExperiences.filter(exp => {
         if (!exp || !exp.experience_start_date_time) return false;
         const eventStartDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
-        const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
-        return now < correctedEventStartTime;
+        return now < eventStartDate;
       });
 
       // Sort by start time (soonest first) and take the next 3
@@ -208,9 +207,7 @@ export default function HomeScreen() {
         .sort((a, b) => {
           const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time);
           const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time);
-          const correctedTimeA = new Date(timeA.getTime() - (7 * 60 * 60 * 1000));
-          const correctedTimeB = new Date(timeB.getTime() - (7 * 60 * 60 * 1000));
-          return correctedTimeA.getTime() - correctedTimeB.getTime();
+          return timeA.getTime() - timeB.getTime();
         })
         .slice(0, 3); // Take only the next 3 experiences
 

@@ -9,6 +9,7 @@ import {
   Image,
   Animated,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -76,7 +77,7 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Time TBD';
     try {
-      // Use timezone-corrected date for consistent display
+      // Use the event date directly without timezone correction
       const eventDate = experiencesService.convertToEventLocalTime(dateString);
       return format(eventDate, 'EEEE, MMMM d, yyyy');
     } catch (error) {
@@ -87,11 +88,9 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   const formatTime = (dateString?: string) => {
     if (!dateString) return 'Time TBD';
     try {
-      // Use timezone-corrected time for consistent display
+      // Use the event time directly without timezone correction
       const eventTime = experiencesService.convertToEventLocalTime(dateString);
-      // Temporarily subtract 6 hours to show correct local event time
-      const correctedEventTime = new Date(eventTime.getTime() - (7 * 60 * 60 * 1000));
-      return format(correctedEventTime, 'h:mm a');
+      return format(eventTime, 'h:mm a');
     } catch (error) {
       return 'Invalid time';
     }
@@ -213,9 +212,26 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
               {experience.experience_venue_location?.venue_location_name && (
                 <View style={styles.timeItem}>
                   <Ionicons name="location" size={20} color={colors.tint} />
-                  <Text style={[styles.timeLabel, { color: colors.text }]}>
-                    {experience.experience_venue_location.venue_location_name}
-                  </Text>
+                  <View style={styles.locationContainer}>
+                    <Text style={[styles.timeLabel, { color: colors.text }]}>
+                      {experience.experience_venue_location.venue_location_name}
+                    </Text>
+                    {experience.experience_venue_location.venue_location_address_link && (
+                      <TouchableOpacity
+                        style={styles.addressLinkButton}
+                        onPress={() => {
+                          if (experience.experience_venue_location?.venue_location_address_link) {
+                            Linking.openURL(experience.experience_venue_location.venue_location_address_link);
+                          }
+                        }}
+                      >
+                        <Text style={[styles.addressLinkText, { color: colors.tint }]}>
+                          View on Map
+                        </Text>
+                        <Ionicons name="open-outline" size={16} color={colors.tint} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
               )}
             </View>
@@ -348,6 +364,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'RoobertMedium',
     marginLeft: 12,
+    flex: 1,
+  },
+  locationContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  addressLinkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
+  addressLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
   sectionTitle: {
     fontSize: 18,

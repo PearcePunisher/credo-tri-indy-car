@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Alert,
   Image,
+  Dimensions,
   Platform,
 } from 'react-native';
 import { parseISO, format, isSameDay, isPast, startOfDay } from 'date-fns';
@@ -24,6 +25,9 @@ import NotificationDebugger from '@/components/NotificationDebugger';
 interface GroupedExperiences {
   [dateKey: string]: Experience[];
 }
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 const ScheduleScreen = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -103,11 +107,11 @@ const ScheduleScreen = () => {
     }
   };
 
-  // Group experiences by date using corrected timezone
+  // Group experiences by date
   const groupExperiencesByDate = (experiences: Experience[]): GroupedExperiences => {
     return experiences.reduce((acc, experience) => {
       if (!experience || !experience.experience_start_date_time) return acc;
-      // Use the timezone-corrected date for consistent grouping
+      // Use the event date directly for consistent grouping
       const eventDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
       const dateKey = format(eventDate, 'yyyy-MM-dd');
       if (!acc[dateKey]) {
@@ -118,47 +122,40 @@ const ScheduleScreen = () => {
     }, {} as GroupedExperiences);
   };
 
-  // Sort experiences within each day by time using corrected timezone
+  // Sort experiences within each day by time
   const sortExperiencesByTime = (experiences: Experience[]): Experience[] => {
     return experiences
       .filter(exp => exp && exp.experience_start_date_time)
       .sort((a, b) => {
         const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time);
         const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time);
-        // Apply 7-hour correction for proper sorting
-        const correctedTimeA = new Date(timeA.getTime() - (7 * 60 * 60 * 1000));
-        const correctedTimeB = new Date(timeB.getTime() - (7 * 60 * 60 * 1000));
-        return correctedTimeA.getTime() - correctedTimeB.getTime();
+        return timeA.getTime() - timeB.getTime();
       });
   };
 
   const now = new Date();
   const today = startOfDay(now);
 
-  // Separate experiences into past, current (happening now), and future using corrected timezone
+  // Separate experiences into past, current (happening now), and future
   const pastExperiences = experiences.filter(exp => {
     if (!exp || !exp.experience_start_date_time || !exp.experience_end_date_time) return false;
     const eventEndDate = experiencesService.convertToEventLocalTime(exp.experience_end_date_time);
-    const correctedEventEndTime = new Date(eventEndDate.getTime() - (7 * 60 * 60 * 1000));
-    return isPast(correctedEventEndTime);
+    return isPast(eventEndDate);
   });
 
   const currentExperiences = experiences.filter(exp => {
     if (!exp || !exp.experience_start_date_time || !exp.experience_end_date_time) return false;
     const eventStartDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
     const eventEndDate = experiencesService.convertToEventLocalTime(exp.experience_end_date_time);
-    const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
-    const correctedEventEndTime = new Date(eventEndDate.getTime() - (7 * 60 * 60 * 1000));
     // Event is current if: start time has passed AND end time has not passed
-    return now >= correctedEventStartTime && now <= correctedEventEndTime;
+    return now >= eventStartDate && now <= eventEndDate;
   });
   
   const futureExperiences = experiences.filter(exp => {
     if (!exp || !exp.experience_start_date_time) return false;
     const eventStartDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
-    const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
     // Event is future if start time has not passed yet
-    return now < correctedEventStartTime;
+    return now < eventStartDate;
   });
 
   const groupedPastExperiences = groupExperiencesByDate(pastExperiences);
@@ -212,22 +209,18 @@ const ScheduleScreen = () => {
   const renderExperienceItem = (experience: Experience, key: string) => {
     if (!experience || !experience.experience_start_date_time) return null;
     
-    // Use timezone-corrected event time for consistent display
+    // Use event time directly without timezone correction
     const eventStartDate = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
     const eventEndDate = experience.experience_end_date_time ? experiencesService.convertToEventLocalTime(experience.experience_end_date_time) : null;
     
-    // Temporarily subtract 7 hours to show correct local event time
-    const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
-    const correctedEventEndTime = eventEndDate ? new Date(eventEndDate.getTime() - (7 * 60 * 60 * 1000)) : null;
-    
-    const startTimeString = format(correctedEventStartTime, 'h:mm a');
-    const endTimeString = correctedEventEndTime ? format(correctedEventEndTime, 'h:mm a') : '';
+    const startTimeString = format(eventStartDate, 'h:mm a');
+    const endTimeString = eventEndDate ? format(eventEndDate, 'h:mm a') : '';
     const timeString = endTimeString ? `${startTimeString} - ${endTimeString}` : startTimeString;
     
     const isToday = isSameDay(eventStartDate, now);
-    const isPastEvent = correctedEventEndTime ? isPast(correctedEventEndTime) : isPast(correctedEventStartTime);
-    const isCurrentEvent = correctedEventEndTime ? 
-      (now >= correctedEventStartTime && now <= correctedEventEndTime) : 
+    const isPastEvent = eventEndDate ? isPast(eventEndDate) : isPast(eventStartDate);
+    const isCurrentEvent = eventEndDate ? 
+      (now >= eventStartDate && now <= eventEndDate) : 
       false;
     
     const venueLocationName = experience.experience_venue_location?.venue_location_name || 'Location TBD';
@@ -271,7 +264,7 @@ const ScheduleScreen = () => {
   };
 
   const renderDateSection = (dateKey: string, experiences: Experience[], isPast = false) => {
-    // Use timezone-corrected date for consistent display
+    // Use event date directly without timezone correction
     const date = experiencesService.convertToEventLocalTime(dateKey + 'T00:00:00');
     const isToday = isSameDay(date, now);
     const displayDate = isToday ? 'Today' : format(date, 'EEEE, MMMM d');
@@ -312,7 +305,7 @@ const ScheduleScreen = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />
         }
       >
-        <BrandLogo style={styles.logo} />
+        <BrandLogo style={styles.brand} />
         <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
         
         {/* Temporary debugging component */}
@@ -401,6 +394,12 @@ const styles = StyleSheet.create({
     padding: 16,
     // Additional scroll padding for content breathing room
     paddingBottom: Platform.OS === 'ios' ? 32 : 16
+  },
+  brand: {
+    width: CARD_WIDTH,
+    minHeight: 40,
+    alignSelf: "center",
+    objectFit: "contain",
   },
   logo: { 
     marginBottom: 16 

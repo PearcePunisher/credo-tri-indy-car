@@ -68,10 +68,10 @@ const WelcomeScreen = () => {
 
         {/* Intro Paragraphs */}
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          Welcome to the Juncos Team event application. We welcome you to the Java House Grand Prix of Monterey at the Weather Tech Laguna Seca Raceway.
+          Welcome to the Juncos Hollinger Racing event application. We welcome you to the Bitnile Grand Prix of Portland at Portland International Raceway.
         </Text>
         <Text style={[styles.paragraph, { color: colors.text }]}>
-          We look forward to hosting you and making your experience the absolute best it can be. Before heading to the track, we wanted to ensure all the vital information needed to help you make the most out of your experience.
+          We look forward to hosting you and making your experience the absolute best it can be. Before heading to the track this weekend, we wanted to ensure all the vital information needed to help you make the most out of your experience.
         </Text>
 
         {/* Subheading */}
