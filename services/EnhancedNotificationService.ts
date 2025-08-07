@@ -3,6 +3,30 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { Experience } from './ExperiencesService';
 
+// Simple event emitter for state synchronization
+class EventEmitter {
+  private listeners: { [key: string]: Function[] } = {};
+
+  on(event: string, listener: Function) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event].push(listener);
+  }
+
+  off(event: string, listener: Function) {
+    if (!this.listeners[event]) return;
+    this.listeners[event] = this.listeners[event].filter(l => l !== listener);
+  }
+
+  emit(event: string, ...args: any[]) {
+    if (!this.listeners[event]) return;
+    this.listeners[event].forEach(listener => listener(...args));
+  }
+}
+
+const notificationEvents = new EventEmitter();
+
 // Notification Categories
 export enum NotificationCategory {
   EXPERIENCE_REMINDER = 'experience_reminder',
@@ -539,7 +563,15 @@ class EnhancedNotificationService {
   async getNotificationHistory(): Promise<NotificationHistory[]> {
     try {
       const stored = await AsyncStorage.getItem(this.STORAGE_KEY_HISTORY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      
+      const history: NotificationHistory[] = JSON.parse(stored);
+      
+      // Convert receivedAt strings back to Date objects
+      return history.map(notification => ({
+        ...notification,
+        receivedAt: new Date(notification.receivedAt),
+      }));
     } catch (error) {
       console.error('❌ Error getting notification history:', error);
       return [];
@@ -557,8 +589,44 @@ class EnhancedNotificationService {
       
       await AsyncStorage.setItem(this.STORAGE_KEY_HISTORY, JSON.stringify(updated));
       console.log(`✅ Marked notification as read: ${notificationId}`);
+      
+      // Emit event to sync across components
+      notificationEvents.emit('notificationsUpdated');
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
+    }
+  }
+
+  async markAllNotificationsAsRead(): Promise<void> {
+    try {
+      const history = await this.getNotificationHistory();
+      const updated = history.map(notification => ({ 
+        ...notification, 
+        isRead: true 
+      }));
+      
+      await AsyncStorage.setItem(this.STORAGE_KEY_HISTORY, JSON.stringify(updated));
+      console.log(`✅ Marked all notifications as read`);
+      
+      // Emit event to sync across components
+      notificationEvents.emit('notificationsUpdated');
+    } catch (error) {
+      console.error('❌ Error marking all notifications as read:', error);
+    }
+  }
+
+  async removeNotification(notificationId: string): Promise<void> {
+    try {
+      const history = await this.getNotificationHistory();
+      const updated = history.filter(notification => notification.id !== notificationId);
+      
+      await AsyncStorage.setItem(this.STORAGE_KEY_HISTORY, JSON.stringify(updated));
+      console.log(`✅ Removed notification: ${notificationId}`);
+      
+      // Emit event to sync across components
+      notificationEvents.emit('notificationsUpdated');
+    } catch (error) {
+      console.error('❌ Error removing notification:', error);
     }
   }
 
@@ -566,6 +634,9 @@ class EnhancedNotificationService {
     try {
       await AsyncStorage.removeItem(this.STORAGE_KEY_HISTORY);
       console.log('✅ Cleared notification history');
+      
+      // Emit event to sync across components
+      notificationEvents.emit('notificationsUpdated');
     } catch (error) {
       console.error('❌ Error clearing notification history:', error);
     }
@@ -599,17 +670,6 @@ class EnhancedNotificationService {
         },
         badge: 1,
       }, null);
-
-      // Add to history
-      await this.addToHistory({
-        id: `test_${Date.now()}`,
-        title: 'Test Notification',
-        body: 'This is a test notification from the Enhanced Notification Service!',
-        category: NotificationCategory.GENERAL_ANNOUNCEMENT,
-        type: NotificationType.UPDATE,
-        receivedAt: new Date(),
-        isRead: false,
-      });
 
       console.log('✅ Test notification sent successfully');
     } catch (error) {
@@ -654,6 +714,9 @@ class EnhancedNotificationService {
       });
 
       console.log('✅ Handled received notification:', title);
+      
+      // Emit event to sync across components
+      notificationEvents.emit('notificationsUpdated');
     } catch (error) {
       console.error('❌ Error handling received notification:', error);
     }
@@ -683,3 +746,4 @@ class EnhancedNotificationService {
 }
 
 export const enhancedNotificationService = new EnhancedNotificationService();
+export { notificationEvents };

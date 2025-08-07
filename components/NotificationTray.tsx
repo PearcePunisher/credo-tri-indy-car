@@ -50,6 +50,8 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
     notificationHistory,
     unreadCount,
     markAsRead,
+    markAllAsRead,
+    removeNotification,
     clearHistory,
     loadNotificationHistory,
   } = useEnhancedNotifications({
@@ -90,18 +92,12 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
   };
 
   const handleMarkAllAsRead = async () => {
-    // Mark all notifications as read
-    const promises = notificationHistory
-      .filter(notification => !notification.isRead)
-      .map(notification => markAsRead(notification.id));
-    
-    await Promise.all(promises);
+    await markAllAsRead();
   };
 
   const handleClearNotification = async (id: string) => {
-    // For individual notification removal, we could extend the service
-    // For now, just mark as read
-    await markAsRead(id);
+    // Remove the notification completely
+    await removeNotification(id);
   };
 
   const handleClearAllNotifications = () => {
@@ -149,9 +145,22 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
         return colors.secondaryText;
     }
   };
-  const formatTimestamp = (timestamp: Date) => {
+  const formatTimestamp = (timestamp: Date | string | undefined) => {
+    if (!timestamp) return 'Unknown time';
+    
+    let date: Date;
+    if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      date = new Date(timestamp);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+    }
+    
     const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
+    const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -160,7 +169,7 @@ export const NotificationTray: React.FC<NotificationTrayProps> = ({ visible, onC
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    return timestamp.toLocaleDateString();
+    return date.toLocaleDateString();
   };
 
   const renderNotificationItem = ({ item }: { item: NotificationHistory }) => (

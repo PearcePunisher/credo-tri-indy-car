@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { enhancedNotificationService, NotificationHistory } from '@/services/EnhancedNotificationService';
+import { enhancedNotificationService, NotificationHistory, notificationEvents } from '@/services/EnhancedNotificationService';
 import { useRouter } from 'expo-router';
 
 // Configure notification behavior
@@ -95,6 +95,19 @@ export function useEnhancedNotifications({ userId, jwtToken, isVIP }: UseEnhance
     };
   }, [isInitialized]);
 
+  // Listen for notification updates to sync state across components
+  useEffect(() => {
+    const handleNotificationUpdate = () => {
+      loadNotificationHistory();
+    };
+
+    notificationEvents.on('notificationsUpdated', handleNotificationUpdate);
+
+    return () => {
+      notificationEvents.off('notificationsUpdated', handleNotificationUpdate);
+    };
+  }, []);
+
   // Load notification history from storage
   const loadNotificationHistory = async () => {
     try {
@@ -172,9 +185,29 @@ export function useEnhancedNotifications({ userId, jwtToken, isVIP }: UseEnhance
   const markAsRead = async (notificationId: string) => {
     try {
       await enhancedNotificationService.markNotificationAsRead(notificationId);
-      await loadNotificationHistory();
+      // Event listener will handle state update
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
+    }
+  };
+
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      await enhancedNotificationService.markAllNotificationsAsRead();
+      // Event listener will handle state update
+    } catch (error) {
+      console.error('❌ Error marking all notifications as read:', error);
+    }
+  };
+
+  // Remove individual notification
+  const removeNotification = async (notificationId: string) => {
+    try {
+      await enhancedNotificationService.removeNotification(notificationId);
+      // Event listener will handle state update
+    } catch (error) {
+      console.error('❌ Error removing notification:', error);
     }
   };
 
@@ -182,7 +215,7 @@ export function useEnhancedNotifications({ userId, jwtToken, isVIP }: UseEnhance
   const clearHistory = async () => {
     try {
       await enhancedNotificationService.clearNotificationHistory();
-      await loadNotificationHistory();
+      // Event listener will handle state update
     } catch (error) {
       console.error('❌ Error clearing notification history:', error);
     }
@@ -219,6 +252,8 @@ export function useEnhancedNotifications({ userId, jwtToken, isVIP }: UseEnhance
     scheduleExperienceNotifications,
     cancelExperienceNotifications,
     markAsRead,
+    markAllAsRead,
+    removeNotification,
     clearHistory,
     requestPermissions,
     sendTestNotification,

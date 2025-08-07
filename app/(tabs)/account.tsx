@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -8,11 +8,15 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import BrandLogo from "@/components/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { User } from "@/services/AuthService";
 import { Ionicons } from "@expo/vector-icons";
 import UserQRCode from "@/components/UserQRCode";
 import { useRouter } from "expo-router";
@@ -24,10 +28,151 @@ export const options = {
 const AccountScreen = () => {
   const { colorScheme, toggleColorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
-  const { authState, logout } = useAuth();
+  const { authState, logout, createLocalAuthState } = useAuth();
   const router = useRouter();
+  const [invitationCode, setInvitationCode] = useState("");
+  const [isUpdatingCode, setIsUpdatingCode] = useState(false);
 
-  const handleLogout = () => {
+  const handleInvitationCodeSubmit = async () => {
+    if (!invitationCode.trim()) return;
+    
+    setIsUpdatingCode(true);
+    console.log("🔄 Updating invitation code:", invitationCode);
+    
+    try {
+      // Create payload similar to registration using cached user data
+      const user = authState.user!;
+      const payload = {
+        email: user.email,
+        invitation_code: invitationCode.trim(),
+        id: user.serverId || user.id, // Send existing user ID
+      };
+
+      console.log("📤 Sending invitation code update payload:", payload);
+
+      const response = await fetch(
+        "https://nodejs-production-0e5a.up.railway.app/get_dummy_schedule",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`📊 Server response status: ${response.status}`);
+
+      if (response.status === 200) {
+        // Get the response data from the server
+        const responseData = await response.json();
+        console.log('✅ Server response data:', responseData);
+        
+        // Server returns data directly (not nested under "response")
+        if (responseData && (responseData.event_code_document_id || responseData.event_schedule_document_id)) {
+          // Update the current user with new event data from server
+          const updatedUserData = {
+            ...user,
+            invitationCode: invitationCode.trim(),
+            eventCodeDocumentId: responseData.event_code_document_id || user.eventCodeDocumentId,
+            eventScheduleDocumentId: responseData.event_schedule_document_id || user.eventScheduleDocumentId,
+            userIsStaff: responseData.user_is_staff !== undefined ? responseData.user_is_staff : user.userIsStaff,
+            updatedAt: new Date().toISOString(),
+          };
+
+          // Store the updated user data and refresh auth state
+          await updateUserInStorage(updatedUserData);
+          
+          // Clear the experiences cache so fresh data is fetched with the new document IDs
+          const { experiencesService } = await import('@/services/ExperiencesService');
+          await experiencesService.refreshData();
+          
+          console.log('✅ Event switching successful');
+          console.log('🔄 Updated event document IDs:', {
+            eventCodeDocumentId: responseData.event_code_document_id,
+            eventScheduleDocumentId: responseData.event_schedule_document_id,
+          });
+          console.log('🔄 Experience cache cleared, fresh schedule data will be fetched');
+          
+          // Log the changes for verification
+          console.log('🔄 Updated user data:', {
+            oldEventCodeDocumentId: user.eventCodeDocumentId,
+            newEventCodeDocumentId: updatedUserData.eventCodeDocumentId,
+            oldEventScheduleDocumentId: user.eventScheduleDocumentId,  
+            newEventScheduleDocumentId: updatedUserData.eventScheduleDocumentId,
+            oldInvitationCode: user.invitationCode,
+            newInvitationCode: updatedUserData.invitationCode,
+          });
+          
+          Alert.alert(
+            "Event Switch Successful",
+            `Your invitation code "${invitationCode.trim()}" has been accepted. You now have access to the new event schedule!`,
+            [{ text: "OK" }]
+          );
+        } else {
+          // Still update the invitation code locally even without server data
+          const updatedUserData = {
+            ...user,
+            invitationCode: invitationCode.trim(),
+            updatedAt: new Date().toISOString(),
+          };
+          
+          // Store the updated user data preserving all states
+          await updateUserInStorage(updatedUserData);
+          
+          console.log('✅ Invitation code updated locally');
+          console.log('🔄 Updated invitation code:', {
+            oldInvitationCode: user.invitationCode,
+            newInvitationCode: updatedUserData.invitationCode,
+          });
+          
+          Alert.alert(
+            "Code Accepted",
+            `Your invitation code "${invitationCode.trim()}" has been accepted!`,
+            [{ text: "OK" }]
+          );
+        }
+        
+        // Clear the input after successful submission
+        setInvitationCode("");
+      } else {
+        const errorData = await response.text();
+        console.error('❌ Server error response:', response.status, errorData);
+        Alert.alert(
+          "Invalid Invitation Code",
+          `The invitation code "${invitationCode.trim()}" is not valid or has expired. Please check the code and try again.`,
+          [{ text: "OK" }]
+        );
+      }
+    } catch (error) {
+      console.error("❌ Network error submitting invitation code:", error);
+      Alert.alert(
+        "Connection Error", 
+        "Unable to validate invitation code. Please check your internet connection and try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsUpdatingCode(false);
+    }
+  };
+
+  // Helper function to update user data in storage while preserving auth state
+  const updateUserInStorage = async (userData: User): Promise<void> => {
+    try {
+      await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
+      
+      // Get the auth service and refresh the auth state to pick up the changes
+      const AuthService = (await import('@/services/AuthService')).default;
+      const authService = AuthService.getInstance();
+      
+      // Force re-initialization to pick up the updated user data
+      const updatedAuthState = await authService.initializeAuth();
+      console.log('🔄 Auth state refreshed with updated user data');
+    } catch (error) {
+      console.error('Error updating user in storage:', error);
+      throw error;
+    }
+  };
+
+  const handleLogout = async () => {
     Alert.alert(
       "Logout",
       "Are you sure you want to logout? You will need to register again.",
@@ -86,6 +231,53 @@ const AccountScreen = () => {
           </View>
         </View>
 
+        {/* Change Event Card */}
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Change Event
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>
+            Enter a new invitation code to access a different event
+          </Text>
+          
+          <View style={styles.invitationCodeSection}>
+            <TextInput
+              style={[
+                styles.invitationCodeInput,
+                {
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                  borderColor: colors.border,
+                },
+              ]}
+              placeholder="Enter invitation code"
+              placeholderTextColor={colors.secondaryText}
+              value={invitationCode}
+              onChangeText={setInvitationCode}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              editable={!isUpdatingCode}
+            />
+            <TouchableOpacity
+              style={[
+                styles.submitCodeButton,
+                {
+                  backgroundColor: invitationCode.trim() && !isUpdatingCode ? colors.tint : colors.secondaryText,
+                },
+              ]}
+              onPress={handleInvitationCodeSubmit}
+              disabled={!invitationCode.trim() || isUpdatingCode}
+              activeOpacity={0.8}
+            >
+              {isUpdatingCode ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="arrow-forward" size={16} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Testing Information Card */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -139,6 +331,17 @@ const AccountScreen = () => {
               </Text>
               <Text style={[styles.infoValue, { color: colors.text }]}>
                 {authState.user.eventScheduleDocumentId}
+              </Text>
+            </View>
+          )}
+
+          {authState.user.invitationCode && (
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>
+                Current Invitation Code:
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text, fontFamily: 'monospace' }]}>
+                {authState.user.invitationCode}
               </Text>
             </View>
           )}
@@ -261,7 +464,7 @@ const AccountScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingBottom: Platform.OS === 'ios' ? 20 : 0 }, // Platform-specific tab bar spacing
-  scroll: { padding: 20, paddingBottom: Platform.OS === 'ios' ? 32 : 16 }, // Platform-specific scroll padding
+  scroll: { padding: 20, paddingBottom: Platform.OS === 'ios' ? 100 : 80 }, // Increased bottom padding for logout button
   centerContent: { flex: 1, justifyContent: "center", alignItems: "center" },
   brand: {
     width: 250,
@@ -303,6 +506,33 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  invitationCodeSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  invitationCodeInput: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  submitCodeButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 48,
   },
   infoRow: {
     flexDirection: "row",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, ScrollView, StyleSheet, Platform, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView } from "react-native";
 import {
   TextInput,
@@ -13,7 +13,6 @@ import * as Yup from "yup";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useAuth } from "@/hooks/useAuth";
 import BrandLogo from "../BrandLogo";
 import { pushTokenService } from "@/services/PushTokenService";
@@ -149,12 +148,18 @@ export function RegisterScreenFormik() {
   
   console.log('📱 RegisterScreenFormik state initialized...');
   
-  // Date picker states
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-  const [isGuest1DatePickerVisible, setGuest1DatePickerVisible] = useState(false);
-  const [isGuest2DatePickerVisible, setGuest2DatePickerVisible] = useState(false);
+  console.log('📅 RegisterScreenFormik date input handlers initialized...');
+  
+  // Separate date field states
+  const [dobFields, setDobFields] = useState({ month: '', day: '', year: '' });
+  const [guest1DobFields, setGuest1DobFields] = useState({ month: '', day: '', year: '' });
+  const [guest2DobFields, setGuest2DobFields] = useState({ month: '', day: '', year: '' });
 
-  console.log('📅 RegisterScreenFormik date picker states initialized...');
+  // Effect to sync separate date fields when form values change
+  useEffect(() => {
+    // This will be used when the form is populated with existing data
+    // For now, we start with empty fields
+  }, []);
   
   const { createLocalAuthState, updateNotificationSubscription } = useAuth();
   
@@ -178,6 +183,115 @@ export function RegisterScreenFormik() {
     const day = parseInt(parts[2]);
     if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
     return new Date(year, month, day);
+  }
+
+  // Helper function to combine separate date fields into YYYY-MM-DD format
+  function combineDateFields(month: string, day: string, year: string): string {
+    if (!month || !day || !year) return '';
+    const paddedMonth = month.padStart(2, '0');
+    const paddedDay = day.padStart(2, '0');
+    return `${year}-${paddedMonth}-${paddedDay}`;
+  }
+
+  // Helper function to split YYYY-MM-DD date into separate fields
+  function splitDateFields(dateString: string): { month: string; day: string; year: string } {
+    if (!dateString) return { month: '', day: '', year: '' };
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return { month: '', day: '', year: '' };
+    return {
+      year: parts[0] || '',
+      month: parseInt(parts[1]).toString() || '',
+      day: parseInt(parts[2]).toString() || ''
+    };
+  }
+
+  // Helper function to handle date input formatting across all platforms
+  function handleDateInputChange(text: string, fieldName: string, setFieldValue: any) {
+    // Remove any non-digit characters except hyphens
+    let cleanText = text.replace(/[^\d-]/g, '');
+    
+    // Auto-format as user types: YYYY-MM-DD
+    if (cleanText.length >= 4 && cleanText.charAt(4) !== '-') {
+      cleanText = cleanText.substring(0, 4) + '-' + cleanText.substring(4);
+    }
+    if (cleanText.length >= 7 && cleanText.charAt(7) !== '-') {
+      cleanText = cleanText.substring(0, 7) + '-' + cleanText.substring(7);
+    }
+    
+    // Limit to 10 characters (YYYY-MM-DD format)
+    if (cleanText.length <= 10) {
+      setFieldValue(fieldName, cleanText);
+    }
+  }
+
+  // Helper function to handle separate date field changes
+  function handleSeparateDateFieldChange(
+    text: string, 
+    field: 'month' | 'day' | 'year', 
+    currentValues: { month: string; day: string; year: string },
+    setFieldValue: any,
+    dobFieldName: string
+  ) {
+    // Only allow numbers
+    const cleanText = text.replace(/[^\d]/g, '');
+    
+    // Apply field-specific limits
+    let maxLength = 4; // year default
+    let isValid = true;
+    
+    if (field === 'month') {
+      maxLength = 2;
+      // Allow leading zeros and validate range 01-12
+      if (cleanText.length === 2) {
+        const numValue = parseInt(cleanText);
+        isValid = numValue >= 1 && numValue <= 12;
+      } else if (cleanText.length === 1) {
+        // Allow single digits 0-9 for first character
+        const numValue = parseInt(cleanText);
+        isValid = numValue >= 0 && numValue <= 9;
+      }
+    } else if (field === 'day') {
+      maxLength = 2;
+      // Allow leading zeros and validate range 01-31
+      if (cleanText.length === 2) {
+        const numValue = parseInt(cleanText);
+        isValid = numValue >= 1 && numValue <= 31;
+      } else if (cleanText.length === 1) {
+        // Allow single digits 0-9 for first character
+        const numValue = parseInt(cleanText);
+        isValid = numValue >= 0 && numValue <= 9;
+      }
+    } else if (field === 'year') {
+      // For year, we want a reasonable range (1900-current year + 10)
+      if (cleanText.length === 4) {
+        const numValue = parseInt(cleanText);
+        const currentYear = new Date().getFullYear();
+        isValid = numValue >= 1900 && numValue <= currentYear + 10;
+      }
+    }
+    
+    // Apply length limit and validation
+    if (cleanText.length <= maxLength && isValid) {
+      // Update the individual field in state
+      const updatedValues = { ...currentValues, [field]: cleanText };
+      
+      // If all fields have values with proper length, combine them into the main dob field
+      if (updatedValues.month.length >= 1 && updatedValues.day.length >= 1 && updatedValues.year.length === 4) {
+        const paddedMonth = updatedValues.month.padStart(2, '0');
+        const paddedDay = updatedValues.day.padStart(2, '0');
+        const combinedDate = `${updatedValues.year}-${paddedMonth}-${paddedDay}`;
+        setFieldValue(dobFieldName, combinedDate);
+      } else {
+        // Clear the main dob field if any part is incomplete
+        setFieldValue(dobFieldName, '');
+      }
+      
+      // Return the updated values for local state
+      return updatedValues;
+    }
+    
+    // Return unchanged values if validation failed
+    return currentValues;
   }
 
   // Helper function to format phone numbers based on country
@@ -539,85 +653,118 @@ export function RegisterScreenFormik() {
                   }}
                   error={!!(touched.email && errors.email)}
                 />
-                {Platform.OS === 'web' ? (
-                  <TextInput
-                    label="Date of Birth"
-                    value={values.dob}                  onChangeText={(text) => {
-                    // Allow progressive typing and validate complete dates
-                    const cleanText = text.replace(/[^\d-]/g, ''); // Only allow digits and hyphens
-                    if (cleanText.length <= 10) {
-                      setFieldValue("dob", cleanText);
-                    }
-                  }}
-                    onBlur={handleBlur("dob")}
-                    style={styles.input}
-                    mode="outlined"
-                    placeholder="YYYY-MM-DD (e.g., 1990-12-25)"
-                    maxLength={10}
-                    theme={{
-                      colors: {
-                        primary: colors.tint,
-                        background: colors.card,
-                        text: colors.text,
-                        placeholder: colors.secondaryText,
-                      },
-                      fonts: {
-                        regular: {
-                          fontFamily: "Roobert",
-                        },
-                      },
-                    }}
-                    error={!!(touched.dob && errors.dob)}
-                  />
-                ) : (
-                  <View style={styles.input}>
-                    <Text style={{ 
-                      color: colors.secondaryText, 
-                      fontSize: 12, 
-                      marginBottom: 4,
-                      fontFamily: "Roobert" 
-                    }}>
-                      Date of Birth
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => setDatePickerVisible(true)}
-                      style={{
-                        borderColor: touched.dob && errors.dob ? colors.error : colors.secondaryText,
-                        backgroundColor: colors.card,
-                        borderRadius: 4,
-                        borderWidth: 0.5,
-                        height: 48,
-                        paddingHorizontal: 12,
-                        justifyContent: "center",
-                      }}>
-                      <Text style={{
-                        color: values.dob ? colors.text : colors.secondaryText,
-                        fontSize: 16,
-                        fontFamily: "Roobert",
-                      }}>
-                        {values.dob || "Select Date of Birth"}
-                      </Text>
-                    </TouchableOpacity>
-                    <DateTimePickerModal
-                      isVisible={isDatePickerVisible}
-                      mode="date"
-                      onConfirm={(date) => {
-                        setFieldValue("dob", formatDateToString(date));
-                        setDatePickerVisible(false);
-                      }}
-                      onCancel={() => setDatePickerVisible(false)}
-                      minimumDate={new Date(1900, 0, 1)} // Allow dates from 1900
-                      maximumDate={new Date()}
-                      date={parseStringToDate(values.dob) || new Date(2000, 0, 1)}
-                      isDarkModeEnabled={colorScheme === "dark"}
-                      pickerContainerStyleIOS={{
-                        backgroundColor: colors.card,
-                      }}
-                      confirmTextIOS="Select"
-                      cancelTextIOS="Cancel"
-                    />
+                <View style={styles.input}>
+                  <Text style={{ 
+                    color: colors.secondaryText, 
+                    fontSize: 12, 
+                    marginBottom: 8,
+                    fontFamily: "Roobert" 
+                  }}>
+                    Date of Birth
+                  </Text>
+                  <View style={{ 
+                    flexDirection: 'row', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <TextInput
+                        label="Month"
+                        value={dobFields.month}
+                        onChangeText={(text) => {
+                          const updatedFields = handleSeparateDateFieldChange(
+                            text, 'month', dobFields, setFieldValue, 'dob'
+                          );
+                          setDobFields(updatedFields);
+                        }}
+                        onBlur={handleBlur("dob")}
+                        style={{ height: 48 }}
+                        mode="outlined"
+                        placeholder="MM"
+                        maxLength={2}
+                        keyboardType="number-pad"
+                        theme={{
+                          colors: {
+                            primary: colors.tint,
+                            background: colors.card,
+                            text: colors.text,
+                            placeholder: colors.secondaryText,
+                          },
+                          fonts: {
+                            regular: {
+                              fontFamily: "Roobert",
+                            },
+                          },
+                        }}
+                        error={!!(touched.dob && errors.dob)}
+                      />
+                    </View>
+                    <View style={{ flex: 1, marginHorizontal: 4 }}>
+                      <TextInput
+                        label="Day"
+                        value={dobFields.day}
+                        onChangeText={(text) => {
+                          const updatedFields = handleSeparateDateFieldChange(
+                            text, 'day', dobFields, setFieldValue, 'dob'
+                          );
+                          setDobFields(updatedFields);
+                        }}
+                        onBlur={handleBlur("dob")}
+                        style={{ height: 48 }}
+                        mode="outlined"
+                        placeholder="DD"
+                        maxLength={2}
+                        keyboardType="number-pad"
+                        theme={{
+                          colors: {
+                            primary: colors.tint,
+                            background: colors.card,
+                            text: colors.text,
+                            placeholder: colors.secondaryText,
+                          },
+                          fonts: {
+                            regular: {
+                              fontFamily: "Roobert",
+                            },
+                          },
+                        }}
+                        error={!!(touched.dob && errors.dob)}
+                      />
+                    </View>
+                    <View style={{ flex: 1.5, marginLeft: 8 }}>
+                      <TextInput
+                        label="Year"
+                        value={dobFields.year}
+                        onChangeText={(text) => {
+                          const updatedFields = handleSeparateDateFieldChange(
+                            text, 'year', dobFields, setFieldValue, 'dob'
+                          );
+                          setDobFields(updatedFields);
+                        }}
+                        onBlur={handleBlur("dob")}
+                        style={{ height: 48 }}
+                        mode="outlined"
+                        placeholder="YYYY"
+                        maxLength={4}
+                        keyboardType="number-pad"
+                        theme={{
+                          colors: {
+                            primary: colors.tint,
+                            background: colors.card,
+                            text: colors.text,
+                            placeholder: colors.secondaryText,
+                          },
+                          fonts: {
+                            regular: {
+                              fontFamily: "Roobert",
+                            },
+                          },
+                        }}
+                        error={!!(touched.dob && errors.dob)}
+                      />
+                    </View>
                   </View>
-                )}
+                </View>
                 <View
                   style={{
                     flexDirection: "row",
@@ -827,9 +974,9 @@ export function RegisterScreenFormik() {
                           setFieldValue("guest2Dob", "");
                           setFieldValue("guest2Phone", "");
                           setFieldValue("guest2CountryCode", "+1");
-                          // Close any open date pickers
-                          setGuest1DatePickerVisible(false);
-                          setGuest2DatePickerVisible(false);
+                          // Clear separate date field states
+                          setGuest1DobFields({ month: '', day: '', year: '' });
+                          setGuest2DobFields({ month: '', day: '', year: '' });
                         }
                       }}
                       thumbColor={
@@ -868,8 +1015,8 @@ export function RegisterScreenFormik() {
                               setFieldValue("guest2Dob", "");
                               setFieldValue("guest2Phone", "");
                               setFieldValue("guest2CountryCode", "+1");
-                              // Close guest 2 date picker
-                              setGuest2DatePickerVisible(false);
+                              // Clear guest 2 separate date field state
+                              setGuest2DobFields({ month: '', day: '', year: '' });
                             }}
                             style={{ flex: 1, borderColor: colors.border }}
                             contentStyle={{
@@ -977,86 +1124,118 @@ export function RegisterScreenFormik() {
                               )
                             }
                           />
-                          {Platform.OS === 'web' ? (
-                            <TextInput
-                              label="Guest 1 Date of Birth"
-                              value={values.guest1Dob}
-                              onChangeText={(text) => {
-                                // Allow progressive typing and validate complete dates
-                                const cleanText = text.replace(/[^\d-]/g, ''); // Only allow digits and hyphens
-                                if (cleanText.length <= 10) {
-                                  setFieldValue("guest1Dob", cleanText);
-                                }
-                              }}
-                              onBlur={handleBlur("guest1Dob")}
-                              style={styles.input}
-                              mode="outlined"
-                              placeholder="YYYY-MM-DD"
-                              maxLength={10}
-                              theme={{
-                                colors: {
-                                  primary: colors.tint,
-                                  background: colors.card,
-                                  text: colors.text,
-                                  placeholder: colors.secondaryText,
-                                },
-                                fonts: {
-                                  regular: {
-                                    fontFamily: "Roobert",
-                                  },
-                                },
-                              }}
-                              error={!!(touched.guest1Dob && errors.guest1Dob)}
-                            />
-                          ) : (
-                            <View style={styles.input}>
-                              <Text style={{ 
-                                color: colors.secondaryText, 
-                                fontSize: 12, 
-                                marginBottom: 4,
-                                fontFamily: "Roobert" 
-                              }}>
-                                Guest 1 Date of Birth
-                              </Text>
-                              <TouchableOpacity
-                                onPress={() => setGuest1DatePickerVisible(true)}
-                                style={{
-                                  borderColor: touched.guest1Dob && errors.guest1Dob ? colors.error : colors.secondaryText,
-                                  backgroundColor: colors.card,
-                                  borderRadius: 4,
-                                  borderWidth: 0.5,
-                                  height: 48,
-                                  paddingHorizontal: 12,
-                                  justifyContent: "center",
-                                }}>
-                                <Text style={{
-                                  color: values.guest1Dob ? colors.text : colors.secondaryText,
-                                  fontSize: 16,
-                                  fontFamily: "Roobert",
-                                }}>
-                                  {values.guest1Dob || "Select Guest 1 Date of Birth"}
-                                </Text>
-                              </TouchableOpacity>
-                              <DateTimePickerModal
-                                isVisible={isGuest1DatePickerVisible}
-                                mode="date"
-                                onConfirm={(date) => {
-                                  setFieldValue("guest1Dob", formatDateToString(date));
-                                  setGuest1DatePickerVisible(false);
-                                }}
-                                onCancel={() => setGuest1DatePickerVisible(false)}
-                                minimumDate={new Date(1900, 0, 1)} // Allow dates from 1900
-                                maximumDate={new Date()}
-                                date={parseStringToDate(values.guest1Dob) || new Date(2000, 0, 1)}
-                                isDarkModeEnabled={colorScheme === "dark"}
-                                pickerContainerStyleIOS={{
-                                  backgroundColor: colors.card,
-                                }}
-                                confirmTextIOS="Select"
-                                cancelTextIOS="Cancel"
-                              />
+                          <View style={styles.input}>
+                            <Text style={{ 
+                              color: colors.secondaryText, 
+                              fontSize: 12, 
+                              marginBottom: 8,
+                              fontFamily: "Roobert" 
+                            }}>
+                              Guest 1 Date of Birth
+                            </Text>
+                            <View style={{ 
+                              flexDirection: 'row', 
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}>
+                              <View style={{ flex: 1, marginRight: 8 }}>
+                                <TextInput
+                                  label="Month"
+                                  value={guest1DobFields.month}
+                                  onChangeText={(text) => {
+                                    const updatedFields = handleSeparateDateFieldChange(
+                                      text, 'month', guest1DobFields, setFieldValue, 'guest1Dob'
+                                    );
+                                    setGuest1DobFields(updatedFields);
+                                  }}
+                                  onBlur={handleBlur("guest1Dob")}
+                                  style={{ height: 48 }}
+                                  mode="outlined"
+                                  placeholder="MM"
+                                  maxLength={2}
+                                  keyboardType="number-pad"
+                                  theme={{
+                                    colors: {
+                                      primary: colors.tint,
+                                      background: colors.card,
+                                      text: colors.text,
+                                      placeholder: colors.secondaryText,
+                                    },
+                                    fonts: {
+                                      regular: {
+                                        fontFamily: "Roobert",
+                                      },
+                                    },
+                                  }}
+                                  error={!!(touched.guest1Dob && errors.guest1Dob)}
+                                />
+                              </View>
+                              <View style={{ flex: 1, marginHorizontal: 4 }}>
+                                <TextInput
+                                  label="Day"
+                                  value={guest1DobFields.day}
+                                  onChangeText={(text) => {
+                                    const updatedFields = handleSeparateDateFieldChange(
+                                      text, 'day', guest1DobFields, setFieldValue, 'guest1Dob'
+                                    );
+                                    setGuest1DobFields(updatedFields);
+                                  }}
+                                  onBlur={handleBlur("guest1Dob")}
+                                  style={{ height: 48 }}
+                                  mode="outlined"
+                                  placeholder="DD"
+                                  maxLength={2}
+                                  keyboardType="number-pad"
+                                  theme={{
+                                    colors: {
+                                      primary: colors.tint,
+                                      background: colors.card,
+                                      text: colors.text,
+                                      placeholder: colors.secondaryText,
+                                    },
+                                    fonts: {
+                                      regular: {
+                                        fontFamily: "Roobert",
+                                      },
+                                    },
+                                  }}
+                                  error={!!(touched.guest1Dob && errors.guest1Dob)}
+                                />
+                              </View>
+                              <View style={{ flex: 1.5, marginLeft: 8 }}>
+                                <TextInput
+                                  label="Year"
+                                  value={guest1DobFields.year}
+                                  onChangeText={(text) => {
+                                    const updatedFields = handleSeparateDateFieldChange(
+                                      text, 'year', guest1DobFields, setFieldValue, 'guest1Dob'
+                                    );
+                                    setGuest1DobFields(updatedFields);
+                                  }}
+                                  onBlur={handleBlur("guest1Dob")}
+                                  style={{ height: 48 }}
+                                  mode="outlined"
+                                  placeholder="YYYY"
+                                  maxLength={4}
+                                  keyboardType="number-pad"
+                                  theme={{
+                                    colors: {
+                                      primary: colors.tint,
+                                      background: colors.card,
+                                      text: colors.text,
+                                      placeholder: colors.secondaryText,
+                                    },
+                                    fonts: {
+                                      regular: {
+                                        fontFamily: "Roobert",
+                                      },
+                                    },
+                                  }}
+                                  error={!!(touched.guest1Dob && errors.guest1Dob)}
+                                />
+                              </View>
                             </View>
-                          )}
+                          </View>
                           <View
                             style={{
                               flexDirection: "row",
@@ -1205,86 +1384,118 @@ export function RegisterScreenFormik() {
                               )
                             }
                           />
-                          {Platform.OS === 'web' ? (
-                            <TextInput
-                              label="Guest 2 Date of Birth"
-                              value={values.guest2Dob}
-                              onChangeText={(text) => {
-                                // Allow progressive typing and validate complete dates
-                                const cleanText = text.replace(/[^\d-]/g, ''); // Only allow digits and hyphens
-                                if (cleanText.length <= 10) {
-                                  setFieldValue("guest2Dob", cleanText);
-                                }
-                              }}
-                              onBlur={handleBlur("guest2Dob")}
-                              style={styles.input}
-                              mode="outlined"
-                              placeholder="YYYY-MM-DD"
-                              maxLength={10}
-                              theme={{
-                                colors: {
-                                  primary: colors.tint,
-                                  background: colors.card,
-                                  text: colors.text,
-                                  placeholder: colors.secondaryText,
-                                },
-                                fonts: {
-                                  regular: {
-                                    fontFamily: "Roobert",
-                                  },
-                                },
-                              }}
-                              error={!!(touched.guest2Dob && errors.guest2Dob)}
-                            />
-                          ) : (
-                            <View style={styles.input}>
-                              <Text style={{ 
-                                color: colors.secondaryText, 
-                                fontSize: 12, 
-                                marginBottom: 4,
-                                fontFamily: "Roobert" 
-                              }}>
-                                Guest 2 Date of Birth
-                              </Text>
-                              <TouchableOpacity
-                                onPress={() => setGuest2DatePickerVisible(true)}
-                                style={{
-                                  borderColor: touched.guest2Dob && errors.guest2Dob ? colors.error : colors.secondaryText,
-                                  backgroundColor: colors.card,
-                                  borderRadius: 4,
-                                  borderWidth: 0.5,
-                                  height: 48,
-                                  paddingHorizontal: 12,
-                                  justifyContent: "center",
-                                }}>
-                                <Text style={{
-                                  color: values.guest2Dob ? colors.text : colors.secondaryText,
-                                  fontSize: 16,
-                                  fontFamily: "Roobert",
-                                }}>
-                                  {values.guest2Dob || "Select Guest 2 Date of Birth"}
-                                </Text>
-                              </TouchableOpacity>
-                              <DateTimePickerModal
-                                isVisible={isGuest2DatePickerVisible}
-                                mode="date"
-                                onConfirm={(date) => {
-                                  setFieldValue("guest2Dob", formatDateToString(date));
-                                  setGuest2DatePickerVisible(false);
-                                }}
-                                onCancel={() => setGuest2DatePickerVisible(false)}
-                                minimumDate={new Date(1900, 0, 1)} // Allow dates from 1900
-                                maximumDate={new Date()}
-                                date={parseStringToDate(values.guest2Dob) || new Date(2000, 0, 1)}
-                                isDarkModeEnabled={colorScheme === "dark"}
-                                pickerContainerStyleIOS={{
-                                  backgroundColor: colors.card,
-                                }}
-                                confirmTextIOS="Select"
-                                cancelTextIOS="Cancel"
-                              />
+                          <View style={styles.input}>
+                            <Text style={{ 
+                              color: colors.secondaryText, 
+                              fontSize: 12, 
+                              marginBottom: 8,
+                              fontFamily: "Roobert" 
+                            }}>
+                              Guest 2 Date of Birth
+                            </Text>
+                            <View style={{ 
+                              flexDirection: 'row', 
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}>
+                              <View style={{ flex: 1, marginRight: 8 }}>
+                                <TextInput
+                                  label="Month"
+                                  value={guest2DobFields.month}
+                                  onChangeText={(text) => {
+                                    const updatedFields = handleSeparateDateFieldChange(
+                                      text, 'month', guest2DobFields, setFieldValue, 'guest2Dob'
+                                    );
+                                    setGuest2DobFields(updatedFields);
+                                  }}
+                                  onBlur={handleBlur("guest2Dob")}
+                                  style={{ height: 48 }}
+                                  mode="outlined"
+                                  placeholder="MM"
+                                  maxLength={2}
+                                  keyboardType="number-pad"
+                                  theme={{
+                                    colors: {
+                                      primary: colors.tint,
+                                      background: colors.card,
+                                      text: colors.text,
+                                      placeholder: colors.secondaryText,
+                                    },
+                                    fonts: {
+                                      regular: {
+                                        fontFamily: "Roobert",
+                                      },
+                                    },
+                                  }}
+                                  error={!!(touched.guest2Dob && errors.guest2Dob)}
+                                />
+                              </View>
+                              <View style={{ flex: 1, marginHorizontal: 4 }}>
+                                <TextInput
+                                  label="Day"
+                                  value={guest2DobFields.day}
+                                  onChangeText={(text) => {
+                                    const updatedFields = handleSeparateDateFieldChange(
+                                      text, 'day', guest2DobFields, setFieldValue, 'guest2Dob'
+                                    );
+                                    setGuest2DobFields(updatedFields);
+                                  }}
+                                  onBlur={handleBlur("guest2Dob")}
+                                  style={{ height: 48 }}
+                                  mode="outlined"
+                                  placeholder="DD"
+                                  maxLength={2}
+                                  keyboardType="number-pad"
+                                  theme={{
+                                    colors: {
+                                      primary: colors.tint,
+                                      background: colors.card,
+                                      text: colors.text,
+                                      placeholder: colors.secondaryText,
+                                    },
+                                    fonts: {
+                                      regular: {
+                                        fontFamily: "Roobert",
+                                      },
+                                    },
+                                  }}
+                                  error={!!(touched.guest2Dob && errors.guest2Dob)}
+                                />
+                              </View>
+                              <View style={{ flex: 1.5, marginLeft: 8 }}>
+                                <TextInput
+                                  label="Year"
+                                  value={guest2DobFields.year}
+                                  onChangeText={(text) => {
+                                    const updatedFields = handleSeparateDateFieldChange(
+                                      text, 'year', guest2DobFields, setFieldValue, 'guest2Dob'
+                                    );
+                                    setGuest2DobFields(updatedFields);
+                                  }}
+                                  onBlur={handleBlur("guest2Dob")}
+                                  style={{ height: 48 }}
+                                  mode="outlined"
+                                  placeholder="YYYY"
+                                  maxLength={4}
+                                  keyboardType="number-pad"
+                                  theme={{
+                                    colors: {
+                                      primary: colors.tint,
+                                      background: colors.card,
+                                      text: colors.text,
+                                      placeholder: colors.secondaryText,
+                                    },
+                                    fonts: {
+                                      regular: {
+                                        fontFamily: "Roobert",
+                                      },
+                                    },
+                                  }}
+                                  error={!!(touched.guest2Dob && errors.guest2Dob)}
+                                />
+                              </View>
                             </View>
-                          )}
+                          </View>
                           <View
                             style={{
                               flexDirection: "row",

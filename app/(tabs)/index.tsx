@@ -39,6 +39,9 @@ console.log('✅ useColorScheme hook imported');
 import { useAuth } from "@/hooks/useAuth";
 console.log('✅ useAuth hook imported');
 import { Button } from "@/components/Button";
+import EnhancedTestNotificationButton from "@/components/EnhancedTestNotificationButton";
+import { experiencesService, type Experience } from '@/services/ExperiencesService';
+import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 console.log('✅ Button component imported');
 
 console.log('🚀 All imports completed for Index page');
@@ -140,9 +143,56 @@ export default function HomeScreen() {
   } | null>(null);
 
   const [notificationTrayVisible, setNotificationTrayVisible] = useState(false);
+  const [upcomingExperiences, setUpcomingExperiences] = useState<Experience[]>([]);
+  const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
+  const [loadingExperiences, setLoadingExperiences] = useState(true);
 
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+
+  // Load upcoming experiences
+  const loadUpcomingExperiences = async () => {
+    try {
+      setLoadingExperiences(true);
+      const response = await experiencesService.getExperiences();
+      const scheduleData = response.data?.data;
+      const experiencesData = scheduleData?.schedule_experiences
+        ?.map(item => item.schedule_experience)
+        .filter(exp => exp && exp.id && exp.experience_start_date_time) || [];
+
+      // Remove potential duplicates based on experience ID
+      const uniqueExperiences = experiencesData.filter((exp, index, arr) => 
+        arr.findIndex(e => e.id === exp.id) === index
+      );
+
+      // Filter for future experiences only
+      const now = new Date();
+      const futureExperiences = uniqueExperiences.filter(exp => {
+        if (!exp || !exp.experience_start_date_time) return false;
+        const eventStartDate = experiencesService.convertToEventLocalTime(exp.experience_start_date_time);
+        const correctedEventStartTime = new Date(eventStartDate.getTime() - (7 * 60 * 60 * 1000));
+        return now < correctedEventStartTime;
+      });
+
+      // Sort by start time (soonest first) and take the next 3
+      const sortedFutureExperiences = futureExperiences
+        .sort((a, b) => {
+          const timeA = experiencesService.convertToEventLocalTime(a.experience_start_date_time);
+          const timeB = experiencesService.convertToEventLocalTime(b.experience_start_date_time);
+          const correctedTimeA = new Date(timeA.getTime() - (7 * 60 * 60 * 1000));
+          const correctedTimeB = new Date(timeB.getTime() - (7 * 60 * 60 * 1000));
+          return correctedTimeA.getTime() - correctedTimeB.getTime();
+        })
+        .slice(0, 3); // Take only the next 3 experiences
+
+      setUpcomingExperiences(sortedFutureExperiences);
+    } catch (error) {
+      console.error('Error loading upcoming experiences:', error);
+      setUpcomingExperiences([]);
+    } finally {
+      setLoadingExperiences(false);
+    }
+  };
 
   useEffect(() => {
     const found = getNextRace((scheduleData as ScheduleData).stages);
@@ -152,7 +202,14 @@ export default function HomeScreen() {
       const interval = setInterval(() => {
         setCountdown(getCountdownParts(found.race.scheduled));
       }, 1000);
+      
+      // Load upcoming experiences
+      loadUpcomingExperiences();
+      
       return () => clearInterval(interval);
+    } else {
+      // Load upcoming experiences even if no race found
+      loadUpcomingExperiences();
     }
   }, []);
 
@@ -394,47 +451,68 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Upcoming Experiences
-          </Text>
-          <View style={styles.carouselContainer}>
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              style={styles.carousel}>
-              <View style={styles.card}>
-                <Image
-                  source={{
-                    uri: "https://i0.wp.com/speedsport.com/wp-content/uploads/2023/01/unnamed-2023-01-28T140339.484.jpg?fit=900%2C471&ssl=1",
-                  }}
-                  style={styles.cardImage}
-                />
-                <View
-                  style={[
-                    styles.upNextBadge,
-                    styles.sponsoredBadge,
-                    { backgroundColor: colors.tint },
-                  ]}>
-                  <Text
-                    style={[styles.upNextText, { color: colors.textOnGreen }]}>
-                    Sponsored Event
-                  </Text>
-                </View>
-              </View>
-            </ScrollView>
-          </View>
-          <View style={styles.eventInfo}>
-            <Text style={[styles.eventTitle, { color: colors.text }]}>
-              Garage Tour
-            </Text>
-            <Text style={[styles.eventDetails, { color: colors.tint }]}>
-              Exclusive Event • Meet the Beta Testers
-            </Text>
-            <Text style={[styles.eventSubDetails, { color: colors.tint }]}>
-              Invitation Only
-            </Text>
-          </View> */}
+          {/* Only show Upcoming Experiences section if there are experiences */}
+          {upcomingExperiences.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Upcoming Experiences
+              </Text>
+              <ScrollView
+                horizontal
+                pagingEnabled={false} // Disable pagingEnabled to use custom snapping
+                showsHorizontalScrollIndicator={false}
+                decelerationRate="fast"
+                snapToInterval={CARD_WIDTH + 20} // Card width + margin for proper spacing
+                snapToAlignment="start"
+                contentContainerStyle={styles.experiencesScrollContainer}
+                style={styles.experiencesScroll}>
+                {upcomingExperiences.map((experience, index) => {
+                  const imageUrl = experiencesService.getImageUrl(experience);
+                  // Create a unique key combining index and id to prevent duplicate key warnings
+                  const uniqueKey = `experience-${index}-${experience.id || 'unknown'}`;
+                  
+                  return (
+                    <View key={uniqueKey} style={styles.experienceCard}>
+                      <View style={styles.carouselContainer}>
+                        <TouchableOpacity
+                          style={styles.experienceCardImage}
+                          onPress={() => setSelectedExperience(experience)}>
+                          <Image
+                            source={{ uri: imageUrl }}
+                            style={styles.cardImage}
+                            defaultSource={{ uri: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=300&fit=crop' }}
+                          />
+                        </TouchableOpacity>
+                      </View>
+
+                      {/* Experience info that slides with each card */}
+                      <View style={styles.eventInfo}>
+                        <Text style={[styles.eventTitle, { color: colors.text }]}>
+                          {experience.experience_title}
+                        </Text>
+                        <Text style={[styles.eventDetails, { color: colors.tint }]}>
+                          {experiencesService.formatEventTime(experience.experience_start_date_time, { includeDate: true })}
+                          {experience.experience_venue_location?.venue_location_name && 
+                            ` • ${experience.experience_venue_location.venue_location_name}`
+                          }
+                        </Text>
+                        
+                        {/* See more button */}
+                        <TouchableOpacity
+                          style={[styles.seeMoreButton, { backgroundColor: colors.tint }]}
+                          onPress={() => setSelectedExperience(experience)}>
+                          <Text style={[styles.seeMoreButtonText, { color: colors.textOnGreen }]}>
+                            See More
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </>
+          )}
+
           {/* Commenting out share feedback button */}
           {/* <TouchableOpacity
             style={[styles.shareButton, { backgroundColor: colors.tint }]}>
@@ -442,7 +520,10 @@ export default function HomeScreen() {
               style={[styles.shareButtonText, { color: colors.textOnGreen }]}>
               Share Your Thoughts
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
+
+          {/* Temporary test notification button */}
+          <EnhancedTestNotificationButton />
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>
@@ -455,12 +536,24 @@ export default function HomeScreen() {
         visible={notificationTrayVisible}
         onClose={() => setNotificationTrayVisible(false)}
       />
+
+      <ExperienceDetailTray
+        experience={selectedExperience}
+        visible={selectedExperience !== null}
+        onClose={() => setSelectedExperience(null)}
+      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    paddingHorizontal: 10,
+    // Platform-specific bottom padding to account for tab bar
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+  },
+  containerSlider: {
     flex: 1,
     paddingHorizontal: 10,
     // Platform-specific bottom padding to account for tab bar
@@ -649,5 +742,34 @@ const styles = StyleSheet.create({
     color: "#888",
     fontSize: 12,
     
+  },
+  experiencesScroll: {
+    marginTop: 10,
+  },
+  experiencesScrollContainer: {
+    paddingLeft: 0,
+    paddingRight: 0, // Extra padding on the right to ensure last card is fully visible
+  },
+  experienceCard: {
+    width: CARD_WIDTH,
+    marginRight: 20, // Add spacing between cards
+  },
+  experienceCardImage: {
+    width: CARD_WIDTH,
+    borderRadius: 15,
+    overflow: "hidden",
+    marginRight: 0, // No margin for experience cards to prevent cutoff
+    aspectRatio: 1 / 1,
+  },
+  seeMoreButton: {
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: "flex-start",
+    marginTop: 8,
+  },
+  seeMoreButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

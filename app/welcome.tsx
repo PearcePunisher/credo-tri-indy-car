@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
+import { VideoPlayer } from '@/components/VideoPlayer';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,6 +47,17 @@ const WelcomeScreen = () => {
 
         {/* Title */}
         <Text style={[styles.title, { color: colors.text }]}>Welcome</Text>
+
+        {/* Welcome Video */}
+        <VideoPlayer 
+          videoUri="https://timely-actor-10dfb03957.media.strapiapp.com/videoplayback_d9388e2096.mp4"
+          aspectRatio={9/16}
+          autoPlay={true}
+          loop={false} // Don't loop to avoid distraction
+          muted={false} // Allow sound for user engagement
+          showPlayButton={true} // Show play/pause overlay
+          style={styles.welcomeVideo}
+        />
 
         {/* Intro Paragraphs */}
         <Text style={[styles.paragraph, { color: colors.text }]}>
@@ -92,6 +104,10 @@ const styles = StyleSheet.create({
   scroll: { padding: 20, paddingBottom: 40 },
   brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 20, objectFit: 'contain' },
   title: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
+  welcomeVideo: { 
+    marginBottom: 20,
+    alignSelf: 'center', // Center the video within the container
+  },
   paragraph: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
   subheading: { fontSize: 18, fontWeight: '600', marginTop: 10, marginBottom: 6 },
   bulletList: { marginBottom: 24 },
