@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -23,6 +23,8 @@ const VenueDirectionsScreen = () => {
   const [loading, setLoading] = useState(true);
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+  // Track which URLs we've rendered to avoid duplicate buttons
+  const renderedUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +42,19 @@ const VenueDirectionsScreen = () => {
 
     fetchData();
   }, []);
+
+  // Clear seen URLs whenever content changes
+  useEffect(() => {
+    renderedUrlsRef.current.clear();
+  }, [content]);
+
+  const extractText = (node: any): string => {
+    if (!node) return '';
+    if (typeof node === 'string') return node;
+    if (typeof node.text === 'string') return node.text;
+    if (Array.isArray(node.children)) return node.children.map(extractText).join('');
+    return '';
+  };
 
   const renderBlock = (block: any, index: number) => {
     const { type } = block;
@@ -67,12 +82,13 @@ const VenueDirectionsScreen = () => {
           <View key={index} style={styles.linkContainer}>
             {block.children.map((child: any, childIndex: number) => {
               if (child.type === 'link' && child.url) {
-                const linkText = child.children[0]?.text || 'Open Map';
-                // Skip empty links
-                if (!linkText.trim() && !child.children[0]?.text) {
-                  return null;
-                }
-                // Render map button for links - Need to fix link text to include WHERE the map is directing.
+                const linkText = extractText(child).trim();
+                // Skip if no label text
+                if (!linkText) return null;
+                // Deduplicate by URL across the whole page
+                if (renderedUrlsRef.current.has(child.url)) return null;
+                renderedUrlsRef.current.add(child.url);
+                // Render map button for links using their provided label
                 return (
                   <TouchableOpacity
                     key={childIndex}
@@ -87,7 +103,7 @@ const VenueDirectionsScreen = () => {
                         style={styles.buttonIcon}
                       />
                       <Text style={[styles.mapButtonText, { color: colors.textOnGreen }]}>
-                        {linkText.trim() || 'Open Directions'}
+                        {linkText}
                       </Text>
                     </View>
                   </TouchableOpacity>
