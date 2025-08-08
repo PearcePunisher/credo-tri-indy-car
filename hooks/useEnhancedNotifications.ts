@@ -7,10 +7,11 @@ import { useRouter } from 'expo-router';
 // Configure notification behavior
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
+    // Suppress foreground banners to avoid Expo Go immediate presentation quirks
+    shouldShowBanner: false,
+    shouldShowList: false,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
   }),
 });
 
@@ -61,7 +62,24 @@ export function useEnhancedNotifications({ userId, jwtToken, isVIP }: UseEnhance
     // Listen for incoming notifications (when app is in foreground)
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       console.log('📱 Notification received in foreground:', notification);
-      
+
+      // Guard against obviously-early 20-min reminders (Expo Go quirk)
+      try {
+        const data: any = notification.request?.content?.data || {};
+        if (data?.type === 'twenty_minutes_before' && data?.startTime) {
+          const eventTime = new Date(data.startTime);
+          const intendedReminder = new Date(eventTime.getTime() - 20 * 60 * 1000);
+          const now = new Date();
+          // If we're still much earlier than the intended reminder time, ignore it
+          if (now.getTime() < intendedReminder.getTime() - 30 * 1000) {
+            console.log('⏭️ Ignoring early 20-minute reminder received in foreground (dev quirk)');
+            return;
+          }
+        }
+      } catch (e) {
+        // noop
+      }
+
       // Handle the notification
       await enhancedNotificationService.handleNotificationReceived(notification);
       

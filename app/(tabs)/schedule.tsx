@@ -21,6 +21,7 @@ import { experiencesService, type Experience } from '@/services/ExperiencesServi
 import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import { Ionicons } from '@expo/vector-icons';
 import NotificationDebugger from '@/components/NotificationDebugger';
+import FocusTransition from '@/components/ui/FocusTransition';
 
 interface GroupedExperiences {
   [dateKey: string]: Experience[];
@@ -288,17 +289,20 @@ const ScheduleScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <FocusTransition variant="slide">
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.tint} />
           <Text style={[styles.loadingText, { color: colors.text }]}>Loading experiences...</Text>
         </View>
       </SafeAreaView>
+      </FocusTransition>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <FocusTransition variant="slide">
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -380,7 +384,8 @@ const ScheduleScreen = () => {
           onToggleNotification={(enabled: boolean) => handleNotificationToggle(selectedExperience.id, enabled)}
         />
       )}
-    </SafeAreaView>
+  </SafeAreaView>
+  </FocusTransition>
   );
 };
 

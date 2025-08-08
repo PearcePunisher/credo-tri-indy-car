@@ -27,8 +27,8 @@ const TRAY_HEIGHT = SCREEN_HEIGHT * 0.8; // 80% of screen height for better posi
 // Set notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
+    shouldShowBanner: false,
+    shouldShowList: false,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),

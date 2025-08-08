@@ -65,12 +65,16 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
     if (onToggleNotification) {
       const newState = !isNotificationEnabled;
       onToggleNotification(newState);
-      
-      if (newState) {
-        await experiencesService.scheduleExperienceNotifications(experience);
-      } else {
-        await experiencesService.cancelExperienceNotifications(experience.id);
-      }
+      // Delegate scheduling/canceling to parent when a handler is provided
+      return;
+    }
+
+    // Fallback: handle scheduling locally only if no parent handler is provided
+    const newState = !isNotificationEnabled;
+    if (newState) {
+      await experiencesService.scheduleExperienceNotifications(experience);
+    } else {
+      await experiencesService.cancelExperienceNotifications(experience.id);
     }
   };
 

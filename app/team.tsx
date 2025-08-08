@@ -17,6 +17,9 @@ import {
   Platform,
 } from "react-native";
 
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
+
 // Type definitions based on API structure
 type SocialMedia = {
   id: number;
@@ -195,6 +198,7 @@ const TeamScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <BrandLogo style={styles.brand} />
         <Text
           style={[
             styles.title,
@@ -212,7 +216,6 @@ const TeamScreen = () => {
             ]}
           >
             {/* Remove the extra View and just use the logo with a small margin */}
-            <BrandLogo style={{ ...styles.brand, marginBottom: 4 }} />
             <Text
               style={[
                 styles.subHeader,
@@ -535,8 +538,6 @@ const TeamScreen = () => {
   );
 };
 
-const { width } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -551,7 +552,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
   },
-  brand: { width: 250, height: 120, alignSelf: 'center', marginBottom: 10, objectFit: 'contain' },
+  brand: {
+    width: CARD_WIDTH,
+    minHeight: 40,
+    alignSelf: "center",
+    objectFit: "contain",
+  },
   teamDetails: {
     padding: 16,
     borderRadius: 8,

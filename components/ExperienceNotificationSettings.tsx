@@ -72,7 +72,7 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
         await experiencesService.scheduleNotifications(experience.id);
         Alert.alert(
           'Notifications Enabled',
-          'You will receive reminders 1 hour before, 20 minutes before, and when your experience begins.',
+          'You will receive a reminder 20 minutes before your experience begins.',
           [{ text: 'OK' }]
         );
       } else {
@@ -170,8 +170,8 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
           <Text style={[styles.toggleTitle, { color: colors.text }]}>
             Receive Notifications
           </Text>
-          <Text style={[styles.toggleSubtitle, { color: colors.secondaryText }]}>
-            Get reminded 1 hour before, 20 minutes before, and when your experience begins
+          <Text style={[styles.toggleSubtitle, { color: colors.secondaryText }]}> 
+            Get reminded 20 minutes before your experience begins
           </Text>
         </View>
         
@@ -210,21 +210,9 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
           </Text>
           <View style={styles.scheduleList}>
             <View style={styles.scheduleItem}>
-              <Ionicons name="time-outline" size={16} color={colors.tint} />
-              <Text style={[styles.scheduleText, { color: colors.secondaryText }]}>
-                1 hour before the experience
-              </Text>
-            </View>
-            <View style={styles.scheduleItem}>
               <Ionicons name="alarm-outline" size={16} color={colors.tint} />
-              <Text style={[styles.scheduleText, { color: colors.secondaryText }]}>
+              <Text style={[styles.scheduleText, { color: colors.secondaryText }]}> 
                 20 minutes before the experience
-              </Text>
-            </View>
-            <View style={styles.scheduleItem}>
-              <Ionicons name="play-circle-outline" size={16} color={colors.tint} />
-              <Text style={[styles.scheduleText, { color: colors.secondaryText }]}>
-                When the experience begins
               </Text>
             </View>
           </View>

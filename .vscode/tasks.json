@@ -8,6 +8,13 @@
 			"group": "build",
 			"isBackground": true,
 			"problemMatcher": []
+		},
+		{
+			"label": "Start Expo Development Server",
+			"type": "shell",
+			"command": "npx expo start",
+			"isBackground": true,
+			"group": "build"
 		}
 	]
 }

@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   TextInput,
+  Dimensions,
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,6 +21,10 @@ import { User } from "@/services/AuthService";
 import { Ionicons } from "@expo/vector-icons";
 import UserQRCode from "@/components/UserQRCode";
 import { useRouter } from "expo-router";
+import FocusTransition from "@/components/ui/FocusTransition";
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 export const options = {
   title: "Account",
@@ -195,21 +200,24 @@ const AccountScreen = () => {
 
   if (!authState.user) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.centerContent}>
-          <Text style={[styles.errorText, { color: colors.text }]}>
-            No user information available
-          </Text>
-        </View>
-      </SafeAreaView>
+      <FocusTransition variant="fade">
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={styles.centerContent}>
+            <Text style={[styles.errorText, { color: colors.text }]}>
+              No user information available
+            </Text>
+          </View>
+        </SafeAreaView>
+      </FocusTransition>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <FocusTransition variant="fade">
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}>
+        <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
@@ -459,6 +467,7 @@ const AccountScreen = () => {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+    </FocusTransition>
   );
 };
 
@@ -467,10 +476,9 @@ const styles = StyleSheet.create({
   scroll: { padding: 20, paddingBottom: Platform.OS === 'ios' ? 100 : 80 }, // Increased bottom padding for logout button
   centerContent: { flex: 1, justifyContent: "center", alignItems: "center" },
   brand: {
-    width: 250,
-    height: 120,
+    width: CARD_WIDTH,
+    minHeight: 40,
     alignSelf: "center",
-    marginBottom: 10,
     objectFit: "contain",
   },
   title: {

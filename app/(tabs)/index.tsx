@@ -42,6 +42,7 @@ import { Button } from "@/components/Button";
 import EnhancedTestNotificationButton from "@/components/EnhancedTestNotificationButton";
 import { experiencesService, type Experience } from '@/services/ExperiencesService';
 import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
+import FocusTransition from "@/components/ui/FocusTransition";
 console.log('✅ Button component imported');
 
 console.log('🚀 All imports completed for Index page');
@@ -245,6 +246,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
+    <FocusTransition variant="fade">
     <>
       <StatusBar
         barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
@@ -594,7 +596,8 @@ export default function HomeScreen() {
         visible={selectedExperience !== null}
         onClose={() => setSelectedExperience(null)}
       />
-    </>
+  </>
+  </FocusTransition>
   );
 }
 

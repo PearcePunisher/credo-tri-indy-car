@@ -8,11 +8,15 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import BrandLogo from '@/components/BrandLogo';
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 const VenueDirectionsScreen = () => {
   const [content, setContent] = useState<any[]>([]);
@@ -174,11 +178,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   brand: {
-    width: 250,
-    height: 120,
-    alignSelf: 'center',
-    marginBottom: 10,
-    objectFit: 'contain',
+    width: CARD_WIDTH,
+    minHeight: 40,
+    alignSelf: "center",
+    objectFit: "contain",
   },
   title: {
     fontSize: 26,

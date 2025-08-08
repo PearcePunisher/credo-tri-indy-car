@@ -9,6 +9,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
@@ -16,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import BrandLogo from '@/components/BrandLogo';
 import * as FileSystem from 'expo-file-system';
 
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 interface RichTextChild {
   text?: string;
@@ -314,7 +317,7 @@ const fetchFAQs = async () => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <BrandLogo style={styles.logo} />
+            <BrandLogo style={styles.brand} />
             <Text style={[styles.title, { color: colors.text }]}>
               Frequently Asked Questions
             </Text>
@@ -331,7 +334,7 @@ const fetchFAQs = async () => {
           </View>
 
           {/* Contact Support */}
-          <View style={[styles.supportCard, { backgroundColor: colors.card }]}>
+          {/* <View style={[styles.supportCard, { backgroundColor: colors.card }]}>
             <Ionicons name="help-circle-outline" size={32} color={colors.tint} />
             <Text style={[styles.supportTitle, { color: colors.text }]}>
               Still need help?
@@ -339,7 +342,7 @@ const fetchFAQs = async () => {
             <Text style={[styles.supportText, { color: colors.secondaryText }]}>
               If you can't find what you're looking for, contact our support team or look for event staff at the venue.
             </Text>
-          </View>
+          </View> */}
         </ScrollView>
       </SafeAreaView>
     </>
@@ -393,11 +396,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
   },
-  logo: {
-    width: 200,
-    height: 100,
-    marginBottom: 16,
-    objectFit: 'contain',
+  brand: {
+    width: CARD_WIDTH,
+    minHeight: 40,
+    alignSelf: "center",
+    objectFit: "contain",
   },
   title: {
     fontSize: 24,

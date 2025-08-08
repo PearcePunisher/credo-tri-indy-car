@@ -473,13 +473,14 @@ class ExperiencesService {
         return false;
       }
 
-      // User-specific notification statuses
-      const userStatusKey = `notificationStatuses_${currentUser.id}`;
-      const statuses = (globalThis as any)[userStatusKey] || {};
+  // User-specific notification statuses (persisted)
+  const userStatusKey = `notificationStatuses_${currentUser.id}`;
+  const raw = await AsyncStorage.getItem(userStatusKey);
+  const statuses = raw ? JSON.parse(raw) as Record<number, boolean> : {};
       
-      // Default to false (opt-in) - users must explicitly enable notifications
-      // This prevents notification bombardment by requiring conscious choice
-      return statuses[experienceId] === true;
+  // Default to false (opt-in) - users must explicitly enable notifications
+  // This prevents notification bombardment by requiring conscious choice
+  return statuses[experienceId] === true;
     } catch (error) {
       console.error('Error getting notification status:', error);
       // Default to disabled on error to prevent unwanted notifications
@@ -498,12 +499,12 @@ class ExperiencesService {
         return;
       }
 
-      // User-specific notification statuses
-      const userStatusKey = `notificationStatuses_${currentUser.id}`;
-      if (!(globalThis as any)[userStatusKey]) {
-        (globalThis as any)[userStatusKey] = {};
-      }
-      (globalThis as any)[userStatusKey][experienceId] = enabled;
+  // User-specific notification statuses (persisted)
+  const userStatusKey = `notificationStatuses_${currentUser.id}`;
+  const raw = await AsyncStorage.getItem(userStatusKey);
+  const statuses = raw ? JSON.parse(raw) as Record<number, boolean> : {};
+  statuses[experienceId] = enabled;
+  await AsyncStorage.setItem(userStatusKey, JSON.stringify(statuses));
     } catch (error) {
       console.error('Error setting notification status:', error);
     }

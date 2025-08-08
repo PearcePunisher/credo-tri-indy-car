@@ -1,25 +1,17 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
 import VIPTile from "@/components/VIPTile";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
-// Importing icons - TEMPORARILY COMMENTED FOR CRASH TESTING
-// import TrackIcon from "@/assets/icons/trackIcon.svg";
-// import DoorIcon from "@/assets/icons/doorIcon.svg";
-// import CelebrationIcon from "@/assets/icons/celebrationIcon.svg";
-// import EventIcon from "@/assets/icons/scheduleIcon.svg";
-// import PinIcon from "@/assets/icons/pinIcon.svg";
-// import GroupIcon from "@/assets/icons/groupIcon.svg";
-// import CarIcon from "@/assets/icons/carIcon.svg";
-// import CalendarIcon from "@/assets/icons/calendarIcon.svg";
-// import QuizIcon from "@/assets/icons/quizIcon.svg";
-// import CommentIcon from "@/assets/icons/commentIcon.svg";
-// import LogoutIcon from "@/assets/icons/logoutIcon.svg"; // TEMPORARILY REMOVED FOR CRASH TESTING
+import FocusTransition from "@/components/ui/FocusTransition";
 
 // Importing the brand logo component
 import BrandLogo from "@/components/BrandLogo";
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 export const options = {
   title: "Home",
@@ -37,12 +29,13 @@ export default function VIPHomeScreen() {
   console.log('✅ VIPHomeScreen hooks initialized successfully');
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.background,
-      }}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <FocusTransition variant="slide">
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+        }}>
+        <ScrollView contentContainerStyle={styles.container}>
         <BrandLogo style={styles.brand} />
         <Text style={[styles.header, { color: colors.text }]}>
           PIT LANE CLUB
@@ -95,6 +88,7 @@ export default function VIPHomeScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </FocusTransition>
   );
 }
 
@@ -111,10 +105,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   brand: {
-    width: 250,
-    height: 120,
+    width: CARD_WIDTH,
+    minHeight: 40,
     alignSelf: "center",
-    marginBottom: 10,
     objectFit: "contain",
   },
   sub: {

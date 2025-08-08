@@ -7,9 +7,9 @@ import { STRAPI_CONFIG, buildApiUrl } from '@/constants/StrapiConfig';
 // Configure notification behavior
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
+    shouldShowBanner: false,
+    shouldShowList: false,
+    shouldPlaySound: false,
     shouldSetBadge: false,
   }),
 });

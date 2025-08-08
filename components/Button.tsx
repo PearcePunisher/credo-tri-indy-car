@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, Text, ViewStyle, StyleSheet } from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { TouchableOpacity, Text, ViewStyle, StyleSheet, Animated, Easing } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 
@@ -20,6 +20,7 @@ export const Button = ({
 }: ButtonProps) => {
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+  const scale = useRef(new Animated.Value(1)).current;
 
   // Custom logic for background, text, and border based on color scheme and outlined
   let backgroundColor = 'black';
@@ -40,26 +41,48 @@ export const Button = ({
     borderColor = 'transparent';
   }
 
+  const animateIn = useMemo(() => () => {
+    Animated.timing(scale, {
+      toValue: 0.98,
+      duration: 80,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [scale]);
+
+  const animateOut = useMemo(() => () => {
+    Animated.timing(scale, {
+      toValue: 1,
+      duration: 110,
+      easing: Easing.out(Easing.back(2)),
+      useNativeDriver: true,
+    }).start();
+  }, [scale]);
+
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      style={[
-        styles.button,
-        {
-          backgroundColor,
-          borderColor,
-          opacity: disabled ? 0.6 : 1,
-        },
-        style,
-        outlined && styles.outlined,
-      ]}
-      accessibilityRole="button"
-    >
-      <Text style={[styles.text, { color: textColor }]}>
-        {children}
-      </Text>
-    </TouchableOpacity>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <TouchableOpacity
+        onPress={onPress}
+        onPressIn={animateIn}
+        onPressOut={animateOut}
+        disabled={disabled}
+        style={[
+          styles.button,
+          {
+            backgroundColor,
+            borderColor,
+            opacity: disabled ? 0.6 : 1,
+          },
+          style,
+          outlined && styles.outlined,
+        ]}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.text, { color: textColor }]}>
+          {children}
+        </Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

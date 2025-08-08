@@ -97,6 +97,7 @@ class EnhancedNotificationService {
   private readonly STORAGE_KEY_HISTORY = 'notification_history';
   private readonly STORAGE_KEY_SCHEDULED = 'scheduled_notifications';
   private readonly MAX_HISTORY_ITEMS = 100;
+  private inFlight: Record<number, 'schedule' | 'cancel' | undefined> = {};
 
   constructor() {
     this.setupNotificationCategories();
@@ -231,6 +232,11 @@ class EnhancedNotificationService {
 
   // Schedule all notifications for an experience
   async scheduleExperienceNotifications(experience: Experience): Promise<ScheduledNotificationInfo[]> {
+    if (this.inFlight[experience.id]) {
+      console.log(`⏳ Skipping schedule; operation already in-flight for experience ${experience.id}`);
+      return [];
+    }
+    this.inFlight[experience.id] = 'schedule';
     const scheduledNotifications: ScheduledNotificationInfo[] = [];
     
     console.log(`🔔 Scheduling notifications for: ${experience.experience_title}`);
@@ -243,20 +249,18 @@ class EnhancedNotificationService {
     // Import the experiences service for timezone handling
     const { experiencesService } = await import('./ExperiencesService');
     
-    // Use corrected event time with 6-hour offset for notification scheduling
-    const eventTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
-    const correctedEventTime = new Date(eventTime.getTime() - (7 * 60 * 60 * 1000));
-    const displayTime = correctedEventTime;
+  // Use event time directly without manual timezone offsets
+  const eventTime = experiencesService.convertToEventLocalTime(experience.experience_start_date_time);
+  const displayTime = eventTime;
     const now = new Date();
 
     console.log(`⏰ Event time calculations:`);
     console.log(`   Original: ${experience.experience_start_date_time}`);
-    console.log(`   Event time: ${eventTime.toISOString()}`);
-    console.log(`   Corrected time: ${correctedEventTime.toISOString()}`);
+  console.log(`   Event time: ${eventTime.toISOString()}`);
     console.log(`   Current time: ${now.toISOString()}`);
 
     // Don't schedule notifications for past events
-    if (correctedEventTime <= now) {
+  if (eventTime <= now) {
       console.warn('⚠️ Experience is in the past, not scheduling notifications');
       return scheduledNotifications;
     }
@@ -270,57 +274,19 @@ class EnhancedNotificationService {
     console.log('✅ Notification permissions granted, proceeding with scheduling...');
 
     try {
-      // 1 hour before notification
-      const oneHourBefore = new Date(correctedEventTime.getTime() - 60 * 60 * 1000);
-      console.log(`   1 hour before: ${oneHourBefore.toISOString()}`);
-      
-      if (oneHourBefore > now) {
-        console.log('📱 Scheduling 1-hour notification...');
-        console.log(`   Trigger date: ${oneHourBefore.toISOString()}`);
-        console.log(`   Current time: ${now.toISOString()}`);
-        console.log(`   Time difference: ${Math.round((oneHourBefore.getTime() - now.getTime()) / 1000 / 60)} minutes from now`);
-        
-        const oneHourNotificationId = await this.scheduleNotification({
-          title: `${experience.experience_title} in 1 hour`,
-          body: `Get ready! Your experience starts at ${displayTime.toLocaleTimeString()}.`,
-          data: {
-            category: NotificationCategory.EXPERIENCE_REMINDER,
-            type: NotificationType.ONE_HOUR_BEFORE,
-            experienceId: experience.id,
-            experienceTitle: experience.experience_title,
-            location: experience.experience_venue_location?.venue_location_name,
-            startTime: experience.experience_start_date_time,
-          },
-        }, oneHourBefore as any);
-
-        if (oneHourNotificationId) {
-          console.log(`✅ 1-hour notification scheduled with ID: ${oneHourNotificationId}`);
-          scheduledNotifications.push({
-            id: oneHourNotificationId,
-            experienceId: experience.id,
-            type: NotificationType.ONE_HOUR_BEFORE,
-            category: NotificationCategory.EXPERIENCE_REMINDER,
-            scheduledTime: oneHourBefore,
-            content: {
-              title: `${experience.experience_title} in 1 hour`,
-              body: `Get ready! Your experience starts at ${displayTime.toLocaleTimeString()}.`,
-            },
-          });
-        } else {
-          console.warn('⚠️ Failed to schedule 1-hour notification (no ID returned)');
-        }
-      } else {
-        console.log('⏰ Skipping 1-hour notification (time has passed)');
-      }
-
-      // 20 minutes before notification
-      const twentyMinutesBefore = new Date(correctedEventTime.getTime() - 20 * 60 * 1000);
+  // 20 minutes before notification (only reminder we send)
+  const twentyMinutesBefore = new Date(eventTime.getTime() - 20 * 60 * 1000);
       console.log(`   20 minutes before: ${twentyMinutesBefore.toISOString()}`);
       
       if (twentyMinutesBefore > now) {
         console.log('📱 Scheduling 20-minute notification...');
+        const seconds = Math.ceil((twentyMinutesBefore.getTime() - now.getTime()) / 1000);
         console.log(`   Trigger date: ${twentyMinutesBefore.toISOString()}`);
-        console.log(`   Time difference: ${Math.round((twentyMinutesBefore.getTime() - now.getTime()) / 1000 / 60)} minutes from now`);
+        console.log(`   Time difference: ${Math.round(seconds / 60)} minutes from now`);
+        if (seconds <= 0) {
+          console.log('⏭️ Skipping 20-minute notification (computed seconds <= 0)');
+          return scheduledNotifications;
+        }
         
         const twentyMinNotificationId = await this.scheduleNotification({
           title: `${experience.experience_title} starting soon`,
@@ -333,7 +299,7 @@ class EnhancedNotificationService {
             location: experience.experience_venue_location?.venue_location_name,
             startTime: experience.experience_start_date_time,
           },
-        }, twentyMinutesBefore as any);
+         }, twentyMinutesBefore as Date);
 
         if (twentyMinNotificationId) {
           scheduledNotifications.push({
@@ -350,36 +316,6 @@ class EnhancedNotificationService {
         }
       }
 
-      // At event time notification
-      if (correctedEventTime > now) {
-        const eventTimeNotificationId = await this.scheduleNotification({
-          title: `${experience.experience_title} is starting now!`,
-          body: `Your experience is beginning at ${experience.experience_venue_location?.venue_location_name || 'the venue'}. Enjoy!`,
-          data: {
-            category: NotificationCategory.EXPERIENCE_REMINDER,
-            type: NotificationType.AT_EVENT_TIME,
-            experienceId: experience.id,
-            experienceTitle: experience.experience_title,
-            location: experience.experience_venue_location?.venue_location_name,
-            startTime: experience.experience_start_date_time,
-          },
-        }, correctedEventTime as any);
-
-        if (eventTimeNotificationId) {
-          scheduledNotifications.push({
-            id: eventTimeNotificationId,
-            experienceId: experience.id,
-            type: NotificationType.AT_EVENT_TIME,
-            category: NotificationCategory.EXPERIENCE_REMINDER,
-            scheduledTime: correctedEventTime,
-            content: {
-              title: `${experience.experience_title} is starting now!`,
-              body: `Your experience is beginning at ${experience.experience_venue_location?.venue_location_name || 'the venue'}. Enjoy!`,
-            },
-          });
-        }
-      }
-
       // Save scheduled notifications
       await this.saveScheduledNotifications(experience.id, scheduledNotifications);
       
@@ -389,15 +325,37 @@ class EnhancedNotificationService {
     } catch (error) {
       console.error('❌ Error scheduling experience notifications:', error);
       throw error;
+    } finally {
+      this.inFlight[experience.id] = undefined;
     }
   }
 
   // Schedule a single notification
   private async scheduleNotification(
     notification: NotificationData,
-    trigger: Notifications.NotificationTriggerInput
+    trigger: Notifications.NotificationTriggerInput | Date | null
   ): Promise<string | null> {
     try {
+      // Normalize trigger: prefer timeInterval triggers for reliability (esp. in Expo Go)
+      let normalizedTrigger: Notifications.NotificationTriggerInput | null = null;
+      if (trigger instanceof Date) {
+        const seconds = Math.ceil((trigger.getTime() - Date.now()) / 1000);
+        if (seconds <= 0) {
+          console.warn('⏭️ Skipping scheduling: trigger time is in the past');
+          return null;
+        }
+        normalizedTrigger = { seconds, repeats: false } as Notifications.TimeIntervalTriggerInput;
+      } else if (trigger && (trigger as any).date instanceof Date) {
+        const date = (trigger as any).date as Date;
+        const seconds = Math.ceil((date.getTime() - Date.now()) / 1000);
+        if (seconds <= 0) {
+          console.warn('⏭️ Skipping scheduling: trigger time is in the past');
+          return null;
+        }
+        normalizedTrigger = { seconds, repeats: false } as Notifications.TimeIntervalTriggerInput;
+      } else {
+        normalizedTrigger = trigger as any;
+      }
       // Determine Android channel based on category
       let androidChannelId = 'general';
       if (notification.data?.category === NotificationCategory.EXPERIENCE_REMINDER) {
@@ -427,14 +385,14 @@ class EnhancedNotificationService {
       
       console.log(`📱 Attempting to schedule notification:`, {
         title: content.title,
-        trigger: trigger,
+        trigger: normalizedTrigger,
         channelId: content.channelId,
         hasData: !!content.data
       });
       
-      const id = await Notifications.scheduleNotificationAsync({
+  const id = await Notifications.scheduleNotificationAsync({
         content,
-        trigger,
+        trigger: normalizedTrigger,
       });
       
       console.log(`✅ Scheduled notification with ID: ${id}`);
@@ -449,6 +407,11 @@ class EnhancedNotificationService {
 
   // Cancel all notifications for an experience
   async cancelExperienceNotifications(experienceId: number): Promise<void> {
+    if (this.inFlight[experienceId]) {
+      console.log(`⏳ Skipping cancel; operation already in-flight for experience ${experienceId}`);
+      return;
+    }
+    this.inFlight[experienceId] = 'cancel';
     try {
       const scheduledNotifications = await this.getScheduledNotificationsForExperience(experienceId);
       
@@ -464,6 +427,8 @@ class EnhancedNotificationService {
     } catch (error) {
       console.error('❌ Error canceling experience notifications:', error);
       throw error;
+    } finally {
+      this.inFlight[experienceId] = undefined;
     }
   }
 

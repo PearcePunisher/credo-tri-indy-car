@@ -1,12 +1,23 @@
-import React from 'react';
-import { SafeAreaView, ScrollView, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
-import { useAuth } from '@/hooks/useAuth';
-import BrandLogo from '@/components/BrandLogo';
-import UserQRCode from '@/components/UserQRCode';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
+import { useAuth } from "@/hooks/useAuth";
+import BrandLogo from "@/components/BrandLogo";
+import UserQRCode from "@/components/UserQRCode";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40; // 20px margin on each side
 
 export const options = {
   title: "My QR Code",
@@ -21,15 +32,15 @@ const UserQRScreen = () => {
 
   if (!authState.user) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centerContent}>
           <Text style={[styles.errorText, { color: colors.text }]}>
             Please sign in to view your QR code
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.backButton, { backgroundColor: colors.tint }]}
-            onPress={() => router.back()}
-          >
+            onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -38,17 +49,21 @@ const UserQRScreen = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
         {/* Title */}
-        <Text style={[styles.title, { color: colors.text }]}>My Event QR Code</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          My Event QR Code
+        </Text>
 
         {/* Description */}
         <Text style={[styles.description, { color: colors.secondaryText }]}>
-          Show this QR code at the event for quick check-in and access to your personalized experience.
+          Show this QR code at the event for quick check-in and access to your
+          personalized experience.
         </Text>
 
         {/* QR Code Component */}
@@ -58,7 +73,9 @@ const UserQRScreen = () => {
         <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
           <View style={styles.infoHeader}>
             <Ionicons name="information-circle" size={24} color={colors.tint} />
-            <Text style={[styles.infoTitle, { color: colors.text }]}>How to Use</Text>
+            <Text style={[styles.infoTitle, { color: colors.text }]}>
+              How to Use
+            </Text>
           </View>
           <View style={styles.infoList}>
             <Text style={[styles.infoItem, { color: colors.text }]}>
@@ -77,10 +94,9 @@ const UserQRScreen = () => {
         </View>
 
         {/* Back Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.backButton, { backgroundColor: colors.tint }]}
-          onPress={() => router.back()}
-        >
+          onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={20} color="white" />
           <Text style={styles.backButtonText}>Back to Account</Text>
         </TouchableOpacity>
@@ -91,29 +107,38 @@ const UserQRScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { padding: 20, paddingBottom: 40 },
-  centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  brand: { width: 200, height: 96, alignSelf: 'center', marginBottom: 20, objectFit: 'contain' },
-  title: { 
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    marginBottom: 12, 
-    textAlign: 'center',
-    
+  scroll: { 
+    padding: 20, 
+    paddingBottom: 40 
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  brand: {
+    width: CARD_WIDTH,
+    minHeight: 40,
+    alignSelf: "center",
+    objectFit: "contain",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
   },
   description: {
     fontSize: 16,
     lineHeight: 22,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 20,
-    
   },
-  errorText: { 
-    fontSize: 18, 
-    textAlign: 'center', 
+  errorText: {
+    fontSize: 18,
+    textAlign: "center",
     marginBottom: 20,
-    
   },
   infoCard: {
     padding: 20,
@@ -122,15 +147,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   infoTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 8,
-    
   },
   infoList: {
     paddingLeft: 8,
@@ -139,22 +163,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 8,
-    
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
     gap: 8,
   },
   backButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
-    
+    fontWeight: "600",
   },
 });
 
