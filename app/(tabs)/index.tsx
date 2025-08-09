@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 console.log('✅ React imported');
 import {
   StyleSheet,
@@ -177,8 +177,51 @@ export default function HomeScreen() {
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [loadingExperiences, setLoadingExperiences] = useState(true);
 
+  // Carousel navigation state
+  const [currentRaceIndex, setCurrentRaceIndex] = useState(0);
+  const [currentExperienceIndex, setCurrentExperienceIndex] = useState(0);
+  const raceScrollRef = useRef<ScrollView>(null);
+  const experienceScrollRef = useRef<ScrollView>(null);
+
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
+
+  // Navigation functions for carousels
+  const navigateRaceCarousel = (direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentRaceIndex - 1)
+      : Math.min(upcomingRaces.length - 1, currentRaceIndex + 1);
+    
+    setCurrentRaceIndex(newIndex);
+    raceScrollRef.current?.scrollTo({
+      x: newIndex * (CARD_WIDTH + 20),
+      animated: true,
+    });
+  };
+
+  const navigateExperienceCarousel = (direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentExperienceIndex - 1)
+      : Math.min(upcomingExperiences.length - 1, currentExperienceIndex + 1);
+    
+    setCurrentExperienceIndex(newIndex);
+    experienceScrollRef.current?.scrollTo({
+      x: newIndex * (CARD_WIDTH + 20),
+      animated: true,
+    });
+  };
+
+  const handleRaceScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / (CARD_WIDTH + 20));
+    setCurrentRaceIndex(index);
+  };
+
+  const handleExperienceScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / (CARD_WIDTH + 20));
+    setCurrentExperienceIndex(index);
+  };
 
   // Load upcoming experiences
   const loadUpcomingExperiences = async () => {
@@ -288,16 +331,45 @@ export default function HomeScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Upcoming Races
           </Text>
-          <ScrollView
-            horizontal
-            pagingEnabled={false}
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="fast"
-            snapToInterval={CARD_WIDTH + 20}
-            snapToAlignment="start"
-            contentContainerStyle={styles.experiencesScrollContainer}
-            style={styles.experiencesScroll}>
-            {upcomingRaces.map((raceData, index) => {
+          
+          {/* Race Carousel with Navigation */}
+          <View style={styles.carouselWrapper}>
+            {/* Left Arrow */}
+            <TouchableOpacity 
+              style={[styles.navArrow, styles.leftArrow, { backgroundColor: colors.card }]}
+              onPress={() => navigateRaceCarousel('left')}
+              disabled={currentRaceIndex === 0}>
+              <Ionicons 
+                name="chevron-back" 
+                size={24} 
+                color={currentRaceIndex === 0 ? colors.secondaryText : colors.tint} 
+              />
+            </TouchableOpacity>
+
+            {/* Right Arrow */}
+            <TouchableOpacity 
+              style={[styles.navArrow, styles.rightArrow, { backgroundColor: colors.card }]}
+              onPress={() => navigateRaceCarousel('right')}
+              disabled={currentRaceIndex === upcomingRaces.length - 1}>
+              <Ionicons 
+                name="chevron-forward" 
+                size={24} 
+                color={currentRaceIndex === upcomingRaces.length - 1 ? colors.secondaryText : colors.tint} 
+              />
+            </TouchableOpacity>
+
+            <ScrollView
+              ref={raceScrollRef}
+              horizontal
+              pagingEnabled={false}
+              showsHorizontalScrollIndicator={false}
+              decelerationRate="fast"
+              snapToInterval={CARD_WIDTH + 20}
+              snapToAlignment="start"
+              contentContainerStyle={styles.experiencesScrollContainer}
+              style={styles.experiencesScroll}
+              onMomentumScrollEnd={handleRaceScroll}>
+              {upcomingRaces.map((raceData, index) => {
               const { race, event } = raceData;
               
               // Get race track images - placeholders for now
@@ -395,6 +467,21 @@ export default function HomeScreen() {
               );
             })}
           </ScrollView>
+          
+          {/* Pagination dots */}
+          <View style={styles.paginationContainer}>
+            {upcomingRaces.map((_: any, index: number) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  index === currentRaceIndex && styles.paginationDotActive,
+                  { backgroundColor: index === currentRaceIndex ? colors.tint : colors.border }
+                ]}
+              />
+            ))}
+          </View>
+        </View>
 
           <Text style={[styles.countdownTitle, { color: colors.text }]}>
             COUNTDOWN TO RACE DAY:
@@ -511,15 +598,44 @@ export default function HomeScreen() {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 Upcoming Experiences
               </Text>
-              <ScrollView
-                horizontal
-                pagingEnabled={false} // Disable pagingEnabled to use custom snapping
-                showsHorizontalScrollIndicator={false}
-                decelerationRate="fast"
-                snapToInterval={CARD_WIDTH + 20} // Card width + margin for proper spacing
-                snapToAlignment="start"
-                contentContainerStyle={styles.experiencesScrollContainer}
-                style={styles.experiencesScroll}>
+              
+              {/* Experience Carousel with Navigation */}
+              <View style={styles.carouselWrapper}>
+                {/* Left Arrow */}
+                <TouchableOpacity 
+                  style={[styles.navArrow, styles.leftArrow, { backgroundColor: colors.card }]}
+                  onPress={() => navigateExperienceCarousel('left')}
+                  disabled={currentExperienceIndex === 0}>
+                  <Ionicons 
+                    name="chevron-back" 
+                    size={24} 
+                    color={currentExperienceIndex === 0 ? colors.secondaryText : colors.tint} 
+                  />
+                </TouchableOpacity>
+
+                {/* Right Arrow */}
+                <TouchableOpacity 
+                  style={[styles.navArrow, styles.rightArrow, { backgroundColor: colors.card }]}
+                  onPress={() => navigateExperienceCarousel('right')}
+                  disabled={currentExperienceIndex >= upcomingExperiences.length - 1}>
+                  <Ionicons 
+                    name="chevron-forward" 
+                    size={24} 
+                    color={currentExperienceIndex >= upcomingExperiences.length - 1 ? colors.secondaryText : colors.tint} 
+                  />
+                </TouchableOpacity>
+
+                <ScrollView
+                  ref={experienceScrollRef}
+                  horizontal
+                  pagingEnabled={false} // Disable pagingEnabled to use custom snapping
+                  showsHorizontalScrollIndicator={false}
+                  decelerationRate="fast"
+                  snapToInterval={CARD_WIDTH + 20} // Card width + margin for proper spacing
+                  snapToAlignment="start"
+                  contentContainerStyle={styles.experiencesScrollContainer}
+                  style={styles.experiencesScroll}
+                  onMomentumScrollEnd={handleExperienceScroll}>
                 {upcomingExperiences.map((experience, index) => {
                   const imageUrl = experiencesService.getImageUrl(experience);
                   // Create a unique key combining index and id to prevent duplicate key warnings
@@ -564,6 +680,21 @@ export default function HomeScreen() {
                   );
                 })}
               </ScrollView>
+              
+              {/* Pagination dots */}
+              <View style={styles.paginationContainer}>
+                {upcomingExperiences.map((_: any, index: number) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.paginationDot,
+                      index === currentExperienceIndex && styles.paginationDotActive,
+                      { backgroundColor: index === currentExperienceIndex ? colors.tint : colors.border }
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
             </>
           )}
 
@@ -826,5 +957,43 @@ const styles = StyleSheet.create({
   seeMoreButtonText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  carouselWrapper: {
+    position: 'relative',
+  },
+  navArrow: {
+    position: 'absolute',
+    top: '50%',
+    zIndex: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: -20,
+  },
+  leftArrow: {
+    left: 10,
+  },
+  rightArrow: {
+    right: 10,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingTop: 10,
+    paddingBottom: 5,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    width: 12,
+    height: 8,
+    borderRadius: 6,
   },
 });
