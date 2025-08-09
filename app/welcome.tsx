@@ -62,7 +62,7 @@ const WelcomeScreen = () => {
         {/* Welcome Video */}
         <VideoPlayer
           ref={videoRef}
-          videoUri="https://timely-actor-10dfb03957.media.strapiapp.com/videoplayback_d9388e2096.mp4"
+          videoUri="https://timely-actor-10dfb03957.media.strapiapp.com/SRR_Portland2025_appwelcome01_5157f41ac6.mp4"
           aspectRatio={9 / 16}
           autoPlay={true}
           loop={false} // Don't loop to avoid distraction
