@@ -71,7 +71,7 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
         // Schedule notifications
         await experiencesService.scheduleNotifications(experience.id);
         Alert.alert(
-          'Notifications Enabled',
+          'Notifications Re-enabled',
           'You will receive a reminder 20 minutes before your experience begins.',
           [{ text: 'OK' }]
         );
@@ -80,7 +80,7 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
         await experiencesService.cancelNotifications(experience.id);
         Alert.alert(
           'Notifications Disabled',
-          'You will no longer receive reminders for this experience.',
+          'You have opted out of reminders for this experience. You can re-enable them anytime.',
           [{ text: 'OK' }]
         );
       }
@@ -171,7 +171,10 @@ const ExperienceNotificationSettings: React.FC<ExperienceNotificationSettingsPro
             Receive Notifications
           </Text>
           <Text style={[styles.toggleSubtitle, { color: colors.secondaryText }]}> 
-            Get reminded 20 minutes before your experience begins
+            {notificationsEnabled 
+              ? 'You will receive reminders for this experience (turn off to opt-out)'
+              : 'Notifications disabled for this experience (turn on to re-enable)'
+            }
           </Text>
         </View>
         

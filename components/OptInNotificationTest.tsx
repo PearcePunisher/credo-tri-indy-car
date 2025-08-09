@@ -22,14 +22,14 @@ const OptInNotificationTest: React.FC = () => {
     }
   };
 
-  const testOptInBehavior = async () => {
+  const testOptOutBehavior = async () => {
     try {
-      Alert.alert('Testing Opt-In Behavior', 'Check console for details...');
+      Alert.alert('Testing Opt-Out Behavior', 'Check console for details...');
       
       // Get experiences and check default notification statuses
       const response = await experiencesService.getExperiences();
       if (response.data?.data.schedule_experiences) {
-        console.log('🧪 Testing Opt-In Notification Behavior');
+        console.log('🧪 Testing Opt-Out Notification Behavior');
         console.log('📊 Total experiences:', response.data.data.schedule_experiences.length);
         
         let enabledCount = 0;
@@ -37,29 +37,36 @@ const OptInNotificationTest: React.FC = () => {
         
         for (const item of response.data.data.schedule_experiences) {
           const experience = item.schedule_experience;
+          
+          // Skip null/undefined experiences
+          if (!experience || !experience.id) {
+            console.warn('⚠️ Skipping invalid experience:', experience);
+            continue;
+          }
+          
           const isEnabled = await experiencesService.getNotificationStatus(experience.id);
           
           if (isEnabled) {
             enabledCount++;
-            console.log(`✅ ENABLED: ${experience.experience_title}`);
+            console.log(`✅ ENABLED: ${experience.experience_title || 'Unknown'}`);
           } else {
             disabledCount++;
-            console.log(`❌ DISABLED: ${experience.experience_title}`);
+            console.log(`❌ DISABLED: ${experience.experience_title || 'Unknown'}`);
           }
         }
         
         console.log('📈 Summary:');
         console.log(`  Enabled: ${enabledCount}`);
         console.log(`  Disabled: ${disabledCount}`);
-        console.log(`  Expected with opt-in: All should be disabled by default`);
+        console.log(`  Expected with opt-out: All should be enabled by default`);
         
         // Update notification count
         const finalCount = await experiencesService.getScheduledNotificationCount();
         setNotificationCount(finalCount);
         
         Alert.alert(
-          'Opt-In Test Results',
-          `Enabled: ${enabledCount}\nDisabled: ${disabledCount}\nScheduled notifications: ${finalCount}\n\nExpected: All disabled by default with opt-in approach`
+          'Opt-Out Test Results',
+          `Enabled: ${enabledCount}\nDisabled: ${disabledCount}\nScheduled notifications: ${finalCount}\n\nExpected: All enabled by default with opt-out approach`
         );
       }
     } catch (error) {
@@ -68,33 +75,96 @@ const OptInNotificationTest: React.FC = () => {
     }
   };
 
-  const simulateUserOptIn = async () => {
+  const simulateUserOptOut = async () => {
     try {
       const response = await experiencesService.getExperiences();
       if (response.data?.data.schedule_experiences && response.data.data.schedule_experiences.length > 0) {
-        const firstExperience = response.data.data.schedule_experiences[0].schedule_experience;
+        // Find the first valid experience
+        const validExperience = response.data.data.schedule_experiences.find(
+          item => item.schedule_experience && item.schedule_experience.id
+        );
         
-        // Simulate user opting in to notifications for the first experience
-        await experiencesService.setNotificationStatus(firstExperience.id, true);
-        await experiencesService.scheduleExperienceNotifications(firstExperience);
+        if (!validExperience) {
+          Alert.alert('Error', 'No valid experiences found for testing');
+          return;
+        }
+        
+        const firstExperience = validExperience.schedule_experience;
+        
+        // Simulate user opting out of notifications for the first experience
+        await experiencesService.setNotificationStatus(firstExperience.id, false);
+        await experiencesService.cancelNotifications(firstExperience.id);
         
         const newCount = await experiencesService.getScheduledNotificationCount();
         setNotificationCount(newCount);
         
         Alert.alert(
-          'User Opt-In Simulated',
-          `Opted into notifications for: ${firstExperience.experience_title}\n\nNew notification count: ${newCount}`
+          'User Opt-Out Simulated',
+          `Opted out of notifications for: ${firstExperience.experience_title}\n\nNew notification count: ${newCount}`
         );
       }
     } catch (error) {
-      console.error('❌ Opt-in simulation failed:', error);
-      Alert.alert('Error', 'Failed to simulate user opt-in');
+      console.error('❌ Opt-out simulation failed:', error);
+      Alert.alert('Error', 'Failed to simulate user opt-out');
+    }
+  };
+
+  const clearAutoSubscriptionStatus = async () => {
+    try {
+      await experiencesService.clearAutoSubscriptionStatus();
+      await experiencesService.clearNotificationPreferences();
+      
+      const newCount = await experiencesService.getScheduledNotificationCount();
+      setNotificationCount(newCount);
+      
+      Alert.alert(
+        'Auto-Subscription Status Cleared',
+        'You can now test the auto-subscription behavior again. Fetch experiences to trigger auto-subscription.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('❌ Failed to clear auto-subscription status:', error);
+      Alert.alert('Error', 'Failed to clear auto-subscription status');
+    }
+  };
+
+  const debugScheduledNotifications = async () => {
+    try {
+      // Import Notifications to check scheduled notifications
+      const Notifications = await import('expo-notifications');
+      const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+      
+      console.log('📋 Debug: All Scheduled Notifications');
+      console.log(`📊 Total scheduled: ${scheduled.length}`);
+      
+      if (scheduled.length > 0) {
+        console.log('📝 Scheduled notification details:');
+        scheduled.forEach((notification, index) => {
+          console.log(`${index + 1}. Notification ID: ${notification.identifier}`);
+          console.log(`   Title: ${notification.content.title}`);
+          console.log(`   Body: ${notification.content.body}`);
+          console.log(`   Trigger: ${JSON.stringify(notification.trigger, null, 2)}`);
+          console.log(`   Data: ${JSON.stringify(notification.content.data, null, 2)}`);
+          console.log('   ---');
+        });
+      } else {
+        console.log('📋 No scheduled notifications found');
+      }
+      
+      Alert.alert(
+        'Scheduled Notifications Debug',
+        `Found ${scheduled.length} scheduled notifications.\n\nCheck console for detailed information.`,
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('❌ Failed to debug scheduled notifications:', error);
+      Alert.alert('Error', 'Failed to debug scheduled notifications');
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Opt-In Test</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Opt-Out Test</Text>
       
       <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
         Current scheduled notifications: {notificationCount}
@@ -102,19 +172,28 @@ const OptInNotificationTest: React.FC = () => {
       
       <TouchableOpacity 
         style={[styles.button, { backgroundColor: colors.tint }]} 
-        onPress={testOptInBehavior}
+        onPress={testOptOutBehavior}
       >
         <Text style={[styles.buttonText, { color: colors.textOnGreen }]}>
-          Test Opt-In Default Behavior
+          Test Opt-Out Default Behavior
         </Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
         style={[styles.button, { backgroundColor: colors.tint }]} 
-        onPress={simulateUserOptIn}
+        onPress={simulateUserOptOut}
       >
         <Text style={[styles.buttonText, { color: colors.textOnGreen }]}>
-          Simulate User Opt-In
+          Simulate User Opt-Out
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.button, { backgroundColor: '#ff9500' }]} 
+        onPress={clearAutoSubscriptionStatus}
+      >
+        <Text style={[styles.buttonText, { color: 'white' }]}>
+          Clear Auto-Subscription Status
         </Text>
       </TouchableOpacity>
       
@@ -124,6 +203,15 @@ const OptInNotificationTest: React.FC = () => {
       >
         <Text style={[styles.buttonText, { color: 'white' }]}>
           Refresh Notification Count
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.button, { backgroundColor: '#9b59b6' }]} 
+        onPress={debugScheduledNotifications}
+      >
+        <Text style={[styles.buttonText, { color: 'white' }]}>
+          Debug Scheduled Notifications
         </Text>
       </TouchableOpacity>
     </View>

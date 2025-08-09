@@ -190,11 +190,18 @@ class PushTokenService {
         return true;
       } else {
         const errorText = await response.text();
-        console.error('❌ Failed to register push token with backend:', response.status, errorText);
+        console.warn('⚠️ Backend push token registration failed (this is optional):', response.status, errorText);
+        
+        // If it's a method not allowed error, the backend doesn't support this endpoint yet
+        if (response.status === 405) {
+          console.log('ℹ️ Backend push token endpoint not implemented yet - notification system will work locally');
+        }
+        
         return false;
       }
     } catch (error) {
-      console.error('❌ Error registering push token with backend:', error);
+      console.warn('⚠️ Error registering push token with backend (this is optional):', error);
+      console.log('ℹ️ Notification system will continue to work locally without backend integration');
       return false;
     }
   }

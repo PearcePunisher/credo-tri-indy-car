@@ -38,8 +38,12 @@ export function useEnhancedNotifications({ userId, jwtToken, isVIP }: UseEnhance
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         if (userId && jwtToken) {
-          // Register for push notifications
-          await enhancedNotificationService.registerForPushNotifications(userId, jwtToken);
+          // Register for push notifications (don't block initialization if this fails)
+          try {
+            await enhancedNotificationService.registerForPushNotifications(userId, jwtToken);
+          } catch (error) {
+            console.warn('⚠️ Push token registration failed, but notifications will still work locally:', error);
+          }
         }
 
         // Load notification history

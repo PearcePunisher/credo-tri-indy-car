@@ -276,17 +276,29 @@ class EnhancedNotificationService {
     try {
   // 20 minutes before notification (only reminder we send)
   const twentyMinutesBefore = new Date(eventTime.getTime() - 20 * 60 * 1000);
+      console.log(`📅 Notification scheduling details:`);
       console.log(`   20 minutes before: ${twentyMinutesBefore.toISOString()}`);
+      console.log(`   Current time: ${now.toISOString()}`);
+      console.log(`   Minutes until notification: ${Math.round((twentyMinutesBefore.getTime() - now.getTime()) / (1000 * 60))}`);
       
       if (twentyMinutesBefore > now) {
         console.log('📱 Scheduling 20-minute notification...');
         const seconds = Math.ceil((twentyMinutesBefore.getTime() - now.getTime()) / 1000);
+        const minutes = Math.round(seconds / 60);
+        
+        console.log(`📋 Scheduling details:`);
         console.log(`   Trigger date: ${twentyMinutesBefore.toISOString()}`);
-        console.log(`   Time difference: ${Math.round(seconds / 60)} minutes from now`);
+        console.log(`   Time difference: ${minutes} minutes (${seconds} seconds) from now`);
+        console.log(`   Local trigger time: ${twentyMinutesBefore.toLocaleString()}`);
+        
         if (seconds <= 0) {
           console.log('⏭️ Skipping 20-minute notification (computed seconds <= 0)');
           return scheduledNotifications;
         }
+        
+        // Add minimum delay to prevent immediate firing in Expo Go
+        const minDelaySeconds = Math.max(seconds, 10); // At least 10 seconds delay
+        console.log(`   Using delay: ${minDelaySeconds} seconds (adjusted for Expo Go)`);
         
         const twentyMinNotificationId = await this.scheduleNotification({
           title: `${experience.experience_title} starting soon`,
@@ -338,21 +350,33 @@ class EnhancedNotificationService {
     try {
       // Normalize trigger: prefer timeInterval triggers for reliability (esp. in Expo Go)
       let normalizedTrigger: Notifications.NotificationTriggerInput | null = null;
+      let triggerTime: Date | null = null;
+      
       if (trigger instanceof Date) {
+        triggerTime = trigger;
         const seconds = Math.ceil((trigger.getTime() - Date.now()) / 1000);
         if (seconds <= 0) {
           console.warn('⏭️ Skipping scheduling: trigger time is in the past');
           return null;
         }
-        normalizedTrigger = { seconds, repeats: false } as Notifications.TimeIntervalTriggerInput;
+        
+        // Add minimum delay for Expo Go to prevent immediate firing
+        const minDelaySeconds = Math.max(seconds, 30); // At least 30 seconds delay
+        normalizedTrigger = { seconds: minDelaySeconds, repeats: false } as Notifications.TimeIntervalTriggerInput;
+        
+        console.log(`⏰ Normalized trigger: ${minDelaySeconds} seconds from now (${Math.round(minDelaySeconds / 60)} minutes)`);
       } else if (trigger && (trigger as any).date instanceof Date) {
         const date = (trigger as any).date as Date;
+        triggerTime = date;
         const seconds = Math.ceil((date.getTime() - Date.now()) / 1000);
         if (seconds <= 0) {
           console.warn('⏭️ Skipping scheduling: trigger time is in the past');
           return null;
         }
-        normalizedTrigger = { seconds, repeats: false } as Notifications.TimeIntervalTriggerInput;
+        
+        // Add minimum delay for Expo Go
+        const minDelaySeconds = Math.max(seconds, 30);
+        normalizedTrigger = { seconds: minDelaySeconds, repeats: false } as Notifications.TimeIntervalTriggerInput;
       } else {
         normalizedTrigger = trigger as any;
       }
@@ -383,11 +407,15 @@ class EnhancedNotificationService {
         content.badge = notification.badge;
       }
       
-      console.log(`📱 Attempting to schedule notification:`, {
+      console.log(`📱 Scheduling notification:`, {
         title: content.title,
         trigger: normalizedTrigger,
+        triggerTime: triggerTime?.toISOString(),
+        triggerTimeLocal: triggerTime?.toLocaleString(),
         channelId: content.channelId,
-        hasData: !!content.data
+        hasData: !!content.data,
+        experienceId: content.data?.experienceId,
+        notificationType: content.data?.type
       });
       
   const id = await Notifications.scheduleNotificationAsync({
@@ -395,7 +423,22 @@ class EnhancedNotificationService {
         trigger: normalizedTrigger,
       });
       
-      console.log(`✅ Scheduled notification with ID: ${id}`);
+      console.log(`✅ Successfully scheduled notification with ID: ${id}`);
+      console.log(`   📅 Will fire at: ${triggerTime ? triggerTime.toLocaleString() : 'Unknown time'}`);
+      
+      // Add to notification history for bell/tray updates
+      await this.addToHistory({
+        id,
+        title: notification.title,
+        body: notification.body,
+        data: notification.data || {},
+        receivedAt: new Date(),
+        isRead: false,
+        category: notification.data?.category || NotificationCategory.GENERAL_ANNOUNCEMENT,
+        type: notification.data?.type || NotificationType.TWENTY_MINUTES_BEFORE,
+        experienceId: notification.data?.experienceId,
+      });
+      
       return id;
     } catch (error) {
       console.error('❌ Error scheduling notification:', error);
