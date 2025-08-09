@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from 'react-error-boundary';
 import { Text, View } from 'react-native';
-import AppPreloader from "@/components/AppPreloader";
 
 // Check if reanimated import causes issues in production
 try {
@@ -70,7 +69,6 @@ function ErrorFallback({error, resetErrorBoundary}: {error: Error, resetErrorBou
 export default function RootLayout() {
   console.log('🚀 RootLayout starting...');
   const { colorScheme } = useColorScheme();
-  const [assetsReady, setAssetsReady] = useState(false);
   
   console.log('📝 Skipping font loading for crash testing...');
   // TEMPORARILY DISABLED FOR CRASH TESTING
@@ -84,16 +82,16 @@ export default function RootLayout() {
   console.log('✅ Fonts loaded status (forced for testing):', loaded);
 
   useEffect(() => {
-    console.log('📱 useEffect triggered, loaded:', loaded, 'assetsReady:', assetsReady);
-    if (loaded && assetsReady) {
-      console.log('🎯 Hiding splash screen after assets preloaded...');
+    console.log('📱 useEffect triggered, loaded:', loaded);
+    if (loaded) {
+      console.log('🎯 Hiding splash screen after fonts loaded...');
       // Add a small delay to ensure everything is ready before hiding splash
       setTimeout(() => {
         SplashScreen.hideAsync();
         console.log('✅ Splash screen hidden');
       }, 100);
     }
-  }, [loaded, assetsReady]);
+  }, [loaded]);
 
   if (!loaded) {
     console.log('⏳ Fonts not loaded yet, returning null');
@@ -118,8 +116,6 @@ export default function RootLayout() {
               <ThemeProvider
                 value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
               <AppStateManager>
-                {/* Preload key image assets and show a subtle overlay while loading */}
-                <AppPreloader onReady={() => setAssetsReady(true)} />
                 <Stack screenOptions={{ animation: 'fade' }}>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen
