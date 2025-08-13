@@ -1,12 +1,15 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { scheduleAllFromStrapi, type SchedulePayload } from '@/services/NotificationScheduler';
+import { enableForegroundBanners } from '@/services/ForegroundNotificationHandler';
 
 export default function MockScheduleNotificationDemo() {
   const [status, setStatus] = useState<string>('Idle');
 
   const handleSchedule = useCallback(async () => {
     setStatus('Scheduling...');
+  // Enable foreground banners/sound for demo in Expo Go
+  enableForegroundBanners(true);
 
     // Create a simple mock payload emulating Strapi response shape
     const now = new Date();
@@ -41,7 +44,7 @@ export default function MockScheduleNotificationDemo() {
 
     try {
       // Use 1 minute lead so it fires ~1 minute from now
-      await scheduleAllFromStrapi(payload, { minutesBefore: 1 });
+  await scheduleAllFromStrapi(payload, { minutesBefore: 1, allowForegroundPresentation: true, forceSound: true });
       setStatus('Scheduled a demo notification');
     } catch (e) {
       console.warn('Mock schedule failed', e);

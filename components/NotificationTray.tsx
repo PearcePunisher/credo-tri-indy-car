@@ -15,6 +15,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import { ENV_CONFIG } from '@/constants/Environment';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import useEnhancedNotifications from '@/hooks/useEnhancedNotifications';
@@ -26,12 +27,17 @@ const TRAY_HEIGHT = SCREEN_HEIGHT * 0.8; // 80% of screen height for better posi
 
 // Set notification handler
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: false,
-    shouldShowList: false,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) => {
+    const data: any = notification?.request?.content?.data || {};
+    const allow = data?.forceForegroundBanner === true || ENV_CONFIG.IS_PRODUCTION === true;
+    const sound = data?.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true;
+    return {
+      shouldShowBanner: allow,
+      shouldShowList: allow,
+      shouldPlaySound: sound,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 interface NotificationTrayProps {

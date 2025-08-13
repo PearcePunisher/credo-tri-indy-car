@@ -2,17 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { enhancedNotificationService, NotificationHistory, notificationEvents } from '@/services/EnhancedNotificationService';
+import { ENV_CONFIG } from '@/constants/Environment';
 import { useRouter } from 'expo-router';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    // Suppress foreground banners to avoid Expo Go immediate presentation quirks
-    shouldShowBanner: false,
-    shouldShowList: false,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) => {
+    const data: any = notification?.request?.content?.data || {};
+    const allow = data?.forceForegroundBanner === true || ENV_CONFIG.IS_PRODUCTION === true;
+    const sound = data?.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true;
+    return {
+      shouldShowBanner: allow,
+      shouldShowList: allow,
+      shouldPlaySound: sound,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 interface UseEnhancedNotificationsProps {

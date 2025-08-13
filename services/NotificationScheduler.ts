@@ -10,6 +10,8 @@
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DateTime } from 'luxon';
+import { Platform } from 'react-native';
+import { ENV_CONFIG } from '@/constants/Environment';
 
 export type ExperienceItem = {
   id: number;
@@ -37,6 +39,8 @@ export type ScheduledRecord = {
 
 export type SchedulerOptions = {
   minutesBefore?: number; // default 20
+  allowForegroundPresentation?: boolean; // allow banner in foreground for dev/demo
+  forceSound?: boolean; // request sound for local notification
 };
 
 function firstSentenceFromRichText(input: any[] | string | null | undefined): string {
@@ -101,6 +105,19 @@ export async function scheduleAllFromStrapi(
   const scheduled = await getScheduledMap();
   const fallbackTz = payload.event_timezone || undefined;
 
+  // Android: ensure a high-importance channel exists so banners show
+  if (Platform.OS === 'android') {
+    try {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'Default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+        sound: 'default',
+      });
+    } catch {}
+  }
+
   for (const item of payload.schedule_experiences || []) {
     const ex = item?.schedule_experience;
     if (!ex || !ex.id) continue;
@@ -132,14 +149,26 @@ export async function scheduleAllFromStrapi(
 
     const body = firstSentenceFromRichText(ex.experience_description) || 'Starting soon.';
 
-  if (ok && (eventInFuture || seconds > 0)) {
+    if (ok && (eventInFuture || seconds > 0)) {
+      const trigger: Notifications.TimeIntervalTriggerInput = {
+        type: 'timeInterval',
+        seconds,
+        repeats: false,
+        ...(Platform.OS === 'android' ? { channelId: 'default' } : {}),
+      } as Notifications.TimeIntervalTriggerInput;
+
       const identifier = await Notifications.scheduleNotificationAsync({
         content: {
           title: ex.experience_title,
           body,
-          data: { experienceId: ex.id },
+          data: { 
+            experienceId: ex.id,
+            forceForegroundBanner: options.allowForegroundPresentation === true ? true : undefined,
+            forceSound: (options.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true) ? true : undefined,
+          },
+          sound: (options.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true) ? true : undefined,
         },
-        trigger: ({ type: 'timeInterval', seconds, repeats: false } as Notifications.TimeIntervalTriggerInput),
+        trigger,
       });
 
       // Persist identifier and the absolute scheduled time for countdowns

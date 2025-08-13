@@ -3,15 +3,21 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { notificationService } from '@/services/NotificationService';
 import { STRAPI_CONFIG, buildApiUrl } from '@/constants/StrapiConfig';
+import { ENV_CONFIG } from '@/constants/Environment';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: false,
-    shouldShowList: false,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) => {
+    const data: any = notification?.request?.content?.data || {};
+    const allow = data?.forceForegroundBanner === true || ENV_CONFIG.IS_PRODUCTION === true;
+    const sound = data?.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true;
+    return {
+      shouldShowBanner: allow,
+      shouldShowList: allow,
+      shouldPlaySound: sound,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 interface UseNotificationsProps {
