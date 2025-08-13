@@ -1,4 +1,5 @@
 import { enhancedNotificationService } from './EnhancedNotificationService';
+import { scheduleAllFromStrapi } from './NotificationScheduler';
 import { ENV_CONFIG } from '@/constants/Environment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthService from './AuthService';
@@ -108,6 +109,18 @@ class ExperiencesService {
       
       // Cache the data locally with user-specific key
       await this.cacheExperiences(data, currentUser.id);
+      
+      // Schedule notifications for all experiences using the new scheduler (20 minutes before by default)
+      try {
+        if (data?.data?.schedule_experiences && Array.isArray(data.data.schedule_experiences)) {
+          await scheduleAllFromStrapi({
+            schedule_experiences: data.data.schedule_experiences as any,
+            // Optionally pass event-wide timezone if available in your API response
+          }, { minutesBefore: 20 });
+        }
+      } catch (schedErr) {
+        console.warn('⚠️ Scheduling notifications from fetch failed:', schedErr);
+      }
       
       return data;
     } catch (error) {
@@ -509,33 +522,24 @@ class ExperiencesService {
 
   // Convenience methods for the UI
   async scheduleNotifications(experienceId: number): Promise<void> {
-   /// console.log('DESPO 1');
     const response = await this.getExperiences();
-  //  console.log("FIXING ERRORS THIS RESPO: "+JSON.stringify(response));
-   // console.log(response);
- //   console.log("IDK MAYBE");
-  //  console.log(response.data);
     if (response.data) {
-  //    console.log("Test 1");
-    //  console.log(response.data.data.schedule_experiences);
-      const experience = response.data.data.schedule_experiences.filter(item => 
-     item.schedule_experience && item.schedule_experience.id
-  ).find(item => item.schedule_experience.id !=null && item.schedule_experience.id === experienceId)?.schedule_experience;
-     // console.log("experience1 is done");
-    //        console.log("HOWDY!");
-    //  console.log(experience);
-     //       console.log("HOWDY2!");
-     // console.log(experienceId);
-      if (experience) {
-        await this.scheduleExperienceNotifications(experience);
-        await this.setNotificationStatus(experienceId, true);
-      }else{
-        console.error("WE HIT A NON EXPERIENC#!!!");
-      }
-    }else{
-      console.warn("Yeah guess it didn't work");
-    }
+      const experience = response.data.data.schedule_experiences
+        .filter(item => item?.schedule_experience && item.schedule_experience.id)
+        .find(item => item.schedule_experience.id === experienceId)?.schedule_experience as any;
 
+      if (experience) {
+        // Use new scheduler to avoid duplicates and follow unified logic
+        await scheduleAllFromStrapi({
+          schedule_experiences: [{ schedule_experience: experience }],
+        }, { minutesBefore: 20 });
+        await this.setNotificationStatus(experienceId, true);
+      } else {
+        console.warn('Experience not found when scheduling:', experienceId);
+      }
+    } else {
+      console.warn('No experiences data available to schedule');
+    }
   }
 
   // Opt-out method: Cancel notifications for a specific experience
@@ -546,7 +550,10 @@ class ExperiencesService {
 
   // Legacy method for backwards compatibility - now maps to opt-out
   async cancelNotifications(experienceId: number): Promise<void> {
-    await this.optOutOfNotifications(experienceId);
+    // Cancel via new scheduler and update status
+    const { cancelByExperienceIds } = await import('./NotificationScheduler');
+    await cancelByExperienceIds([experienceId]);
+    await this.setNotificationStatus(experienceId, false);
   }
 
   // Opt back in: Re-enable notifications for a specific experience

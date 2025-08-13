@@ -13,15 +13,18 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { parseISO, format, isSameDay, isPast, startOfDay } from 'date-fns';
+import { format, isSameDay, isPast, startOfDay } from 'date-fns';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import BrandLogo from '@/components/BrandLogo';
 import { experiencesService, type Experience } from '@/services/ExperiencesService';
 import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import { Ionicons } from '@expo/vector-icons';
-import NotificationDebugger from '@/components/NotificationDebugger';
 import FocusTransition from '@/components/ui/FocusTransition';
+
+// Importing Mock Notification test
+import MockScheduleNotificationDemo from '@/examples/MockScheduleNotificationDemo';
+import NextNotificationCountdown from '@/components/NextNotificationCountdown';
 
 interface GroupedExperiences {
   [dateKey: string]: Experience[];
@@ -186,6 +189,12 @@ const ScheduleScreen = () => {
     new Date(a).getTime() - new Date(b).getTime() // Earliest first for future events
   );
 
+  // Compute next event (fallback for countdown when no notification is pending)
+  const nextEvent = (() => {
+    const all = sortExperiencesByTime(futureExperiences);
+    return all.length > 0 ? all[0] : null;
+  })();
+
   const renderNotificationIcon = (experienceId: number) => {
     const isEnabled = notificationStates[experienceId];
     return (
@@ -311,9 +320,15 @@ const ScheduleScreen = () => {
       >
         <BrandLogo style={styles.brand} />
         <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
+        {/* Countdown to the next scheduled notification (scoped to future experiences), with event fallback */}
+        <NextNotificationCountdown 
+          experienceIds={futureExperiences.map(e => e.id)} 
+          fallbackWhen={nextEvent ? experiencesService.convertToEventLocalTime(nextEvent.experience_start_date_time) : null}
+          fallbackTitle={nextEvent?.experience_title}
+        />
         
         {/* Temporary debugging component */}
-        {/* <NotificationDebugger /> */}
+        <MockScheduleNotificationDemo />
 
         {experiences.length === 0 ? (
           <View style={styles.emptyState}>
