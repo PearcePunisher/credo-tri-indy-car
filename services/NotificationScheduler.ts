@@ -146,6 +146,10 @@ export async function scheduleAllFromStrapi(
     // Schedule ASAP (5s) if user opened the app after the 20-minute mark but before event start
     seconds = 5;
   }
+  // Guardrail: iOS timeInterval triggers can be flaky for ultra-small values; clamp to >= 5s
+  if (seconds > 0 && seconds < 5) {
+    seconds = 5;
+  }
 
     const body = firstSentenceFromRichText(ex.experience_description) || 'Starting soon.';
 
