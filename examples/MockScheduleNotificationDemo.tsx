@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { scheduleAllFromStrapi, type SchedulePayload } from '@/services/NotificationScheduler';
 import { enableForegroundBanners } from '@/services/ForegroundNotificationHandler';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -47,15 +48,13 @@ export default function MockScheduleNotificationDemo() {
     const inMinutes = 2; // schedule 2 minutes from now (then the scheduler subtracts 1 minute lead we choose below)
     const eventDate = new Date(now.getTime() + inMinutes * 60 * 1000);
 
-    const isoLocal = new Date(
-      eventDate.getFullYear(),
-      eventDate.getMonth(),
-      eventDate.getDate(),
-      eventDate.getHours(),
-      eventDate.getMinutes(),
-      0,
-      0
-    ).toISOString();
+  // Build a naive local ISO string (no timezone) so scheduler treats it as wall-clock local
+  const y = eventDate.getFullYear();
+  const m = String(eventDate.getMonth() + 1).padStart(2, '0');
+  const d = String(eventDate.getDate()).padStart(2, '0');
+  const hh = String(eventDate.getHours()).padStart(2, '0');
+  const mm = String(eventDate.getMinutes()).padStart(2, '0');
+  const isoLocal = `${y}-${m}-${d}T${hh}:${mm}:00`;
 
     const payload: SchedulePayload = {
       schedule_experiences: [
@@ -106,6 +105,7 @@ export default function MockScheduleNotificationDemo() {
   const handleInTenSeconds = useCallback(async () => {
     try {
       enableForegroundBanners(true);
+  const trigger = { type: 'timeInterval', seconds: 10, repeats: false } as any;
       await Notifications.scheduleNotificationAsync({
         content: {
           title: '10s Test',
@@ -113,12 +113,24 @@ export default function MockScheduleNotificationDemo() {
           data: { forceForegroundBanner: true, forceSound: true },
           sound: true,
         },
-        trigger: { date: new Date(Date.now() + 10_000) } as Notifications.NotificationTriggerInput,
+        trigger,
       });
       setStatus('Scheduled 10s test');
       await refreshDebug();
     } catch (e) {
       setStatus('10s test failed');
+    }
+  }, [refreshDebug]);
+
+  const handleReset = useCallback(async () => {
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      // Clear scheduler mapping so it will reschedule fresh next time
+      await AsyncStorage.removeItem('scheduled_experience_notifications_v1');
+      setStatus('Reset scheduled notifications');
+      await refreshDebug();
+    } catch (e) {
+      setStatus('Reset failed');
     }
   }, [refreshDebug]);
 
@@ -136,6 +148,9 @@ export default function MockScheduleNotificationDemo() {
       </TouchableOpacity>
       <Text style={[styles.status, { color: colors.secondaryText }]}>{status}</Text>
       <Text style={[styles.debug, { color: colors.secondaryText }]}>Permission: {permission} • Scheduled: {scheduledCount}</Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: colors.error }]} onPress={handleReset}>
+        <Text style={[styles.buttonText, { color: colors.textOnGreen }]}>Reset Demo Schedules</Text>
+      </TouchableOpacity>
     </View>
   );
 }

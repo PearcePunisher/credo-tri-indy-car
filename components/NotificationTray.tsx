@@ -25,20 +25,7 @@ import { useAuth } from '@/hooks/useAuth';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const TRAY_HEIGHT = SCREEN_HEIGHT * 0.8; // 80% of screen height for better positioning
 
-// Set notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async (notification) => {
-    const data: any = notification?.request?.content?.data || {};
-    const allow = data?.forceForegroundBanner === true || ENV_CONFIG.IS_PRODUCTION === true;
-    const sound = data?.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true;
-    return {
-      shouldShowBanner: allow,
-      shouldShowList: allow,
-      shouldPlaySound: sound,
-      shouldSetBadge: false,
-    };
-  },
-});
+// Notification handler is configured centrally in NotificationBootstrap
 
 interface NotificationTrayProps {
   visible: boolean;

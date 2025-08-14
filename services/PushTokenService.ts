@@ -259,16 +259,8 @@ class PushTokenService {
    * Configure notification behavior
    */
   private configureNotificationHandler(): void {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-      }),
-    });
-
-    // Configure notification categories for interactive notifications
+  // Handler is configured centrally; only set categories here
+  // Configure notification categories for interactive notifications
     this.setupNotificationCategories();
   }
 

@@ -5,20 +5,7 @@ import { enhancedNotificationService, NotificationHistory, notificationEvents } 
 import { ENV_CONFIG } from '@/constants/Environment';
 import { useRouter } from 'expo-router';
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async (notification) => {
-    const data: any = notification?.request?.content?.data || {};
-    const allow = data?.forceForegroundBanner === true || ENV_CONFIG.IS_PRODUCTION === true;
-    const sound = data?.forceSound === true || ENV_CONFIG.IS_PRODUCTION === true;
-    return {
-      shouldShowBanner: allow,
-      shouldShowList: allow,
-      shouldPlaySound: sound,
-      shouldSetBadge: false,
-    };
-  },
-});
+// Notification handler is configured centrally in NotificationBootstrap
 
 interface UseEnhancedNotificationsProps {
   userId?: string;

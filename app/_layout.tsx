@@ -26,7 +26,10 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { TeamThemeProvider } from "@/theme/TeamThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import AppStateManager from "../components/AppStateManager";
+import { resyncScheduledNotifications } from "@/services/NotificationScheduler";
+import { AppState } from 'react-native';
 import { PushTokenInitializer } from "../components/PushTokenInitializer";
+import { initNotifications } from "@/services/NotificationBootstrap";
 
 // Add native crash logging and environment validation
 console.log('📱 App starting - Native level');
@@ -82,6 +85,21 @@ export default function RootLayout() {
   console.log('✅ Fonts loaded status (forced for testing):', loaded);
 
   useEffect(() => {
+  // Initialize notifications once at app start (single handler + Android channel)
+  initNotifications().catch((e) => console.warn('Notifications init failed', e));
+
+    // Kick a resync after boot
+    setTimeout(() => {
+      resyncScheduledNotifications().then((r) => console.log('[Notifications] Boot resync:', r)).catch(() => {});
+    }, 500);
+
+    // Resync on app foreground
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        resyncScheduledNotifications().then((r) => console.log('[Notifications] Foreground resync:', r)).catch(() => {});
+      }
+    });
+
     console.log('📱 useEffect triggered, loaded:', loaded);
     if (loaded) {
       console.log('🎯 Hiding splash screen after fonts loaded...');
@@ -91,6 +109,7 @@ export default function RootLayout() {
         console.log('✅ Splash screen hidden');
       }, 100);
     }
+    return () => sub.remove();
   }, [loaded]);
 
   if (!loaded) {

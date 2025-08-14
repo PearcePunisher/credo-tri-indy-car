@@ -78,6 +78,10 @@ export default function VIPHomeScreen() {
           <View style={styles.tile}>
             <VIPTile icon="help" label="FAQ's" onPress={() => router.push("/faq")} />
           </View>
+          {/* Notification Health */}
+          <View style={styles.tile}>
+            <VIPTile icon="alert" label="Notification Health" onPress={() => router.push("/notification-health")} />
+          </View>
           {/* <View style={styles.tile}>
             <VIPTile icon="mail" label="Feedback" onPress={() => {}} />
           </View> */}

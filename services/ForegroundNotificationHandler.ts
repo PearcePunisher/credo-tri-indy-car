@@ -1,23 +1,7 @@
-import * as Notifications from 'expo-notifications';
-
-let enabled = false;
+import { setForegroundOverride } from '@/services/NotificationBootstrap';
 
 export function enableForegroundBanners(enable: boolean) {
-  enabled = enable;
-  if (!enabled) return;
-  Notifications.setNotificationHandler({
-    handleNotification: async (notification) => {
-      const data: any = notification?.request?.content?.data || {};
-      const allow = data?.forceForegroundBanner === true;
-      const sound = data?.forceSound === true;
-      return {
-        shouldShowBanner: allow,
-        shouldShowList: allow,
-        shouldPlaySound: sound,
-        shouldSetBadge: false,
-      };
-    },
-  });
+  setForegroundOverride(enable, enable);
 }
 
 export default enableForegroundBanners;

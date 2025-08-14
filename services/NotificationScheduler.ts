@@ -85,7 +85,7 @@ async function ensurePermissions(): Promise<boolean> {
   return req.status === 'granted';
 }
 
-async function getScheduledMap(): Promise<ScheduledRecord> {
+export async function getPersistedSchedule(): Promise<ScheduledRecord> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   return raw ? (JSON.parse(raw) as ScheduledRecord) : {};
 }
@@ -101,8 +101,9 @@ export async function scheduleAllFromStrapi(
   const minutesBefore = options.minutesBefore ?? 20;
 
   const ok = await ensurePermissions();
+  console.log('[Scheduler] Permissions granted:', ok);
 
-  const scheduled = await getScheduledMap();
+  const scheduled = await getPersistedSchedule();
   const fallbackTz = payload.event_timezone || undefined;
 
   // Android: ensure a high-importance channel exists so banners show
@@ -131,6 +132,13 @@ export async function scheduleAllFromStrapi(
     const now = DateTime.now();
     const eventInFuture = dt > now;
     const missedWindow = fireAt <= now && eventInFuture; // within the last 20 minutes
+    console.log('[Scheduler] Experience', ex.id, ex.experience_title, {
+      eventStartISO: dt.toISO(),
+      fireAtISO: fireAt.toISO(),
+      nowISO: now.toISO(),
+      eventInFuture,
+      missedWindow,
+    });
 
     // Avoid duplicates, but allow upgrading 'pending' entries when permissions become available
     const existing = scheduled[ex.id];
@@ -150,6 +158,11 @@ export async function scheduleAllFromStrapi(
   if (seconds > 0 && seconds < 5) {
     seconds = 5;
   }
+  if (seconds <= 0 && eventInFuture) {
+    // If rounding produced 0 or negative but event is still in the future, bump to 5s
+    seconds = 5;
+  }
+  console.log('[Scheduler] Scheduling with seconds:', seconds);
 
     const body = firstSentenceFromRichText(ex.experience_description) || 'Starting soon.';
 
@@ -174,6 +187,7 @@ export async function scheduleAllFromStrapi(
         },
         trigger,
       });
+      console.log('[Scheduler] Scheduled identifier:', identifier);
 
       // Persist identifier and the absolute scheduled time for countdowns
       scheduled[ex.id] = { id: identifier, fireAt: fireAt.toISO(), title: ex.experience_title } as any;
@@ -188,7 +202,7 @@ export async function scheduleAllFromStrapi(
 
 // Helper to cancel all scheduled notifications for these experiences (by id)
 export async function cancelByExperienceIds(ids: number[]): Promise<void> {
-  const scheduled = await getScheduledMap();
+  const scheduled = await getPersistedSchedule();
   for (const id of ids) {
     const entry = scheduled[id];
     const identifier = typeof entry === 'string' ? entry : entry?.id;
@@ -204,7 +218,7 @@ export async function cancelByExperienceIds(ids: number[]): Promise<void> {
 
 // Helper: get the next scheduled notification entry (soonest by fireAt)
 export async function getNextScheduledNotification(filterIds?: number[]): Promise<{ experienceId: number; fireAt: Date; title?: string } | null> {
-  const scheduled = await getScheduledMap();
+  const scheduled = await getPersistedSchedule();
   const now = new Date();
   let best: { experienceId: number; fireAt: Date; title?: string } | null = null;
   for (const key of Object.keys(scheduled)) {
@@ -222,6 +236,83 @@ export async function getNextScheduledNotification(filterIds?: number[]): Promis
     }
   }
   return best;
+}
+
+// List OS-level scheduled notifications
+export async function listOsScheduled(): Promise<Notifications.NotificationRequest[]> {
+  try {
+    return await Notifications.getAllScheduledNotificationsAsync();
+  } catch (e) {
+    console.warn('[Scheduler] listOsScheduled failed', e);
+    return [];
+  }
+}
+
+// Resync missing scheduled notifications from persisted map
+export async function resyncScheduledNotifications(): Promise<{ rescheduled: number; removed: number }> {
+  const result = { rescheduled: 0, removed: 0 };
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    const hasPerm = status === 'granted';
+    const map = await getPersistedSchedule();
+    const os = await Notifications.getAllScheduledNotificationsAsync();
+    const present = new Set(os.map((r) => r.identifier));
+    const now = new Date();
+
+    for (const key of Object.keys(map)) {
+      const expId = Number(key);
+      const entry = map[expId];
+      const id = typeof entry === 'string' ? entry : (entry as any)?.id;
+      const fireISO = typeof entry === 'string' ? undefined : (entry as any)?.fireAt;
+      const title = typeof entry === 'string' ? undefined : (entry as any)?.title || 'Starting soon';
+      const isPending = typeof id === 'string' && id.startsWith('pending:');
+      const inOs = id && present.has(id);
+
+      if (inOs && !isPending) continue; // all good
+
+      // If permission not granted, keep a pending stub
+      if (!hasPerm) {
+        if (!isPending) {
+          map[expId] = { id: `pending:${expId}`, fireAt: fireISO, title } as any;
+        }
+        continue;
+      }
+
+      // Must have a future fire time to reschedule
+      const fireAt = fireISO ? new Date(fireISO) : null;
+      if (!fireAt || isNaN(fireAt.getTime()) || fireAt <= now) {
+        // Remove stale
+        delete map[expId];
+        result.removed++;
+        continue;
+      }
+
+      // Compute seconds; clamp to >=5
+      let seconds = Math.ceil((fireAt.getTime() - now.getTime()) / 1000);
+      if (seconds < 5) seconds = 5;
+
+      try {
+        const identifier = await Notifications.scheduleNotificationAsync({
+          content: {
+            title,
+            body: 'Starting soon.',
+            data: { experienceId: expId },
+            sound: true,
+          },
+          trigger: { seconds, repeats: false } as any,
+        });
+        map[expId] = { id: identifier, fireAt: fireISO, title } as any;
+        result.rescheduled++;
+      } catch (e) {
+        console.warn('[Scheduler] Reschedule failed for', expId, e);
+      }
+    }
+
+    await setScheduledMap(map);
+  } catch (e) {
+    console.warn('[Scheduler] resyncScheduledNotifications failed', e);
+  }
+  return result;
 }
 
 // Example integration with a mock file placed in assets or a local json import can call scheduleAllFromStrapi
