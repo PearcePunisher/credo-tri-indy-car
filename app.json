@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "icon":"./assets/icons/jhr.icon",
       "supportsTablet": true,
       "bundleIdentifier": "com.wickedthink.indycar",
       "infoPlist": {
@@ -60,6 +61,19 @@
         {
           "supportsBackgroundPlayback": false,
           "supportsPictureInPicture": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/notification-icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": [
+            "./assets/sounds/notification_sound.wav",
+            "./assets/sounds/notification_sound_other.wav"
+          ],
+          "enableBackgroundRemoteNotifications": false
         }
       ]
     ],
