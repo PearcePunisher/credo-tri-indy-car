@@ -85,15 +85,15 @@ const RichTextRenderer = ({
         linkText = child.children.map(c => c.text || '').join('');
       }
       
-      console.log('Link found:', { text: linkText, url: child.url, textLength: linkText?.length, type: child.type });
+  // ...existing code...
       
       return (
         <TouchableOpacity
           key={index}
           onPress={() => {
-            console.log('Opening URL:', child.url);
+            // ...existing code...
             Linking.openURL(child.url!).catch(err => {
-              console.error('Error opening URL:', err);
+              // ...existing code...
             });
           }}
           style={[styles.linkContainer, { backgroundColor: 'rgba(0,0,255,0.1)', minHeight: 20, paddingVertical: 2 }]} // Debug: add background and min height
@@ -192,7 +192,7 @@ export default function FAQScreen() {
         setError('No FAQ data found');
       }
     } catch (err) {
-      console.error('Error fetching FAQs:', err);
+  // ...existing code...
       setError('Failed to load FAQs. Please try again later.');
     } finally {
       setLoading(false);
@@ -216,7 +216,7 @@ const fetchFAQs = async () => {
       if (data.data && data.data.length > 0 && data.data[0].FAQs) {
         //setFaqData(data.data[0].FAQs);//this is our data. 
        await FileSystem.writeAsStringAsync(FAQS_FILE, JSON.stringify(data.data[0].FAQs));
-       console.log("Success!");
+  // ...existing code...
 
        setFaqData(JSON.parse(await FileSystem.readAsStringAsync(FAQS_FILE)));
 
@@ -224,7 +224,7 @@ const fetchFAQs = async () => {
         setError('No FAQ data found');
       }
     } catch (err) {
-      console.error('Error fetching FAQs:', err);
+  // ...existing code...
       setError('Failed to load FAQs. Please try again later.');
     } finally {
       setLoading(false);

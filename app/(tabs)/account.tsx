@@ -42,7 +42,7 @@ const AccountScreen = () => {
     if (!invitationCode.trim()) return;
     
     setIsUpdatingCode(true);
-    console.log("🔄 Updating invitation code:", invitationCode);
+  // ...existing code...
     
     try {
       // Create payload similar to registration using cached user data
@@ -53,7 +53,7 @@ const AccountScreen = () => {
         id: user.serverId || user.id, // Send existing user ID
       };
 
-      console.log("📤 Sending invitation code update payload:", payload);
+  // ...existing code...
 
       const response = await fetch(
         "https://nodejs-production-0e5a.up.railway.app/get_dummy_schedule",
@@ -64,12 +64,12 @@ const AccountScreen = () => {
         }
       );
 
-      console.log(`📊 Server response status: ${response.status}`);
+  // ...existing code...
 
       if (response.status === 200) {
         // Get the response data from the server
         const responseData = await response.json();
-        console.log('✅ Server response data:', responseData);
+  // ...existing code...
         
         // Server returns data directly (not nested under "response")
         if (responseData && (responseData.event_code_document_id || responseData.event_schedule_document_id)) {
@@ -90,23 +90,7 @@ const AccountScreen = () => {
           const { experiencesService } = await import('@/services/ExperiencesService');
           await experiencesService.refreshData();
           
-          console.log('✅ Event switching successful');
-          console.log('🔄 Updated event document IDs:', {
-            eventCodeDocumentId: responseData.event_code_document_id,
-            eventScheduleDocumentId: responseData.event_schedule_document_id,
-          });
-          console.log('🔄 Experience cache cleared, fresh schedule data will be fetched');
-          
-          // Log the changes for verification
-          console.log('🔄 Updated user data:', {
-            oldEventCodeDocumentId: user.eventCodeDocumentId,
-            newEventCodeDocumentId: updatedUserData.eventCodeDocumentId,
-            oldEventScheduleDocumentId: user.eventScheduleDocumentId,  
-            newEventScheduleDocumentId: updatedUserData.eventScheduleDocumentId,
-            oldInvitationCode: user.invitationCode,
-            newInvitationCode: updatedUserData.invitationCode,
-          });
-          
+          // ...existing code...
           Alert.alert(
             "Event Switch Successful",
             `Your invitation code "${invitationCode.trim()}" has been accepted. You now have access to the new event schedule!`,
@@ -123,12 +107,7 @@ const AccountScreen = () => {
           // Store the updated user data preserving all states
           await updateUserInStorage(updatedUserData);
           
-          console.log('✅ Invitation code updated locally');
-          console.log('🔄 Updated invitation code:', {
-            oldInvitationCode: user.invitationCode,
-            newInvitationCode: updatedUserData.invitationCode,
-          });
-          
+          // ...existing code...
           Alert.alert(
             "Code Accepted",
             `Your invitation code "${invitationCode.trim()}" has been accepted!`,
@@ -140,7 +119,6 @@ const AccountScreen = () => {
         setInvitationCode("");
       } else {
         const errorData = await response.text();
-        console.error('❌ Server error response:', response.status, errorData);
         Alert.alert(
           "Invalid Invitation Code",
           `The invitation code "${invitationCode.trim()}" is not valid or has expired. Please check the code and try again.`,
@@ -148,7 +126,6 @@ const AccountScreen = () => {
         );
       }
     } catch (error) {
-      console.error("❌ Network error submitting invitation code:", error);
       Alert.alert(
         "Connection Error", 
         "Unable to validate invitation code. Please check your internet connection and try again.",
@@ -170,9 +147,9 @@ const AccountScreen = () => {
       
       // Force re-initialization to pick up the updated user data
       const updatedAuthState = await authService.initializeAuth();
-      console.log('🔄 Auth state refreshed with updated user data');
+  // ...existing code...
     } catch (error) {
-      console.error('Error updating user in storage:', error);
+  // ...existing code...
       throw error;
     }
   };
@@ -190,7 +167,7 @@ const AccountScreen = () => {
             try {
               await logout();
             } catch (error) {
-              console.error("Logout error:", error);
+              // ...existing code...
             }
           },
         },

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-console.log("✅ React imported");
 import {
   SafeAreaView,
   ScrollView,
@@ -10,23 +9,14 @@ import {
   Alert,
   Dimensions,
 } from "react-native";
-console.log("✅ React Native components imported");
 import { useColorScheme } from "@/hooks/useColorScheme";
-console.log("✅ useColorScheme hook imported");
 import { Colors } from "@/constants/Colors";
-console.log("✅ Colors constants imported");
 import BrandLogo from "@/components/BrandLogo";
-console.log("✅ BrandLogo component imported");
 import { RegisterScreenFormik } from "@/components/forms/UserRegistrationFormik";
-console.log("✅ RegisterScreenFormik component imported");
 import { LoginForm } from "@/components/forms/LoginForm";
-console.log("✅ LoginForm component imported");
 import { useRouter } from "expo-router";
-console.log("✅ useRouter hook imported");
 import { useAuth } from "@/hooks/useAuth";
-console.log("✅ useAuth hook imported");
 
-console.log("🚀 All imports completed for UserID page");
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side
@@ -39,9 +29,7 @@ export const options = {
 type AuthMode = "register" | "login" | "guest";
 
 export const UserActivationFormik = () => {
-  console.log(
-    "🔧 UserActivationFormik component starting for registration testing..."
-  );
+  // ...existing code...
 
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
@@ -49,9 +37,7 @@ export const UserActivationFormik = () => {
   const { createLocalAuthState, authState } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>("register");
 
-  console.log(
-    "✅ UserActivationFormik hooks initialized - AuthNavigator is disabled, manual testing mode"
-  );
+  // ...existing code...
 
   const handleGuestContinue = async () => {
     Alert.alert(
@@ -74,7 +60,7 @@ export const UserActivationFormik = () => {
               });
               router.push("/welcome");
             } catch (error) {
-              console.error("Error creating guest state:", error);
+              // ...existing code...
               router.push("/welcome");
             }
           },

@@ -29,7 +29,7 @@ const CarScreen = () => {
         const json = await res.json();
         setCar(json.data);
       } catch (err) {
-        console.error("Failed to load car data", err);
+  // ...existing code...
       } finally {
         setLoading(false);
       }

@@ -32,7 +32,7 @@ const ExperienceScreen = () => {
         const json = await res.json();
         setExperience(json.data);
       } catch (e) {
-        console.error('Error loading experience', e);
+  // ...existing code...
       } finally {
         setLoading(false);
       }

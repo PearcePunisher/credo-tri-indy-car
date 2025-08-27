@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-console.log('✅ React imported');
 import {
   StyleSheet,
   Image,
@@ -11,41 +10,24 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-console.log('✅ React Native components imported');
 import { SafeAreaView } from "react-native-safe-area-context";
-console.log('✅ SafeAreaView imported');
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-console.log('✅ Expo vector icons imported');
 import { router } from "expo-router";
-console.log('✅ Expo router imported');
 import BrandLogo from "@/components/BrandLogo";
-console.log('✅ BrandLogo component imported');
 import EventLogo from "@/components/EventLogo";
-console.log('✅ EventLogo component imported');
 import CedoLogo from "@/components/CedoLogo";
-console.log('✅ CedoLogo component imported');
-// import { NotificationBell } from "@/components/NotificationBell"; // TEMPORARILY COMMENTED OUT
-// import { TestNotificationButton } from "@/components/TestNotificationButton";
 import EnhancedNotificationBell from "@/components/EnhancedNotificationBell";
-console.log('✅ EnhancedNotificationBell component imported');
 import { NotificationTray } from "@/components/NotificationTray";
-console.log('✅ Enhanced Notification Bell Imported')
 import scheduleDataFull from "@/race_data/scheduleData_FULL.json";
-console.log('✅ Schedule data imported');
 import { Colors } from "@/constants/Colors";
-console.log('✅ Colors constants imported');
 import { useColorScheme } from "@/hooks/useColorScheme";
-console.log('✅ useColorScheme hook imported');
 import { useAuth } from "@/hooks/useAuth";
-console.log('✅ useAuth hook imported');
-import { Button } from "@/components/Button";
-import EnhancedTestNotificationButton from "@/components/EnhancedTestNotificationButton";
 import { experiencesService, type Experience } from '@/services/ExperiencesService';
 import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import FocusTransition from "@/components/ui/FocusTransition";
-console.log('✅ Button component imported');
 
-console.log('🚀 All imports completed for Index page');
+import { useNotification } from "@/context/NotificationContext";
+
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side
@@ -152,6 +134,8 @@ function getCountdownParts(targetDate: string): {
 }
 
 export default function HomeScreen() {
+
+  const { notification, expoPushToken, error } = useNotification();
   
   const { debugUserData, authState } = useAuth();
   
@@ -699,16 +683,14 @@ export default function HomeScreen() {
           )}
 
           {/* Commenting out share feedback button */}
-          {/* <TouchableOpacity
-            style={[styles.shareButton, { backgroundColor: colors.tint }]}>
             <Text
-              style={[styles.shareButtonText, { color: colors.textOnGreen }]}>
-              Share Your Thoughts
+              style={[styles.shareButtonText, { color: colors.tint }]}>
+              Your push token:
             </Text>
-          </TouchableOpacity>
-
-          {/* Temporary test notification button - HIDDEN FOR NOW */}
-          {/* <EnhancedTestNotificationButton /> */}
+            <Text
+              style={[styles.shareButtonText, { color: colors.tint }]}>
+              {expoPushToken}
+            </Text>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>

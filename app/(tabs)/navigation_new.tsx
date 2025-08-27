@@ -19,14 +19,14 @@ export const options = {
 
 export default function VIPHomeScreen() {
   const { authState, logout } = useAuth();
-  console.log('🏠 VIPHomeScreen component starting...');
+  // ...existing code...
   
   const router = useRouter();
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
   const iconColor = colors.text;
 
-  console.log('✅ VIPHomeScreen hooks initialized successfully');
+  // ...existing code...
 
   return (
     <FocusTransition variant="slide">
@@ -50,7 +50,7 @@ export default function VIPHomeScreen() {
           </View>
           {/* <View style={styles.tile}>
             <VIPTile icon="person-add" label="Register" onPress={() => {
-              console.log('📝 User tapped Register button - navigating to userID for form testing');
+              // ...existing code...
               router.push("/userID");
             }} />
           </View> */}
