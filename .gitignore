@@ -50,3 +50,5 @@ npm-debug.*
 
 app-example
 test_vals.json
+
+google-services.json
