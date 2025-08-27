@@ -682,15 +682,15 @@ export default function HomeScreen() {
             </>
           )}
 
-          {/* Commenting out share feedback button */}
-            <Text
+          {/* Commenting out push token testing */}
+            {/* <Text
               style={[styles.shareButtonText, { color: colors.tint }]}>
               Your push token:
             </Text>
             <Text
               style={[styles.shareButtonText, { color: colors.tint }]}>
               {expoPushToken}
-            </Text>
+            </Text> */}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Powered by</Text>
