@@ -26,7 +26,7 @@ export default function TrackMapScreen() {
         imageWidth={width}
         imageHeight={height}
         minScale={1}
-        maxScale={3}
+        maxScale={6}
         enableCenterFocus={true}
       >
         <Image source={MAP} style={{ width, height, resizeMode: 'contain' }} />
