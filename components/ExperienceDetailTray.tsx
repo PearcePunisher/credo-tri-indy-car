@@ -27,6 +27,7 @@ interface ExperienceDetailTrayProps {
   onClose: () => void;
   isNotificationEnabled?: boolean;
   onToggleNotification?: (enabled: boolean) => void;
+  showNotificationControls?: boolean;
 }
 
 export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
@@ -35,6 +36,7 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
   onClose,
   isNotificationEnabled = false,
   onToggleNotification,
+  showNotificationControls = true,
 }) => {
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
@@ -248,8 +250,8 @@ export const ExperienceDetailTray: React.FC<ExperienceDetailTrayProps> = ({
               {getDescriptionText()}
             </Text>
 
-            {/* Notification Toggle Button */}
-            {experience.experience_start_date_time && (
+            {/* Notification Toggle Button (hidden when showNotificationControls=false) */}
+            {showNotificationControls && experience.experience_start_date_time && (
               <TouchableOpacity
                 style={[
                   styles.notificationButton,

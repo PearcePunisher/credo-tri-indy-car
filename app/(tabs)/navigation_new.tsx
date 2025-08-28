@@ -9,6 +9,13 @@ import FocusTransition from "@/components/ui/FocusTransition";
 
 // Importing the brand logo component
 import BrandLogo from "@/components/BrandLogo";
+import CarIcon from "@/assets/icons/carIcon.svg";
+import DoorIcon from "@/assets/icons/doorIcon.svg";
+import TrackIcon from "@/assets/icons/trackIcon.svg";
+import ScheduleIcon from "@/assets/icons/scheduleIcon.svg";
+import GroupIcon from "@/assets/icons/groupIcon.svg";
+import PinIcon from "@/assets/icons/pinIcon.svg";
+
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side
@@ -55,22 +62,22 @@ export default function VIPHomeScreen() {
             }} />
           </View> */}
           <View style={styles.tile}>
-            <VIPTile icon="home" label="Welcome" onPress={() => router.push("/welcome")} />
+            <VIPTile iconComponent={<DoorIcon />} label="Welcome" onPress={() => router.push("/welcome")} />
           </View>
           {/* <View style={styles.tile}>
             <VIPTile icon="star" label="Experience" onPress={() => router.push("/experience")} />
           </View> */}
           <View style={styles.tile}>
-            <VIPTile icon="calendar" label="Weekend Schedule" onPress={() => router.push("/schedule")} />
+            <VIPTile iconComponent={<ScheduleIcon />} label="Weekend Schedule" onPress={() => router.push("/schedule")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="location" label="Venue Directions" onPress={() => router.push("/directions")} />
+            <VIPTile iconComponent={<PinIcon />} label="Venue Directions" onPress={() => router.push("/directions")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="map" label="Track Info" onPress={() => router.push("/track")} />
+            <VIPTile iconComponent={<TrackIcon />} label="Track Info" onPress={() => router.push("/track")} />
           </View>
           <View style={styles.tile}>
-            <VIPTile icon="people" label="The Team" onPress={() => router.push("/team")} />
+            <VIPTile iconComponent={<GroupIcon />} label="The Team" onPress={() => router.push("/team")} />
           </View>
           {/* <View style={styles.tile}>
             <VIPTile icon="car" label="Notifications Test" onPress={() => router.push("/notifications-demo")} />
@@ -80,7 +87,7 @@ export default function VIPHomeScreen() {
           </View>
           {/* Notification Health */}
           <View style={styles.tile}>
-            <VIPTile icon="alert" label="Notification Health" onPress={() => router.push("/notification-health")} />
+            <VIPTile iconComponent={<CarIcon />} label="The Cars" onPress={() => router.push("/car")} />
           </View>
           {/* <View style={styles.tile}>
             <VIPTile icon="mail" label="Feedback" onPress={() => {}} />

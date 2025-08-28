@@ -10,9 +10,9 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/image_2_aeedf0958f.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville2025_BB_V2_996293212d.png";
 const LOGO_LIGHT =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/image_2_aeedf0958f.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville2025_BB_V2_996293212d.png";
 
 export default function BrandLogo({
   width = 180,

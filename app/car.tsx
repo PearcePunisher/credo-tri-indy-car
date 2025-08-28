@@ -7,128 +7,16 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  Dimensions,
+  Linking,
+  TouchableOpacity,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme"; // Only import your custom hook
+import { useColorScheme } from "@/hooks/useColorScheme";
 import BrandLogo from "@/components/BrandLogo";
 
-const CarScreen = () => {
-  const [car, setCar] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const { colorScheme } = useColorScheme();
-  const bgColor = Colors[colorScheme].background;
-  const textColor = Colors[colorScheme].text;
-  const cardColor = colorScheme === "dark" ? "#1c1c1e" : "#f0f0f0"; // Or add to Colors if you want
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(
-          "https://timely-actor-10dfb03957.strapiapp.com/api/cars/k26n28fx8yqwxwgrwqv77c3l?populate=*"
-        );
-        const json = await res.json();
-        setCar(json.data);
-      } catch (err) {
-  // ...existing code...
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading || !car) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  const renderSection = (title: string, items: any[], key: string) => (
-    <View style={[styles.card, { backgroundColor: cardColor }]} key={key}>
-      <Text style={[styles.cardTitle, { color: textColor }]}>{title}</Text>
-      {items.map((item, index) => (
-        <Text key={index} style={[styles.cardText, { color: textColor }]}>
-          • {item[key]}
-        </Text>
-      ))}
-    </View>
-  );
-
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <BrandLogo style={styles.brand} />
-        <Text style={[styles.pageTitle, { color: textColor }]}>The Car</Text>
-
-        {/* Car image */}
-        <Image
-          source={{
-            uri: "https://timely-actor-10dfb03957.media.strapiapp.com/May_6_2025_02_45_47_PM_24f5bf18b5.png",
-          }}
-          style={styles.image}
-          resizeMode="contain"
-        />
-
-        <Text style={[styles.subtitle, { color: textColor }]}>
-          A very very cool race car
-        </Text>
-
-        {/* Tags (mocked) */}
-        <View style={styles.tags}>
-          {["Base Info", "Team Entry 1970", "Team Chief John Doe"].map(
-            (tag, i) => (
-              <View key={i} style={styles.tag}>
-                <Text>{tag}</Text>
-              </View>
-            )
-          )}
-        </View>
-
-        {/* Drivers (hardcoded for now) */}
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <Text style={[styles.cardTitle, { color: textColor }]}>Drivers</Text>
-          <View style={styles.driver}>
-            <Image
-              source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
-              style={styles.avatar}
-            />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={[styles.cardText, { color: textColor }]}>
-                Riley Pearce
-              </Text>
-              <Text style={[styles.cardText, { color: textColor }]}>
-                12 – Mercedes
-              </Text>
-            </View>
-            <Text style={{ marginLeft: "auto" }}>🇺🇸</Text>
-          </View>
-        </View>
-
-        {/* Description */}
-        <Text style={[styles.description, { color: textColor }]}>
-          {car.car_description}
-        </Text>
-
-        {/* Sections */}
-        {renderSection("Chassis", car.car_chassis, "car_chasis_detail")}
-        {renderSection(
-          "Construction",
-          car.car_construction,
-          "car_construction_detail"
-        )}
-        {renderSection(
-          "Other Specs",
-          car.car_other_spec,
-          "car_other_spec_detail"
-        )}
-        {renderSection("Materials", car.car_material, "car_material_detail")}
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width - 40;
 
 const styles = StyleSheet.create({
   container: {
@@ -144,16 +32,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    marginVertical: 10,
-  },
   brand: {
-    width: 250,
-    height: 120,
+    width: CARD_WIDTH,
+    minHeight: 40,
     alignSelf: "center",
-    marginBottom: 10,
     objectFit: "contain",
   },
   image: {
@@ -204,6 +86,159 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
+  linkButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  pagerItem: {
+    alignItems: "stretch",
+    marginVertical: 8,
+    alignSelf: "center",
+  },
 });
+
+const CarScreen = () => {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { colorScheme } = useColorScheme();
+  const bgColor = Colors[colorScheme].background;
+  const textColor = Colors[colorScheme].text;
+  const cardColor = colorScheme === "dark" ? "#1c1c1e" : "#f0f0f0";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          "https://timely-actor-10dfb03957.strapiapp.com/api/drivers?populate[driver_image]=true&populate[car][populate][car_images][populate]=car_image_side"
+        );
+        const json = await res.json();
+        setData(json.data);
+      } catch (err) {
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading || !data) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+        <ActivityIndicator size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  const renderCar = ({ item: driver, index }: { item: any; index: number }) => {
+    const car = driver?.car ?? {};
+    const carImageObj = car?.car_images?.[0]?.car_image_side;
+    const carImageUrl = carImageObj?.formats?.medium?.url || carImageObj?.url;
+    const driverImageObj = driver?.driver_image;
+    const driverImageUrl =
+      driverImageObj?.formats?.medium?.url || driverImageObj?.url;
+
+    return (
+      <View style={[styles.pagerItem, { width: CARD_WIDTH }]}>
+        {carImageUrl && (
+          <Image
+            source={{ uri: carImageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        )}
+
+        <View style={styles.tags}>
+          {[
+            `Car #${car.car_number || "-"}`,
+            `${driver.driver_fname || ""} ${driver.driver_lname || ""}`,
+          ].map((tag, i) => (
+            <View key={i} style={styles.tag}>
+              <Text>{tag}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={[styles.card, { backgroundColor: cardColor }]}>
+          <Text style={[styles.cardTitle, { color: textColor }]}>Driver</Text>
+          <View style={styles.driver}>
+            {/* {driverImageUrl && <Image source={{ uri: driverImageUrl }} style={styles.avatar} />} */}
+            <View>
+              <Text
+                style={[
+                  styles.cardText,
+                  { color: textColor, fontWeight: "bold" },
+                ]}>
+                {driver.driver_fname} {driver.driver_lname}
+              </Text>
+              <Text style={[styles.cardText, { color: textColor }]}>
+                Born: {driver.driver_DOB}
+              </Text>
+              <Text style={[styles.cardText, { color: textColor }]}>
+                Hometown: {driver.driver_home_town}
+              </Text>
+              <Text style={[styles.cardText, { color: textColor }]}>
+                Residence: {driver.driver_residence}
+              </Text>
+            </View>
+          </View>
+          <Text style={[styles.cardText, { color: textColor, marginTop: 8 }]}>
+            {driver.driver_bio}
+          </Text>
+          <View style={{ flexDirection: "row", marginTop: 10 }}>
+            {driver.driver_merch_link && (
+              <TouchableOpacity
+                style={[
+                  styles.linkButton,
+                  { backgroundColor: Colors[colorScheme].tint },
+                ]}
+                onPress={() => Linking.openURL(driver.driver_merch_link)}>
+                <Text style={{ color: Colors[colorScheme].textOnGreen }}>
+                  Merch
+                </Text>
+              </TouchableOpacity>
+            )}
+            {driver.driver_website_link && (
+              <TouchableOpacity
+                style={[
+                  styles.linkButton,
+                  { backgroundColor: Colors[colorScheme].tint, marginLeft: 8 },
+                ]}
+                onPress={() => Linking.openURL(driver.driver_website_link)}>
+                <Text style={{ color: Colors[colorScheme].textOnGreen }}>
+                  Website
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <Text style={[styles.description, { color: textColor }]}>
+          {car.car_description}
+        </Text>
+      </View>
+    );
+  };
+
+  const keyExtractor = (item: any, index: number) =>
+    item?.id?.toString?.() || index.toString();
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <BrandLogo style={styles.brand} />
+        <Text style={[styles.pageTitle, { color: textColor }]}>
+          About Our Cars
+        </Text>
+        {data.map((driver, idx) => (
+          <View key={keyExtractor(driver, idx)} style={{ marginBottom: 20 }}>
+            {renderCar({ item: driver, index: idx } as any)}
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 export default CarScreen;

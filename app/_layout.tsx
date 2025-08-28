@@ -17,19 +17,24 @@ import { NotificationProvider } from "@/context/NotificationContext";
 import * as TaskManager from "expo-task-manager";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 import { TeamThemeProvider } from "@/theme/TeamThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import AppStateManager from "../components/AppStateManager";
 import { resyncScheduledNotifications } from "@/services/NotificationScheduler";
-import { AppState } from "react-native";
+import { AppState, Platform, StatusBar as RNStatusBar } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { PushTokenInitializer } from "../components/PushTokenInitializer"; // Disabling for new notification testing
 import { initNotifications } from "@/services/NotificationBootstrap";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
+  // Newer SDKs include banner/list flags in NotificationBehavior.
+  shouldShowAlert: true,
+  shouldPlaySound: true,
+  shouldSetBadge: true,
+  shouldShowBanner: true,
+  shouldShowList: true,
   }),
 });
 
@@ -37,9 +42,16 @@ const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
 
 TaskManager.defineTask(
   BACKGROUND_NOTIFICATION_TASK,
-  ({ data, error, executionInfo }) => {
-  // ...existing code...
-    // Do something with the notification data
+  async ({ data, error, executionInfo }) => {
+    try {
+      // ...existing code...
+      // Do something with the notification data
+      // Keep this async so the TaskManager type (Promise) is satisfied.
+      return Promise.resolve();
+    } catch (err) {
+      // Ensure we always return a Promise
+      return Promise.resolve();
+    }
   }
 );
 
@@ -143,6 +155,15 @@ export default function RootLayout() {
         SplashScreen.hideAsync();
       }, 100);
     }
+    // Ensure Android status bar is not translucent so content doesn't render under it
+    if (Platform.OS === 'android') {
+      try {
+        RNStatusBar.setTranslucent(false);
+        RNStatusBar.setBackgroundColor(Colors[colorScheme]?.background || '#000');
+      } catch (e) {
+        // ignore; platform-specific API may not be available in all environments
+      }
+    }
     return () => sub.remove();
   }, [loaded]);
 
@@ -165,6 +186,7 @@ export default function RootLayout() {
           <NotificationProvider>
             <TeamThemeProvider>
               <SafeAreaProvider>
+                <SafeAreaView style={{ flex: 1, backgroundColor: Colors[colorScheme]?.background }} edges={["top", "left", "right"]}>
                 <ThemeProvider
                   value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
                   <AppStateManager>
@@ -249,6 +271,7 @@ export default function RootLayout() {
                     <StatusBar style="auto" />
                   </AppStateManager>
                 </ThemeProvider>
+                </SafeAreaView>
               </SafeAreaProvider>
             </TeamThemeProvider>
           </NotificationProvider>

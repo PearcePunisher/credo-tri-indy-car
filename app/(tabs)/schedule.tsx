@@ -22,6 +22,7 @@ import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import { Ionicons } from '@expo/vector-icons';
 import FocusTransition from '@/components/ui/FocusTransition';
 
+
 // Importing Mock Notification test
 import MockScheduleNotificationDemo from '@/examples/MockScheduleNotificationDemo';
 import NextNotificationCountdown from '@/components/NextNotificationCountdown';
@@ -39,7 +40,6 @@ const ScheduleScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
-  const [notificationStates, setNotificationStates] = useState<{ [key: number]: boolean }>({});
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
 
@@ -59,18 +59,9 @@ const ScheduleScreen = () => {
         .filter(exp => exp && exp.id && exp.experience_start_date_time) || [];
       setExperiences(experiencesData);
       
-      // Check notification count after loading
-      const notificationCountAfter = await experiencesService.getScheduledNotificationCount();
-      console.log(`📊 Notifications after loading: ${notificationCountAfter}`);
-      
-      // Load notification states for all experiences
-      const states: { [key: number]: boolean } = {};
-      for (const exp of experiencesData) {
-        if (exp && exp.id) {
-          states[exp.id] = await experiencesService.getNotificationStatus(exp.id);
-        }
-      }
-      setNotificationStates(states);
+  // Check notification count after loading
+  const notificationCountAfter = await experiencesService.getScheduledNotificationCount();
+  console.log(`📊 Notifications after loading: ${notificationCountAfter}`);
     } catch (error) {
       console.error('Error loading experiences:', error);
       console.log("Gorlak the destroyer");
@@ -103,7 +94,7 @@ const ScheduleScreen = () => {
       } else {
         await experiencesService.cancelNotifications(experienceId);
       }
-      setNotificationStates(prev => ({ ...prev, [experienceId]: enabled }));
+  // state tracking for per-experience notifications removed by UX decision
     } catch (error) {
       console.error("ERROR IN experience probabl");
       console.error('Error toggling notifications:', error);
@@ -195,26 +186,7 @@ const ScheduleScreen = () => {
     return all.length > 0 ? all[0] : null;
   })();
 
-  const renderNotificationIcon = (experienceId: number) => {
-    const isEnabled = notificationStates[experienceId];
-    return (
-      <View style={styles.notificationIcon}>
-        <Ionicons 
-          name={isEnabled ? "notifications" : "notifications-off"} 
-          size={16} 
-          color={isEnabled ? colors.tint : colors.tabIconDefault} 
-        />
-        {isEnabled && (
-          <Ionicons 
-            name="checkmark-circle" 
-            size={10} 
-            color={colors.tint} 
-            style={styles.notificationCheck}
-          />
-        )}
-      </View>
-    );
-  };
+  // Notification icon removed per UX decision to disable per-experience opt-out
 
   const renderExperienceItem = (experience: Experience, key: string) => {
     if (!experience || !experience.experience_start_date_time) return null;
@@ -267,7 +239,7 @@ const ScheduleScreen = () => {
               </Text>
             )}
           </View>
-          {renderNotificationIcon(experience.id)}
+          {/* notification icon removed */}
         </View>
       </TouchableOpacity>
     );
@@ -320,15 +292,18 @@ const ScheduleScreen = () => {
       >
         <BrandLogo style={styles.brand} />
         <Text style={[styles.header, { color: colors.text }]}>Race Weekend Experiences</Text>
-        {/* Countdown to the next scheduled notification (scoped to future experiences), with event fallback */}
+        
+        {/* Countdown to the next scheduled notification (scoped to future experiences), with event fallback
         <NextNotificationCountdown 
           experienceIds={futureExperiences.map(e => e.id)} 
           fallbackWhen={nextEvent ? experiencesService.convertToEventLocalTime(nextEvent.experience_start_date_time) : null}
           fallbackTitle={nextEvent?.experience_title}
         />
+        */}
         
-        {/* Temporary debugging component */}
+        {/* Temporary debugging component
         <MockScheduleNotificationDemo />
+        */}
 
         {experiences.length === 0 ? (
           <View style={styles.emptyState}>
@@ -395,8 +370,7 @@ const ScheduleScreen = () => {
           experience={selectedExperience}
           visible={selectedExperience !== null}
           onClose={() => setSelectedExperience(null)}
-          isNotificationEnabled={notificationStates[selectedExperience.id] || false}
-          onToggleNotification={(enabled: boolean) => handleNotificationToggle(selectedExperience.id, enabled)}
+          showNotificationControls={false}
         />
       )}
   </SafeAreaView>

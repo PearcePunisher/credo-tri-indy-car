@@ -695,7 +695,7 @@ class EnhancedNotificationService {
       
       // Here you would typically send the token to your backend
       // For now, just return the token
-      console.log('✅ Push token obtained:', pushToken.data);
+      console.log('✅ Push token obtained');
       return pushToken.data;
     } catch (error) {
       console.error('❌ Error getting push token:', error);

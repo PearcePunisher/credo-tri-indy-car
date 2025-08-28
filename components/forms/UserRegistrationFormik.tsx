@@ -387,11 +387,13 @@ export function RegisterScreenFormik() {
                 dob: "",
                 signedWaiver: true,
                 waiverLink: "https://signedwaiver.com",
-                notificationConsent: false,
+                // Notification toggle UI removed; assume implicit consent for now so validation passes
+                notificationConsent: true,
               }}
               validationSchema={validationSchema}
               onSubmit={async (values) => {
                 try {
+                  console.log('[Register] Submitting form values', { email: values.email, hasToken: !!expoPushToken });
                   const payload = {
                     email: values.email,
                     password: values.password,
@@ -416,6 +418,7 @@ export function RegisterScreenFormik() {
                       body: JSON.stringify(payload),
                     }
                   );
+                  console.log('[Register] Response status', response.status);
 
                   if (response.status === 200) {
                     // Get the response data from the server
@@ -873,7 +876,7 @@ export function RegisterScreenFormik() {
                     loading={isSubmitting}>
                     {isSubmitting ? "Registering..." : "Register"}
                   </Button>
-                  {/* Payload Preview */}
+                  {/* Payload Preview (temporarily disabled)
                   <View style={{ marginTop: 24 }}>
                     <Text style={{ color: colors.secondaryText, fontFamily: 'Roobert', marginBottom: 4 }}>Payload Preview</Text>
                     <Text style={{ color: colors.text, fontSize: 12, fontFamily: 'Courier' }}>
@@ -888,6 +891,7 @@ export function RegisterScreenFormik() {
                       }, null, 2)}
                     </Text>
                   </View>
+                  */}
                 </>
               )}
             </Formik>

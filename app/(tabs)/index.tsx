@@ -515,7 +515,7 @@ export default function HomeScreen() {
               onPress={() => router.push("/team")}>
               <Image
                 source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg/960px-Juncos_Hollinger_Racing_2024_IndyCar_at_Iowa_Speedway_crew.jpg",
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/Juncos_Hollinger_Racing_2024_Indy_Car_at_Iowa_Speedway_crew_c372f0d597.jpg",
                 }}
                 style={styles.gridImage}
               />
@@ -572,6 +572,38 @@ export default function HomeScreen() {
               </Text>
               <Text style={[styles.gridSubtitle, { color: colors.tint }]}>
                 Travel info
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.gridItem}
+              onPress={() => router.push("/car")}>
+              <Image
+                source={{
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/217_1_AA_2088053_153805861_2_8a93228c4f.jpg",
+                }}
+                style={styles.gridImage}
+              />
+              <Text style={[styles.gridTitle, { color: colors.text }]}>
+                The Cars
+              </Text>
+              <Text style={[styles.gridSubtitle, { color: colors.tint }]}>
+                Learn more
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.gridItem}
+              onPress={() => router.push("/track-map")}>
+              <Image
+                source={{
+                  uri: "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville_2025_track_map_Small_8faa3a518f.jpeg",
+                }}
+                style={styles.gridImage}
+              />
+              <Text style={[styles.gridTitle, { color: colors.text }]}>
+               Track Map
+              </Text>
+              <Text style={[styles.gridSubtitle, { color: colors.tint }]}>
+               Navigate the venue
               </Text>
             </TouchableOpacity>
           </View>

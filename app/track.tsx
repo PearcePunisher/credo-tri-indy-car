@@ -151,12 +151,12 @@ const TrackDetailScreen = () => {
     const fetchEvent = async () => {
       try {
         const res = await fetch(
-          "https://timely-actor-10dfb03957.strapiapp.com/api/events/ethqa1nhacs8w0zu4kwb34uj?populate=*"
+          "https://timely-actor-10dfb03957.strapiapp.com/api/events/rxo4ckamd5zisayqmf53ooiv?populate=*"
         );
         const json = await res.json();
         setEvent(json.data);
         const res2 = await fetch(
-          "https://timely-actor-10dfb03957.strapiapp.com/api/events/ethqa1nhacs8w0zu4kwb34uj/?populate[event_downloadables][populate][event_downloadables_file]=true&populate[event_downloadables][populate][event_downloadables_cover_image]=true"
+          "https://timely-actor-10dfb03957.strapiapp.com/api/events/rxo4ckamd5zisayqmf53ooiv/?populate[event_downloadables][populate][event_downloadables_file]=true&populate[event_downloadables][populate][event_downloadables_cover_image]=true"
         );
         const cover_image_json = await res2.json();
         setDownloadables(cover_image_json);
