@@ -1,0 +1,52 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# dependencies
+node_modules/
+
+# Prevent yarn usage (NPM only project)
+yarn.lock
+.yarn/
+.pnp.*
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native build artifacts
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Ignore generated native project folders (managed workflow)
+android/
+ios/
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+*.log
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+app-example
+test_vals.json
