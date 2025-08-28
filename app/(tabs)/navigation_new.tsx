@@ -16,7 +16,6 @@ import ScheduleIcon from "@/assets/icons/scheduleIcon.svg";
 import GroupIcon from "@/assets/icons/groupIcon.svg";
 import PinIcon from "@/assets/icons/pinIcon.svg";
 
-
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side
 
@@ -27,7 +26,7 @@ export const options = {
 export default function VIPHomeScreen() {
   const { authState, logout } = useAuth();
   // ...existing code...
-  
+
   const router = useRouter();
   const { colorScheme } = useColorScheme();
   const colors = Colors[colorScheme];
@@ -43,62 +42,111 @@ export default function VIPHomeScreen() {
           backgroundColor: colors.background,
         }}>
         <ScrollView contentContainerStyle={styles.container}>
-        <BrandLogo style={styles.brand} />
-        <Text style={[styles.header, { color: colors.text }]}>
-          PIT LANE CLUB
-        </Text>
-        <Text style={[styles.sub, { color: colors.secondaryText || colors.text }]}>
-          The ultimate individual VIP Hospitality experience
-        </Text>
+          <BrandLogo style={styles.brand} />
+          <Text style={[styles.header, { color: colors.text }]}>
+            PIT LANE CLUB
+          </Text>
+          <Text
+            style={[
+              styles.sub,
+              { color: colors.secondaryText || colors.text },
+            ]}>
+            The ultimate individual VIP Hospitality experience
+          </Text>
 
-        <View style={styles.grid}>
-          <View style={styles.tile}>
-            <VIPTile icon="qr-code" label="My ID" iconColor={iconColor} onPress={() => router.push("/userQR")} />
-          </View>
-          {/* <View style={styles.tile}>
+          <View style={styles.grid}>
+            <View style={styles.tile}>
+              <VIPTile
+                icon="qr-code"
+                label="My ID"
+                iconColor={iconColor}
+                onPress={() => router.push("/userQR")}
+              />
+            </View>
+            {/* <View style={styles.tile}>
             <VIPTile icon="person-add" label="Register" onPress={() => {
               // ...existing code...
               router.push("/userID");
             }} />
           </View> */}
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<DoorIcon />} label="Welcome" onPress={() => router.push("/welcome")} />
-          </View>
-          {/* <View style={styles.tile}>
+            <View style={styles.tile}>
+              <VIPTile
+                iconComponent={<DoorIcon />}
+                label="Welcome"
+                onPress={() => router.push("/welcome")}
+              />
+            </View>
+            {/* <View style={styles.tile}>
             <VIPTile icon="star" label="Experience" onPress={() => router.push("/experience")} />
           </View> */}
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<ScheduleIcon />} label="Weekend Schedule" onPress={() => router.push("/schedule")} />
-          </View>
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<PinIcon />} label="Venue Directions" onPress={() => router.push("/directions")} />
-          </View>
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<TrackIcon />} label="Track Info" onPress={() => router.push("/track")} />
-          </View>
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<GroupIcon />} label="The Team" onPress={() => router.push("/team")} />
-          </View>
-          {/* <View style={styles.tile}>
+            <View style={styles.tile}>
+              <VIPTile
+                iconComponent={<ScheduleIcon />}
+                label="Weekend Schedule"
+                onPress={() => router.push("/schedule")}
+              />
+            </View>
+            <View style={styles.tile}>
+              <VIPTile
+                iconComponent={<PinIcon />}
+                label="Venue Directions"
+                onPress={() => router.push("/directions")}
+              />
+            </View>
+            <View style={styles.tile}>
+              <VIPTile
+                iconComponent={<TrackIcon />}
+                label="Track Info"
+                onPress={() => router.push("/track")}
+              />
+            </View>
+            <View style={styles.tile}>
+              <VIPTile
+                iconComponent={<GroupIcon />}
+                label="The Team"
+                onPress={() => router.push("/team")}
+              />
+            </View>
+            {/* <View style={styles.tile}>
             <VIPTile icon="car" label="Notifications Test" onPress={() => router.push("/notifications-demo")} />
           </View> */}
-          <View style={styles.tile}>
-            <VIPTile icon="help" label="FAQ's" onPress={() => router.push("/faq")} />
-          </View>
-          {/* Notification Health */}
-          <View style={styles.tile}>
-            <VIPTile iconComponent={<CarIcon />} label="The Cars" onPress={() => router.push("/car")} />
-          </View>
-          {/* <View style={styles.tile}>
+            <View style={styles.tile}>
+              <VIPTile
+                icon="help"
+                label="FAQ's"
+                onPress={() => router.push("/faq")}
+              />
+            </View>
+            {/* Notification Health */}
+            <View style={styles.tile}>
+              <VIPTile
+                iconComponent={<CarIcon />}
+                label="The Cars"
+                onPress={() => router.push("/car")}
+              />
+            </View>
+            <View style={styles.tile}>
+              <VIPTile
+                icon="map"
+                label="Track Map"
+                onPress={() => router.push("/track-map")}
+              />
+            </View>
+            {/* <View style={styles.tile}>
             <VIPTile icon="mail" label="Feedback" onPress={() => {}} />
           </View> */}
-          {authState.user?.userIsStaff &&(
-          <View style={styles.tile}>
-            <VIPTile icon="camera" label="Camera" onPress={() => router.push("/camera")} />
-          </View>)}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            {authState.user?.userIsStaff && (
+              <View style={styles.tile}>
+                <VIPTile
+                  icon="camera"
+                  label="Camera"
+                  onPress={() => router.push("/camera")}
+                />
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </FocusTransition>
   );
 }

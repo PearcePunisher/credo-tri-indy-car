@@ -32,11 +32,11 @@ const WelcomeScreen = () => {
   const videoRef = useRef<VideoPlayerRef>(null);
 
   const bulletItems = [
-    "Event Schedule",
-    "How to get to the track and our suite",
-    "Information about the team, our drivers, and our car",
-    "Dress Code",
-    "Bag Policy",
+    'Full event schedule',
+    'Directions and logistics',
+    'Details about our drivers and cars',
+    'A track map',
+    'Real-time notifications so you don\'t miss out!',
   ];
 
   const handleContinue = async () => {
@@ -56,10 +56,7 @@ const WelcomeScreen = () => {
         {/* Branding */}
         <BrandLogo style={styles.brand} />
 
-        {/* Title */}
-        <Text style={[styles.title, { color: colors.text }]}>Welcome</Text>
-
-        {/* Welcome Video */}
+        {/* Welcome Video -- REMOVED FOR NASHVILLE
         <VideoPlayer
           ref={videoRef}
           videoUri="https://timely-actor-10dfb03957.media.strapiapp.com/SRR_Portland2025_appwelcome01_5157f41ac6.mp4"
@@ -70,24 +67,15 @@ const WelcomeScreen = () => {
           showPlayButton={true} // Show play/pause overlay
           style={styles.welcomeVideo}
         />
+        */}
 
-        {/* Intro Paragraphs */}
-        <Text style={[styles.paragraph, { color: colors.text }]}>
-          Welcome to the Juncos Hollinger Racing event application. We welcome
-          you to the Bitnile Grand Prix of Portland at Portland International
-          Raceway.
-        </Text>
-        <Text style={[styles.paragraph, { color: colors.text }]}>
-          We look forward to hosting you and making your experience the absolute
-          best it can be. Before heading to the track this weekend, we wanted to
-          ensure all the vital information needed to help you make the most out
-          of your experience.
-        </Text>
+  {/* Intro Paragraphs */}
+  <Text style={[styles.title, { color: colors.text }]}>Welcome to Juncos Hollinger Racing!</Text>
+  <Text style={[styles.paragraph, { color: colors.text }]}>We’re thrilled to have you join us here in Nashville for the INDYCAR Series season finale. It’s going to be an incredible weekend of racing, and we’re excited to host you and make your experience unforgettable.</Text>
+  <Text style={[styles.paragraph, { color: colors.text }]}>To help you get the most out of your time with us, please use this JHR app, where you’ll find everything you need in one place:</Text>
 
-        {/* Subheading */}
-        <Text style={[styles.subheading, { color: colors.text }]}>
-          Here, you will find:
-        </Text>
+  {/* Subheading */}
+  <Text style={[styles.subheading, { color: colors.text }]}>Here, you will find:</Text>
 
         {/* Bullet list */}
         <View style={styles.bulletList}>
@@ -98,7 +86,10 @@ const WelcomeScreen = () => {
           ))}
         </View>
 
-        {/* Continue Card */}
+  {/* Final line */}
+  <Text style={[styles.paragraph, { color: colors.text }]}>Let’s make this finale weekend one to remember — welcome to Nashville!</Text>
+
+  {/* Continue Card */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <BrandLogo style={styles.cardLogo} />
           <Text style={[styles.cardText, { color: colors.text }]}>

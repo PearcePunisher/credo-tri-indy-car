@@ -563,6 +563,12 @@ class EnhancedNotificationService {
       
       await AsyncStorage.setItem(this.STORAGE_KEY_HISTORY, JSON.stringify(trimmedHistory));
       console.log('✅ Added notification to history');
+      // Update app badge to reflect unread count
+      try {
+        await this.updateAppBadge();
+      } catch (e) {
+        // non-fatal
+      }
     } catch (error) {
       console.error('❌ Error adding to notification history:', error);
     }
@@ -600,6 +606,12 @@ class EnhancedNotificationService {
       
       // Emit event to sync across components
       notificationEvents.emit('notificationsUpdated');
+      // Update app badge after marking read
+      try {
+        await this.updateAppBadge();
+      } catch (e) {
+        // non-fatal
+      }
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
     }
@@ -618,6 +630,12 @@ class EnhancedNotificationService {
       
       // Emit event to sync across components
       notificationEvents.emit('notificationsUpdated');
+      // Clear app badge
+      try {
+        await this.updateAppBadge();
+      } catch (e) {
+        // non-fatal
+      }
     } catch (error) {
       console.error('❌ Error marking all notifications as read:', error);
     }
@@ -633,6 +651,12 @@ class EnhancedNotificationService {
       
       // Emit event to sync across components
       notificationEvents.emit('notificationsUpdated');
+      // Update app badge after removal
+      try {
+        await this.updateAppBadge();
+      } catch (e) {
+        // non-fatal
+      }
     } catch (error) {
       console.error('❌ Error removing notification:', error);
     }
@@ -645,8 +669,26 @@ class EnhancedNotificationService {
       
       // Emit event to sync across components
       notificationEvents.emit('notificationsUpdated');
+      // Clear app badge
+      try {
+        await this.updateAppBadge();
+      } catch (e) {
+        // non-fatal
+      }
     } catch (error) {
       console.error('❌ Error clearing notification history:', error);
+    }
+  }
+
+  // Update the OS-level application badge to reflect unread count
+  private async updateAppBadge(): Promise<void> {
+    try {
+      const unread = await this.getUnreadCount();
+      // Use Expo Notifications API to set badge count (iOS and supported Android launchers)
+      // If unread is 0, this clears the badge
+      await Notifications.setBadgeCountAsync(unread);
+    } catch (error) {
+      console.error('❌ Error updating app badge:', error);
     }
   }
 

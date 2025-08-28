@@ -186,7 +186,7 @@ export default function RootLayout() {
           <NotificationProvider>
             <TeamThemeProvider>
               <SafeAreaProvider>
-                <SafeAreaView style={{ flex: 1, backgroundColor: Colors[colorScheme]?.background }} edges={["top", "left", "right"]}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: Colors[colorScheme]?.background }} edges={["left", "right"]}>
                 <ThemeProvider
                   value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
                   <AppStateManager>
@@ -262,6 +262,14 @@ export default function RootLayout() {
                         name="userQR"
                         options={{
                           title: "My QR Code",
+                          headerShown: true,
+                          headerBackTitle: "Back",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="car"
+                        options={{
+                          title: "Car",
                           headerShown: true,
                           headerBackTitle: "Back",
                         }}
