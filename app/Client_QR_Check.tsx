@@ -12,9 +12,8 @@ import {
   Platform,
 } from 'react-native';
  import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
-
-WebBrowser.maybeCompleteAuthSession(); // Finalize SSO sessions if neededd
+// Removed expo-auth-session import to avoid dependency error; not in use.
+// WebBrowser.maybeCompleteAuthSession(); // Not needed without AuthSession
 
 // 👇 Your Google OAuth Web Client ID (from Google Cloud Console)
 const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';

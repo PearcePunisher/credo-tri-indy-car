@@ -50,8 +50,7 @@ const WelcomeScreen = () => {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}>
+
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
@@ -99,13 +98,12 @@ const WelcomeScreen = () => {
           <TouchableOpacity
             style={[styles.continueBtn, { backgroundColor: colors.tint }]}
             onPress={handleContinue}>
-            <Text style={[styles.continueBtnText, { color: "white" }]}>
+            <Text style={[styles.continueBtnText, { color: colors.textOnGreen }]}>
               Continue to App
             </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
   );
 };
 

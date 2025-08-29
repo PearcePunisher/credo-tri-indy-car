@@ -27,6 +27,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PushTokenInitializer } from "../components/PushTokenInitializer"; // Disabling for new notification testing
 import { initNotifications } from "@/services/NotificationBootstrap";
 
+{/* Importing Analytics */}
+import { vexo } from 'vexo-analytics';
+
+vexo('ddfed763-d1d5-43e6-b567-eeaca605ab8c');
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
   // Newer SDKs include banner/list flags in NotificationBehavior.
@@ -165,7 +170,7 @@ export default function RootLayout() {
       }
     }
     return () => sub.remove();
-  }, [loaded]);
+  }, [loaded, colorScheme]); // Re-run to update Android status bar color when theme changes
 
   if (!loaded) {
   // ...existing code...
@@ -276,7 +281,8 @@ export default function RootLayout() {
                       />
                       <Stack.Screen name="+not-found" />
                     </Stack>
-                    <StatusBar style="auto" />
+                    {/* Tie status bar text color explicitly to app theme (not system) */}
+                    <StatusBar style={colorScheme === 'light' ? 'dark' : 'light'} />
                   </AppStateManager>
                 </ThemeProvider>
                 </SafeAreaView>

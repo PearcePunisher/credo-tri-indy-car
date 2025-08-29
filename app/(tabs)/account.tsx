@@ -64,8 +64,6 @@ const AccountScreen = () => {
         }
       );
 
-  // ...existing code...
-
       if (response.status === 200) {
         // Get the response data from the server
         const responseData = await response.json();
@@ -263,7 +261,7 @@ const AccountScreen = () => {
           </View>
         </View>
 
-        {/* Testing Information Card */}
+        {/* Testing Information Card
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Testing Information
@@ -331,7 +329,7 @@ const AccountScreen = () => {
             </View>
           )}
         </View>
-
+          */}
         {/* QR Code Section */}
         <UserQRCode user={authState.user} size={180} showActions={true} />
 
@@ -418,9 +416,9 @@ const AccountScreen = () => {
               <Ionicons 
                 name={colorScheme === 'light' ? 'sunny' : 'moon'} 
                 size={16} 
-                color="white" 
+                style={[ { color: colors.textOnGreen }]}
               />
-              <Text style={styles.themeToggleText}>
+              <Text style={[styles.themeToggleText, { color: colors.textOnGreen }]}>
                 {colorScheme === 'light' ? 'Light Mode' : 'Dark Mode'}
               </Text>
             </TouchableOpacity>
@@ -431,8 +429,8 @@ const AccountScreen = () => {
         <TouchableOpacity
           style={[styles.qrButton, { backgroundColor: colors.tint }]}
           onPress={() => router.push('/userQR')}>
-          <Ionicons name="qr-code-outline" size={20} color="white" />
-          <Text style={styles.qrButtonText}>View Full QR Code</Text>
+          <Ionicons name="qr-code-outline" size={20} style={[ { color: colors.textOnGreen }]} />
+          <Text style={[styles.qrButtonText, { color: colors.textOnGreen }]}>View Full QR Code</Text>
         </TouchableOpacity>
 
         {/* Logout Button */}

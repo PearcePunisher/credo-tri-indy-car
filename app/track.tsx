@@ -15,6 +15,7 @@ import BrandLogo from "@/components/BrandLogo";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import * as FileSystem from "expo-file-system";
+import TrackMapZoom from '@/components/TrackMapZoom';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
@@ -195,8 +196,7 @@ const TrackDetailScreen = () => {
   const imageUrl = event.event_images?.[0]?.formats?.medium?.url;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}>
+
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
@@ -211,7 +211,13 @@ const TrackDetailScreen = () => {
           {event.event_description}
         </Text>
 
-        {/* Track Image */}
+        {/* Zoomable Track Map */}
+        <View style={styles.mapSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 0 }]}>Track Map</Text>
+          <TrackMapZoom />
+        </View>
+
+        {/* Original Track Image (if still desired below the zoomable version) */}
         {imageUrl && (
           <Image
             source={{ uri: imageUrl }}
@@ -251,24 +257,7 @@ const TrackDetailScreen = () => {
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           {renderRichListOrParagraphs(factFile?.event_fact_file_details)}
         </View>
-
-        {/* Download Map CTA */}
-        {/* {donwloadable_img && download ? (
-          <View style={[styles.card, { backgroundColor: colors.card }]}> 
-            <Image
-              source={{ uri: donwloadable_img }}
-              style={styles.mapImage}
-            />
-            <Text style={[styles.downloadText, { color: colors.text }]}> 
-              {download?.event_downloadables_description ?? 'Event map'}
-            </Text>
-            <TouchableOpacity style={[styles.downloadBtn, { backgroundColor: colors.tint }]} onPress={handleDownload}>
-              <Text style={[styles.downloadBtnText, { color: colors.textOnGreen }]}>Download Map</Text>
-            </TouchableOpacity>
-          </View>
-        ) : null} */}
       </ScrollView>
-    </SafeAreaView>
   );
 };
 
@@ -324,6 +313,10 @@ const styles = StyleSheet.create({
   factText: {
     fontSize: 15,
     marginBottom: 8,
+  },
+  mapSection: {
+    marginBottom: 24,
+    gap: 12,
   },
   mapImage: {
     width: "100%",

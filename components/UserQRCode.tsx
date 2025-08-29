@@ -128,8 +128,8 @@ export const UserQRCode: React.FC<UserQRCodeProps> = ({
             style={[styles.actionButton, { backgroundColor: colors.tint }]}
             onPress={handleShare}
           >
-            <Ionicons name="share-outline" size={16} color="white" />
-            <Text style={styles.actionButtonText}>Share</Text>
+            <Ionicons name="share-outline" size={16} style={[{ color: colors.textOnGreen }]} />
+            <Text style={[styles.actionButtonText, { color: colors.textOnGreen }]}>Share</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 

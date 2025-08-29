@@ -63,7 +63,7 @@ export const LoginForm: React.FC = () => {
       });
 
       Alert.alert("Login Successful", "Welcome back!", [
-        { text: "Continue", onPress: () => router.push('/video') }
+        { text: "Continue", onPress: () => router.push('/experience') }
       ]);
     } catch (error) {
       console.error('Login error:', error);

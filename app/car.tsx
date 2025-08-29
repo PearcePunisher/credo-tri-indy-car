@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
     alignSelf: "center",
     objectFit: "contain",
+    marginTop: 10,
   },
   image: {
     width: "100%",
@@ -225,8 +226,8 @@ const CarScreen = () => {
     item?.id?.toString?.() || index.toString();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    // <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+      <ScrollView>
         <BrandLogo style={styles.brand} />
         <Text style={[styles.pageTitle, { color: textColor }]}>
           About Our Cars
@@ -237,7 +238,7 @@ const CarScreen = () => {
           </View>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    // </SafeAreaView>
   );
 };
 

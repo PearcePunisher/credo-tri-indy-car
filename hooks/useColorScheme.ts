@@ -1,56 +1,79 @@
 import { useState, useEffect } from 'react';
-import { useColorScheme as useRNColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Key for persistence
 const COLOR_SCHEME_KEY = 'user-color-scheme';
 
+// Module-level global state so ALL components share one theme instance
+let globalColorScheme: 'light' | 'dark' = 'light';
+let hasLoadedFromStorage = false;
+const listeners = new Set<React.Dispatch<React.SetStateAction<'light' | 'dark'>>>();
+let loadingPromise: Promise<void> | null = null;
+
+async function loadOnce() {
+  if (hasLoadedFromStorage) return;
+  if (!loadingPromise) {
+    loadingPromise = (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(COLOR_SCHEME_KEY);
+        if (stored === 'light' || stored === 'dark') {
+          globalColorScheme = stored;
+        } else {
+          globalColorScheme = 'light'; // explicit default
+        }
+      } catch (e) {
+        globalColorScheme = 'light';
+      } finally {
+        hasLoadedFromStorage = true;
+        // Notify all subscribers that initial load finished
+        listeners.forEach(l => l(globalColorScheme));
+      }
+    })();
+  }
+  await loadingPromise;
+}
+
+function notifyAll() {
+  listeners.forEach(l => l(globalColorScheme));
+}
+
+async function persist(scheme: 'light' | 'dark') {
+  try {
+    await AsyncStorage.setItem(COLOR_SCHEME_KEY, scheme);
+  } catch (e) {
+    // non-fatal
+  }
+}
+
 export function useColorScheme() {
-  const systemColorScheme = useRNColorScheme();
-  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light'); // Default to light
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [scheme, setScheme] = useState<'light' | 'dark'>(globalColorScheme);
+  const [isLoaded, setIsLoaded] = useState<boolean>(hasLoadedFromStorage);
 
   useEffect(() => {
-    loadStoredColorScheme();
+    listeners.add(setScheme);
+    if (!hasLoadedFromStorage) {
+      loadOnce().then(() => setIsLoaded(true));
+    }
+    return () => {
+      listeners.delete(setScheme);
+    };
   }, []);
 
-  const loadStoredColorScheme = async () => {
-    try {
-      const storedScheme = await AsyncStorage.getItem(COLOR_SCHEME_KEY);
-      if (storedScheme === 'light' || storedScheme === 'dark') {
-        setColorScheme(storedScheme);
-      } else {
-        // If no stored preference, default to light mode
-        setColorScheme('light');
-      }
-    } catch (error) {
-      console.error('Error loading color scheme:', error);
-      setColorScheme('light'); // Default to light on error
-    } finally {
-      setIsLoaded(true);
-    }
-  };
-
   const toggleColorScheme = async () => {
-    const newScheme = colorScheme === 'light' ? 'dark' : 'light';
-    setColorScheme(newScheme);
-    try {
-      await AsyncStorage.setItem(COLOR_SCHEME_KEY, newScheme);
-    } catch (error) {
-      console.error('Error saving color scheme:', error);
-    }
+    globalColorScheme = globalColorScheme === 'light' ? 'dark' : 'light';
+    notifyAll();
+    await persist(globalColorScheme);
   };
 
-  const setColorSchemePreference = async (scheme: 'light' | 'dark') => {
-    setColorScheme(scheme);
-    try {
-      await AsyncStorage.setItem(COLOR_SCHEME_KEY, scheme);
-    } catch (error) {
-      console.error('Error saving color scheme:', error);
-    }
+  const setColorSchemePreference = async (newScheme: 'light' | 'dark') => {
+    if (globalColorScheme === newScheme) return;
+    globalColorScheme = newScheme;
+    notifyAll();
+    await persist(globalColorScheme);
   };
 
   return {
-    colorScheme: isLoaded ? colorScheme : 'light', // Return light while loading
+    colorScheme: scheme,
     toggleColorScheme,
     setColorSchemePreference,
     isLoaded,

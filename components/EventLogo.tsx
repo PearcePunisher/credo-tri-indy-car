@@ -10,7 +10,7 @@ type BrandLogoProps = {
 };
 
 const LOGO_DARK =
-  "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville2025_BB_V2_996293212d.png";
+  "https://timely-actor-10dfb03957.media.strapiapp.com/nashville_logo_2025_150x220_alternate_27dd7be061.png";
 const LOGO_LIGHT =
   "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville2025_BB_V2_996293212d.png";
 
