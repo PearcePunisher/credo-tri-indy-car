@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   View,
   Text,
@@ -21,6 +20,7 @@ import { experiencesService, type Experience } from '@/services/ExperiencesServi
 import { ExperienceDetailTray } from '@/components/ExperienceDetailTray';
 import { Ionicons } from '@expo/vector-icons';
 import FocusTransition from '@/components/ui/FocusTransition';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 // Importing Mock Notification test
