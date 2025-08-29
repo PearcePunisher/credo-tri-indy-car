@@ -1,111 +1,35 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-  Dimensions,
-  Linking,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, Image, StyleSheet, ActivityIndicator, Dimensions } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import BrandLogo from "@/components/BrandLogo";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ChevroletLogo from "@/assets/images/chevy-logo.svg";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  pageTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  brand: {
-    width: CARD_WIDTH,
-    minHeight: 40,
-    alignSelf: "center",
-    objectFit: "contain",
-    marginTop: 10,
-  },
-  image: {
-    width: "100%",
-    height: 180,
-    borderRadius: 8,
-  },
-  tags: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-    marginVertical: 10,
-    flexWrap: "wrap",
-  },
-  tag: {
-    backgroundColor: "#ddd",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    margin: 4,
-  },
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    marginVertical: 10,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  cardText: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  driver: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-  },
-  description: {
-    fontSize: 15,
-    lineHeight: 24,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  linkButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  pagerItem: {
-    alignItems: "stretch",
-    marginVertical: 8,
-    alignSelf: "center",
-  },
+  container: { flex: 1 },
+  scrollContent: { padding: 20, paddingBottom: 60 },
+  brand: { width: CARD_WIDTH, minHeight: 40, alignSelf: "center", marginTop: 10 },
+  heroImage: { width: "100%", height: 200, borderRadius: 12, marginBottom: 16 },
+  pageTitle: { fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
+  paragraph: { fontSize: 15, lineHeight: 24, marginBottom: 16 },
+  heading: { fontSize: 18, fontWeight: "bold", marginTop: 24, marginBottom: 12 },
+  bulletItem: { flexDirection: "row", alignItems: "flex-start", marginBottom: 10 },
+  bulletDot: { fontSize: 18, lineHeight: 22, marginRight: 8 },
+  subBulletDot: { fontSize: 14, lineHeight: 20, marginRight: 8 },
+  bulletText: { flex: 1, fontSize: 15, lineHeight: 22 },
 });
 
 const CarScreen = () => {
+  // Assumption: Client wants to replace per-driver detail cards with top stacked car images and static informational content.
   const [data, setData] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const { colorScheme } = useColorScheme();
-  const bgColor = Colors[colorScheme].background;
-  const textColor = Colors[colorScheme].text;
-  const cardColor = colorScheme === "dark" ? "#1c1c1e" : "#f0f0f0";
+  const colors = Colors[colorScheme];
+  const textColor = colors.text;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,119 +50,87 @@ const CarScreen = () => {
 
   if (loading || !data) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-        <ActivityIndicator size="large" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
 
-  const renderCar = ({ item: driver, index }: { item: any; index: number }) => {
-    const car = driver?.car ?? {};
-    const carImageObj = car?.car_images?.[0]?.car_image_side;
+  // Extract unique car images (first image per driver's car)
+  const carImages: string[] = [];
+  data.forEach((driver) => {
+    const carImageObj = driver?.car?.car_images?.[0]?.car_image_side;
     const carImageUrl = carImageObj?.formats?.medium?.url || carImageObj?.url;
-    const driverImageObj = driver?.driver_image;
-    const driverImageUrl =
-      driverImageObj?.formats?.medium?.url || driverImageObj?.url;
+    if (carImageUrl && !carImages.includes(carImageUrl)) carImages.push(carImageUrl);
+  });
 
-    return (
-      <View style={[styles.pagerItem, { width: CARD_WIDTH }]}>
-        {carImageUrl && (
-          <Image
-            source={{ uri: carImageUrl }}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        )}
-
-        <View style={styles.tags}>
+  return (
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <BrandLogo style={styles.brand} />
+        <Text style={[styles.pageTitle, { color: textColor }]}>Our Cars</Text>
+        <View>
+          {carImages.slice(0, 4).map((uri, idx) => (
+            <Image
+              key={idx}
+              source={{ uri }}
+              style={styles.heroImage}
+              resizeMode="contain"
+            />
+          ))}
+        </View>
+        <View style={{ alignItems: "center", marginBottom: 28, marginTop: 4 }}>
+          <Text style={[styles.heading, { color: textColor, textAlign: "center" }]}>
+            Juncos-Hollinger Racing engines are provided by:
+          </Text>
+          <ChevroletLogo width={180} height={60} />
+        </View>
+        <Text style={[styles.heading, { color: textColor }]}>Hybrid Power Unit Overview</Text>
+        <Text style={[styles.paragraph, { color: textColor }]}>In 2024, INDYCAR will introduce the 2.2-liter twin-turbocharged V-6 engine with hybrid technology as its powerplant. Through meticulous development and collaborative innovation, INDYCAR’s hybrid power unit will enhance racing action and further series’ efforts to deliver the most competitive motorsport on the planet.</Text>
+        <Text style={[styles.paragraph, { color: textColor }]}>The new power unit features additional horsepower and overtake ("push-to-pass") options generating opportunities for additional passing, ultimately giving INDYCAR SERIES drivers more control and options – further amplifying the racing challenge and excitement.</Text>
+        <Text style={[styles.paragraph, { color: textColor }]}>Beginning in November 2022, INDYCAR SERIES engine manufacturers Chevrolet and Honda worked in collaboration on the development of the first-of-its-kind hybrid unit.</Text>
+        <Text style={[styles.paragraph, { color: textColor }]}>The hybrid system is comprised of the Motor Generator Unit (MGU) and Energy Storage System (ESS), which both fit inside the bellhousing, located between the INDYCAR SERIES combustion engine and the gearbox. Multiple strategies for regeneration and deployment have been tested as the power unit builds and transmits energy through the MGU before being saved in the supercapacitor ESS. The additional horsepower is deployed through the same motor generator. Unlike the traditional INDYCAR "push-to-pass" system, the hybrid power unit will not have a restriction on total time used over the course of a race.</Text>
+        <Text style={[styles.paragraph, { color: textColor }]}>The start of the 2024 NTT INDYCAR SERIES season features enhanced possibilities of track records with lighter chassis components (aeroscreen, bellhousing and gearbox) prepared for the hybrid addition. Once the hybrid unit is integrated beginning at the Mid-Ohio Sports Car Course in July, the remaining 2024 races will feature the intensified engineering and wheel-to-wheel precision of the hybrid power era.</Text>
+        <Text style={[styles.heading, { color: textColor }]}>PROJECT TIMELINE</Text>
+        <Text style={[styles.paragraph, { color: textColor }]}>Initial on-track testing of hybrid power unit concepts began in October 2022. The combustion engine was initially paired and tested with the hybrid unit on August 16, 2023, at Sebring International Raceway with drivers Scott Dixon (Honda) and Will Power (Chevrolet). Additional testing sessions included ovals at Indianapolis Motor Speedway, Milwaukee Mile and World Wide Technology Raceway, road courses at Barber Motorsports Park, Homestead-Miami Speedway, IMS and Road America.</Text>
+        <Text style={[styles.heading, { color: textColor }]}>NOTEWORTHY</Text>
+        <View style={{ marginBottom: 8 }}>
           {[
-            `Car #${car.car_number || "-"}`,
-            `${driver.driver_fname || ""} ${driver.driver_lname || ""}`,
-          ].map((tag, i) => (
-            <View key={i} style={styles.tag}>
-              <Text>{tag}</Text>
+            "The 2.2-liter, twin-turbocharged V-6 engine with hybrid technology is a hybrid power unit unique to INDYCAR and developed collaboratively with Chevrolet (Ilmor) and Honda (HRC).",
+            "The hybrid assist unit will produce up additional horsepower ultimately producing a combined 900 horsepower for INDYCAR SERIES race cars.",
+            "The INDYCAR hybrid powerplant maintains the fast, loud and authentic sound of INDYCAR SERIES machinery.",
+            "The new engine package has safety in mind:",
+          ].map((t, i) => (
+            <View key={i} style={styles.bulletItem}>
+              <Text style={[styles.bulletDot, { color: textColor }]}>•</Text>
+              <Text style={[styles.bulletText, { color: textColor }]}>{t}</Text>
+            </View>
+          ))}
+          {/* Sub bullets for safety */}
+          {[
+            "The hybrid component is low voltage (48V)",
+            "The engine will not require on-track “starters” (teams will continue to use portable starters on pit road), so if the car stalls on the track, the driver can quickly restart the car by themselves – avoiding the need for the AMR INDYCAR Safety Team to be deployed.",
+          ].map((t, i) => (
+            <View key={"s-" + i} style={[styles.bulletItem, { marginLeft: 16 }] }>
+              <Text style={[styles.subBulletDot, { color: textColor }]}>•</Text>
+              <Text style={[styles.bulletText, { color: textColor }]}>{t}</Text>
+            </View>
+          ))}
+          <View style={styles.bulletItem}>
+            <Text style={[styles.bulletDot, { color: textColor }]}>•</Text>
+            <Text style={[styles.bulletText, { color: textColor }]}>With the ability to harness, otherwise wasted energy, the hybrid package is part of the greater sustainability program in the NTT INDYCAR SERIES in addition to:</Text>
+          </View>
+          {[
+            "Shell’s 100% Renewable Race Fuel, which made its debut in 2023",
+            "Renewable diesel used in the team’s race car transporters",
+            "Firestone’s innovative and sustainable alternate race tire with green sidewalls made from guayule rubber",
+          ].map((t, i) => (
+            <View key={"s2-" + i} style={[styles.bulletItem, { marginLeft: 16 }] }>
+              <Text style={[styles.subBulletDot, { color: textColor }]}>•</Text>
+              <Text style={[styles.bulletText, { color: textColor }]}>{t}</Text>
             </View>
           ))}
         </View>
-
-        <View style={[styles.card, { backgroundColor: cardColor }]}>
-          <Text style={[styles.cardTitle, { color: textColor }]}>Driver</Text>
-          <View style={styles.driver}>
-            {/* {driverImageUrl && <Image source={{ uri: driverImageUrl }} style={styles.avatar} />} */}
-            <View>
-              <Text
-                style={[
-                  styles.cardText,
-                  { color: textColor, fontWeight: "bold" },
-                ]}>
-                {driver.driver_fname} {driver.driver_lname}
-              </Text>
-              <Text style={[styles.cardText, { color: textColor }]}>
-                Born: {driver.driver_DOB}
-              </Text>
-              <Text style={[styles.cardText, { color: textColor }]}>
-                Hometown: {driver.driver_home_town}
-              </Text>
-              <Text style={[styles.cardText, { color: textColor }]}>
-                Residence: {driver.driver_residence}
-              </Text>
-            </View>
-          </View>
-          <Text style={[styles.cardText, { color: textColor, marginTop: 8 }]}>
-            {driver.driver_bio}
-          </Text>
-          <View style={{ flexDirection: "row", marginTop: 10 }}>
-            {driver.driver_merch_link && (
-              <TouchableOpacity
-                style={[
-                  styles.linkButton,
-                  { backgroundColor: Colors[colorScheme].tint },
-                ]}
-                onPress={() => Linking.openURL(driver.driver_merch_link)}>
-                <Text style={{ color: Colors[colorScheme].textOnGreen }}>
-                  Merch
-                </Text>
-              </TouchableOpacity>
-            )}
-            {driver.driver_website_link && (
-              <TouchableOpacity
-                style={[
-                  styles.linkButton,
-                  { backgroundColor: Colors[colorScheme].tint, marginLeft: 8 },
-                ]}
-                onPress={() => Linking.openURL(driver.driver_website_link)}>
-                <Text style={{ color: Colors[colorScheme].textOnGreen }}>
-                  Website
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        <Text style={[styles.description, { color: textColor }]}>
-          {car.car_description}
-        </Text>
-      </View>
-    );
-  };
-
-  const keyExtractor = (item: any, index: number) =>
-    item?.id?.toString?.() || index.toString();
-
-  return (
-    // <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
-      <ScrollView>
-        <BrandLogo style={styles.brand} />
-        <Text style={[styles.pageTitle, { color: textColor }]}>
-          About Our Cars
-        </Text>
-        {data.map((driver, idx) => (
-          <View key={keyExtractor(driver, idx)} style={{ marginBottom: 20 }}>
-            {renderCar({ item: driver, index: idx } as any)}
-          </View>
-        ))}
       </ScrollView>
-    // </SafeAreaView>
   );
 };
 

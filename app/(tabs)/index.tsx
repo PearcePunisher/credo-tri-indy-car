@@ -592,7 +592,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.gridItem}
-              onPress={() => router.push("/track-map")}>
+              onPress={() => router.push("/track")}>
               <Image
                 source={{
                   uri: "https://timely-actor-10dfb03957.media.strapiapp.com/Nashville_2025_track_map_Small_8faa3a518f.jpeg",

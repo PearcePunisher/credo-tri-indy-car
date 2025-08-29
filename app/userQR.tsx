@@ -32,8 +32,6 @@ const UserQRScreen = () => {
 
   if (!authState.user) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centerContent}>
           <Text style={[styles.errorText, { color: colors.text }]}>
             Please sign in to view your QR code
@@ -44,13 +42,10 @@ const UserQRScreen = () => {
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Branding */}
         <BrandLogo style={styles.brand} />
@@ -97,11 +92,10 @@ const UserQRScreen = () => {
         <TouchableOpacity
           style={[styles.backButton, { backgroundColor: colors.tint }]}
           onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={20} color="white" />
-          <Text style={styles.backButtonText}>Back to Account</Text>
+          <Ionicons name="arrow-back" size={20} color={ colors.textOnGreen} />
+          <Text style={[styles.backButtonText, { color: colors.textOnGreen }]}>Back to Account</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
   );
 };
 
