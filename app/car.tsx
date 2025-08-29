@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Image,
   StyleSheet,
   ActivityIndicator,
@@ -14,6 +13,7 @@ import {
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import BrandLogo from "@/components/BrandLogo";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40;

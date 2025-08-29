@@ -5,7 +5,6 @@ import {
   View,
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Linking,
   Dimensions,
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import BrandLogo from '@/components/BrandLogo';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side

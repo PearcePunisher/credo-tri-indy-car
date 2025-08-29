@@ -1,6 +1,5 @@
 import React, { useRef } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -15,6 +14,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -16,6 +15,7 @@ import { RegisterScreenFormik } from "@/components/forms/UserRegistrationFormik"
 import { LoginForm } from "@/components/forms/LoginForm";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const { width } = Dimensions.get("window");

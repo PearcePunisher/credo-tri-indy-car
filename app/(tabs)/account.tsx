@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -22,6 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 import UserQRCode from "@/components/UserQRCode";
 import { useRouter } from "expo-router";
 import FocusTransition from "@/components/ui/FocusTransition";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 40; // 20px margin on each side

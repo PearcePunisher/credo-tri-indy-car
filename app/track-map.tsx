@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, Dimensions, Image, StyleSheet } from 'react-native';
+import { Dimensions, Image, StyleSheet } from 'react-native';
 import ImageZoom from 'react-native-image-pan-zoom';
 // The library's TypeScript definitions in this project don't include the children
 // slot we use (the <Image/>). Cast to any so we can use the runtime component
@@ -7,6 +7,7 @@ import ImageZoom from 'react-native-image-pan-zoom';
 const ImageZoomAny: any = ImageZoom;
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 

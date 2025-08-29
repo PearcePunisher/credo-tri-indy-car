@@ -4,13 +4,13 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   Image,
   ActivityIndicator,
 } from 'react-native';
 import BrandLogo from '@/components/BrandLogo';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const options = {
   title: 'Experience',
